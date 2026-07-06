@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wires - AV signal flow and cable planning software</title>
-  <meta name="description" content="Wires is a professional desktop app for AV diagram software, signal flow documentation, cable planning, broadcast diagrams and interactive signal routing exports.">
-  <meta name="keywords" content="AV diagram software, signal flow software, broadcast diagram, cable planning, signal routing, broadcast workflow, AV documentation, streaming setup, church AV, corporate AV, live production, interactive signal diagram">
-  <meta property="og:title" content="Wires - AV signal flow and cable planning software">
-  <meta property="og:description" content="Create, animate, document and share complete audiovisual signal architectures with Wires.">
+  <title>Wires - Cabling and signal documentation software</title>
+  <meta name="description" content="Wires helps streamers, churches, conference rooms and technical teams understand, document and share their signal paths with real device images, animated routes and offline exports.">
+  <meta property="og:title" content="Wires - Cabling and signal documentation software">
+  <meta property="og:description" content="Make complex cabling readable with real devices, animated signal paths and interactive exports.">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="Logos/Logo-horizontal.png">
+  <meta property="og:image" content="images/EN/wires-en.png">
   <link rel="icon" href="Logos/favicon.ico">
   <link rel="apple-touch-icon" href="Logos/ico.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,25 +18,25 @@
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="#top" aria-label="Wires home">
+    <a class="brand" href="index.html" aria-label="Wires home">
       <img src="Logos/Logo-horizontal-transparent.png" alt="Wires">
     </a>
     <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
     <nav class="site-nav" aria-label="Main navigation">
-      <a href="#workflow" data-i18n="nav_workflow">Workflow</a>
-      <a href="#features" data-i18n="nav_features">Features</a>
-      <a href="#use-cases" data-i18n="nav_use_cases">Use cases</a>
-      <a href="#pricing" data-i18n="nav_pricing">License</a>
-      <a href="#resources" data-i18n="nav_resources">Resources</a>
+      <a class="active" href="index.html" data-i18n="nav_home">Home</a>
+      <a href="fonctions.html" data-i18n="nav_features">Features</a>
+      <a href="try-it.html" data-i18n="nav_try">Try Wires</a>
       <a href="help.html" data-i18n="nav_help">Help</a>
-      <a class="nav-cta js-download" href="#" data-i18n="nav_download">Download Wires</a>
+      <a href="#contact" data-i18n="nav_contact">Contact</a>
+      <a href="licence.html" data-i18n="nav_license">License</a>
+      <a class="nav-cta js-download" href="licence.html#download-wires" data-i18n="nav_download">Download Wires</a>
       <div id="lang-selector" class="lang-selector">
         <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Change language" aria-expanded="false">
           <span id="lang-flag" class="lang-flag"></span>
           <span id="lang-name" class="lang-name"></span>
-          <span class="lang-arrow">▾</span>
+          <span class="lang-arrow">v</span>
         </button>
         <div id="lang-drop" class="lang-drop" role="menu">
           <button id="lang-opt-en" class="lang-opt" type="button" data-lang="en" role="menuitem"><span id="drop-flag-en"></span><span>English</span></button>
@@ -49,194 +48,125 @@
   </header>
 
   <main id="top">
-    <section class="hero">
-      <div class="hero-media" aria-label="Wires interface preview">
-        <div class="hero-asset-placeholder" data-label="Media placeholder" data-i18n-label="hero_media_label">
-          <div class="placeholder-inner">
-            <div class="play-icon"></div>
-            <span data-i18n="hero_media_text">Future screenshot or product video</span>
-          </div>
-        </div>
-      </div>
-      <div class="hero-content">
-        <p class="eyebrow"><span></span><span data-i18n="hero_badge">Desktop software for professional AV systems</span></p>
-        <h1 data-i18n="hero_h1">Visualize, document and animate complete audiovisual signal routes.</h1>
-        <p class="hero-sub" data-i18n="hero_sub">Wires is not a drawing tool. It is a precise offline workspace for broadcast, streaming, corporate AV, live production and installation teams who need readable signal documentation.</p>
+    <section class="hero hero-home">
+      <div class="hero-copy">
+        <h1 data-i18n="home_h1">Make your cabling readable and alive.</h1>
+        <p class="hero-sub" data-i18n="home_sub">Wires makes your signal visible: real device images, precise ports, animated paths and clean documentation for streamers, churches, conference rooms and small technical teams.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary js-download" href="#" data-i18n="cta_download">Download Wires</a>
+          <a class="btn btn-primary js-download" href="licence.html#download-wires" data-i18n="nav_download">Download Wires</a>
+          <a class="btn btn-secondary" href="fonctions.html" data-i18n="home_features_cta">Explore features</a>
         </div>
-        <dl class="trust-strip">
-          <div><dt data-i18n="trust_offline_title">Offline</dt><dd data-i18n="trust_offline_text">Desktop app</dd></div>
-          <div><dt>HTML</dt><dd data-i18n="trust_html_text">Interactive export</dd></div>
-          <div><dt>PDF</dt><dd data-i18n="trust_pdf_text">Field documents</dd></div>
-        </dl>
       </div>
-    </section>
-
-    <section class="video-slot">
-      <div class="section-head centered">
-        <p class="kicker" data-i18n="video_kicker">Hero video placeholder</p>
-        <h2 data-i18n="video_h2">Designed for a product film, ready before the video exists.</h2>
-        <p data-i18n="video_lead">The hero video area can later host a short capture showing a route being built, animated, filtered and exported.</p>
-      </div>
-      <div class="video-placeholder hero-placeholder" data-label="Hero video" data-i18n-label="video_label">
-        <div class="play-icon"></div>
-        <span data-i18n="video_slot">Product overview - 60 to 90 seconds</span>
-      </div>
-    </section>
-
-    <section id="workflow" class="workflow">
-      <div class="section-head">
-        <p class="kicker" data-i18n="workflow_kicker">How Wires works</p>
-        <h2 data-i18n="workflow_h2">From real equipment to a shareable signal map.</h2>
-        <p data-i18n="workflow_lead">A simple path for building professional AV documentation without turning the site into a manual.</p>
-      </div>
-      <div class="steps">
-        <article><span class="step-number">01</span><h3 data-i18n="step1_title">Build the devices</h3><p data-i18n="step1_text">Import real equipment images, remove backgrounds, crop precisely and place connection points that match the physical ports.</p></article>
-        <article><span class="step-number">02</span><h3 data-i18n="step2_title">Connect the system</h3><p data-i18n="step2_text">Create typed cables, define directions, handle bidirectional ports and organize the plan with zones, categories and cable filters.</p></article>
-        <article><span class="step-number">03</span><h3 data-i18n="step3_title">Animate the signal</h3><p data-i18n="step3_text">Group cables into signal routes, reorder segments, manage splits and verify the path with animated light points on the canvas.</p></article>
-        <article><span class="step-number">04</span><h3 data-i18n="step4_title">Export and share</h3><p data-i18n="step4_text">Deliver interactive HTML exports, PDF documents and pack lists for production crews, clients and technical archives.</p></article>
-      </div>
-    </section>
-
-    <section id="features" class="feature-band">
-      <div class="section-head centered">
-        <p class="kicker" data-i18n="features_kicker">Professional feature set</p>
-        <h2 data-i18n="features_h2">Everything revolves around signal clarity.</h2>
-        <p data-i18n="features_lead">Wires keeps diagrams readable while preserving the details technicians need on real productions.</p>
-      </div>
-      <div class="feature-grid">
-        <article><h3 data-i18n="feat1_title">Signal routes</h3><p data-i18n="feat1_text">Document complete paths from source to destination, including multi-segment chains and route colors.</p></article>
-        <article><h3 data-i18n="feat2_title">Multi-segment animation</h3><p data-i18n="feat2_text">Animate one or several segments to confirm continuity, direction and routing logic at a glance.</p></article>
-        <article><h3 data-i18n="feat3_title">Splits and direction</h3><p data-i18n="feat3_text">Represent branches, alternate paths and cable direction changes without losing visual structure.</p></article>
-        <article><h3 data-i18n="feat4_title">Real device images</h3><p data-i18n="feat4_text">Use actual pictures of cameras, switchers, interfaces, racks and displays for instant recognition.</p></article>
-        <article><h3 data-i18n="feat5_title">Background removal</h3><p data-i18n="feat5_text">Clean imported images, crop them in the app and place ports directly on the device visual.</p></article>
-        <article><h3 data-i18n="feat6_title">Filters and ghost mode</h3><p data-i18n="feat6_text">Filter by category, cable or zone while connected context remains visible at 35 percent opacity.</p></article>
-        <article><h3 data-i18n="feat7_title">Minimap navigation</h3><p data-i18n="feat7_text">Navigate large broadcast or installation plans quickly without losing orientation.</p></article>
-        <article><h3 data-i18n="feat8_title">Custom cable types</h3><p data-i18n="feat8_text">Create your own connector families beyond SDI, HDMI, RJ45, Dante, XLR, USB, optical and more.</p></article>
-        <article><h3 data-i18n="feat9_title">Project import</h3><p data-i18n="feat9_text">Reuse a rack, room or subsystem by importing one Wires project into another.</p></article>
-        <article><h3 data-i18n="feat10_title">Offline desktop app</h3><p data-i18n="feat10_text">Work locally on site, in a venue, on a truck or in a studio without relying on cloud availability.</p></article>
-        <article><h3 data-i18n="feat11_title">Multilingual interface</h3><p data-i18n="feat11_text">Use Wires in English, French or Spanish and switch language directly inside the application.</p></article>
-        <article><h3 data-i18n="feat12_title">Integrated documentation</h3><p data-i18n="feat12_text">Keep the user guide close while the website remains a product story, not a reference manual.</p></article>
-      </div>
-    </section>
-
-    <section class="showcase">
-      <div class="section-head">
-        <p class="kicker" data-i18n="showcase_kicker">Visual placeholders</p>
-        <h2 data-i18n="showcase_h2">Built to stay elegant while screenshots are still in production.</h2>
-        <p data-i18n="showcase_lead">Each slot can later receive a real application capture without changing the layout.</p>
-      </div>
-      <div class="showcase-grid">
-        <article class="screenshot-card wide"><div class="mock-shot route-shot"></div><h3 data-i18n="shot1_title">Signal route panel</h3><p data-i18n="shot1_text">For a screenshot showing route segments, order, direction and split handling.</p></article>
-        <article class="screenshot-card"><div class="mock-shot device-shot"></div><h3 data-i18n="shot2_title">Device image editor</h3><p data-i18n="shot2_text">For background removal, crop handles and port placement.</p></article>
-        <article class="screenshot-card"><div class="mock-shot export-shot"></div><h3 data-i18n="shot3_title">Interactive export</h3><p data-i18n="shot3_text">For HTML, PDF and pack list delivery views.</p></article>
-      </div>
-    </section>
-
-    <section id="quick-start" class="quick-start">
-      <div class="section-head centered">
-        <p class="kicker" data-i18n="quick_kicker">Quick start videos</p>
-        <h2 data-i18n="quick_h2">Six tutorial slots ready for YouTube or local videos.</h2>
-        <p data-i18n="quick_lead">The site can launch with polished placeholders and receive final videos later.</p>
-      </div>
-      <div class="tutorial-grid">
-        <article class="video-placeholder"><div class="play-icon"></div><span data-i18n="quick1">Quick Start 1 - Create a project</span></article>
-        <article class="video-placeholder"><div class="play-icon"></div><span data-i18n="quick2">Quick Start 2 - Add a device</span></article>
-        <article class="video-placeholder"><div class="play-icon"></div><span data-i18n="quick3">Quick Start 3 - Place ports</span></article>
-        <article class="video-placeholder"><div class="play-icon"></div><span data-i18n="quick4">Quick Start 4 - Connect cables</span></article>
-        <article class="video-placeholder"><div class="play-icon"></div><span data-i18n="quick5">Quick Start 5 - Animate routes</span></article>
-        <article class="video-placeholder"><div class="play-icon"></div><span data-i18n="quick6">Quick Start 6 - Export and share</span></article>
-      </div>
-    </section>
-
-    <section id="use-cases" class="use-cases">
-      <div class="section-head">
-        <p class="kicker" data-i18n="use_kicker">Built for AV workflows</p>
-        <h2 data-i18n="use_h2">One language for technical teams, clients and archives.</h2>
-      </div>
-      <div class="use-grid">
-        <article><h3 data-i18n="use1_title">Broadcast studios</h3><p data-i18n="use1_text">Map cameras, routers, switchers, encoders, multiviewers and monitors with clear signal flow.</p></article>
-        <article><h3 data-i18n="use2_title">Live production</h3><p data-i18n="use2_text">Prepare a show before load-in, then export readable diagrams for technicians on site.</p></article>
-        <article><h3 data-i18n="use3_title">Corporate AV</h3><p data-i18n="use3_text">Document conference rooms, HDMI matrices, displays, audio systems and videoconferencing chains.</p></article>
-        <article><h3 data-i18n="use4_title">Church AV</h3><p data-i18n="use4_text">Explain sound, video, screens, cameras and streaming architecture to recurring technical teams.</p></article>
-        <article><h3 data-i18n="use5_title">Streaming setups</h3><p data-i18n="use5_text">Keep cameras, microphones, lighting, capture cards, interfaces and computers organized.</p></article>
-        <article><h3 data-i18n="use6_title">System integration</h3><p data-i18n="use6_text">Deliver client-facing documentation that remains understandable after installation.</p></article>
-      </div>
-    </section>
-
-    <section id="pricing" class="pricing">
-      <div class="section-head centered">
-        <p class="kicker" data-i18n="pricing_kicker">License activation</p>
-        <h2 data-i18n="pricing_h2">One application. Free mode by default. Pro unlocked by license.</h2>
-        <p data-i18n="pricing_lead">Download Wires once, test it immediately, then enter a license key inside the same software when you need Pro limits removed.</p>
-      </div>
-      <div class="plans">
-        <article class="plan">
-          <h3 data-i18n="free_title">Wires without license</h3>
-          <p class="price" data-i18n="price_free">Free mode</p>
-          <ul>
-            <li data-i18n="free_1">10 devices maximum</li>
-            <li data-i18n="free_2">PDF export limited to 75 dpi</li>
-            <li data-i18n="free_3">No sub-projects</li>
-            <li data-i18n="free_4">All other features included</li>
-          </ul>
-        </article>
-        <article class="plan featured-plan">
-          <p class="badge" data-i18n="pro_badge">Recommended for productions</p>
-          <h3 data-i18n="pro_title">Wires with Pro license</h3>
-          <p class="price" data-i18n="price_pro">Activated in the app</p>
-          <ul>
-            <li data-i18n="pro_1">Unlimited devices</li>
-            <li data-i18n="pro_2">High-resolution PDF export</li>
-            <li data-i18n="pro_3">Sub-projects</li>
-            <li data-i18n="pro_4">Same Wires installation</li>
-          </ul>
-        </article>
-      </div>
-      <figure class="activation-preview">
-        <img src="images/EN/activer-en.png" alt="Wires Pro activation window" data-i18n-src="activation_img" data-i18n-alt="activation_alt">
-        <figcaption data-i18n="activation_caption">The Pro license is entered directly in Wires. The download stays the same.</figcaption>
+      <figure class="hero-product">
+        <img src="images/EN/wires-en.png" alt="Wires interface with devices and signal cabling" data-i18n-src="home_wires_img" data-i18n-alt="home_wires_alt">
       </figure>
-      <div id="download-wires" class="pricing-download">
-        <a class="btn btn-primary js-download" href="#" data-i18n="cta_download">Download Wires</a>
-      </div>
     </section>
 
-    <section id="resources" class="resources">
-      <div class="section-head">
-        <p class="kicker" data-i18n="resources_kicker">Documentation and resources</p>
-        <h2 data-i18n="resources_h2">Everything needed around the software, linked locally.</h2>
-      </div>
-      <div class="resource-grid">
-        <a href="MANUAL_FR.V3.docx"><strong data-i18n="res_manual_title">User guide</strong><span data-i18n="res_manual_text">Complete manual, currently supplied as DOCX.</span></a>
-        <a href="#faq"><strong>FAQ</strong><span data-i18n="res_faq_text">Key questions before downloading or upgrading.</span></a>
-        <a href="terms-of-service-wires.html"><strong data-i18n="res_terms_title">Terms of Service</strong><span data-i18n="res_terms_text">Local legal page for Wires.</span></a>
-        <a href="refund-policy-wires.html"><strong data-i18n="res_refund_title">Refund Policy</strong><span data-i18n="res_refund_text">Local refund policy for digital licenses.</span></a>
-        <a href="#"><strong data-i18n="res_release_title">Release notes</strong><span data-i18n="res_release_text">Placeholder for version history.</span></a>
-        <a href="#quick-start"><strong data-i18n="res_tutorials_title">Future tutorials</strong><span data-i18n="res_tutorials_text">Prepared video slots for upcoming lessons.</span></a>
-      </div>
-    </section>
-
-    <section id="faq" class="faq">
+    <section class="intro-band">
       <div class="section-head centered">
-        <p class="kicker">FAQ</p>
-        <h2 data-i18n="faq_h2">Practical answers for technical visitors.</h2>
+        <p class="kicker" data-i18n="home_problem_kicker">The practical problem</p>
+        <h2 data-i18n="home_problem_h2">Your cabling becomes unreadable when the setup grows.</h2>
+        <p data-i18n="home_problem_text">Cameras, switchers, displays, converters, computers and networks multiply quickly. Wires brings order back with real device images, precise ports, animated signal paths and documentation your team can reuse.</p>
       </div>
-      <div class="faq-list">
-        <details open><summary data-i18n="faq1_q">Is Wires a drawing application?</summary><p data-i18n="faq1_a">No. Wires uses visual diagrams, but its purpose is signal documentation: devices, ports, cables, routes, direction, filters and exports.</p></details>
-        <details><summary data-i18n="faq2_q">Can Wires work offline?</summary><p data-i18n="faq2_a">Yes. Wires is a desktop Electron application designed to work locally, which is useful on productions, in venues and in technical rooms.</p></details>
-        <details><summary data-i18n="faq3_q">What makes the HTML export useful?</summary><p data-i18n="faq3_a">It creates an interactive standalone view of the plan, including device visuals and routes, so a setup can be shared or published without opening the app.</p></details>
-        <details><summary data-i18n="faq4_q">How does the Pro license differ from Free mode?</summary><p data-i18n="faq4_a">It is the same Wires application. Without a license, Wires runs in Free mode. Entering a Pro license removes the 10-device limit, enables high-resolution PDF export and unlocks sub-projects.</p></details>
+      <div class="value-grid">
+        <article>
+          <h3 data-i18n="value_real_title">Real equipment</h3>
+          <p data-i18n="value_real_text">Use actual pictures of your devices and place ports where they physically exist.</p>
+        </article>
+        <article>
+          <h3 data-i18n="value_routes_title">Animated signal</h3>
+          <p data-i18n="value_routes_text">Follow the signal across a complete path, including multiple cable segments.</p>
+        </article>
+        <article>
+          <h3 data-i18n="value_offline_title">Offline desktop app</h3>
+          <p data-i18n="value_offline_text">Work locally on Windows or macOS, even in a venue with unreliable internet.</p>
+        </article>
+        <article>
+          <h3 data-i18n="value_custom_title">Highly configurable</h3>
+          <p data-i18n="value_custom_text">Create your own cable types, colors, zones, devices, labels and routing logic.</p>
+        </article>
       </div>
     </section>
 
-    <section class="final-cta">
-      <img src="Logos/Logo-horizontal-transparent.png" alt="Wires">
-      <h2 data-i18n="final_h2">Make the signal visible before the production starts.</h2>
-      <p data-i18n="final_text">Download Wires, test it on a real setup, then activate Pro with a license key when your documentation needs to scale.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary js-download" href="#" data-i18n="cta_download">Download Wires</a>
+    <section class="audience-section">
+      <div class="audience-copy">
+        <p class="kicker" data-i18n="audience_kicker">On site</p>
+        <h2 data-i18n="audience_h2">When cabling needs to be understood immediately.</h2>
+        <p data-i18n="audience_text">Wires helps you find a fault, change an installation or explain a system without starting from zero. In seconds, the team sees where the signal goes, which devices are involved, which cables are needed and how the setup is really built.</p>
+        <ul class="check-list">
+          <li data-i18n="audience_1">Find a signal fault faster</li>
+          <li data-i18n="audience_2">Understand cabling in seconds</li>
+          <li data-i18n="audience_3">Plan the cables before an installation</li>
+          <li data-i18n="audience_4">Modify a setup and explain it clearly</li>
+        </ul>
+      </div>
+      <div class="audience-visual">
+        <div class="audience-placeholder">
+          <span data-i18n="audience_visual_title">Troubleshooting, changes, preparation</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="export-section">
+      <div class="section-head centered">
+        <p class="kicker" data-i18n="export_kicker">Export and share</p>
+        <h2 data-i18n="export_h2">Turn your plan into usable documentation.</h2>
+        <p data-i18n="export_text">Share an interactive HTML viewer, produce a PDF for the field, or export a connection list for the crew.</p>
+      </div>
+      <div class="export-grid">
+        <article>
+          <strong>HTML</strong>
+          <h3 data-i18n="export_html_title">Interactive viewer</h3>
+          <p data-i18n="export_html_text">Open the exported plan in a browser and inspect devices, cables and routes.</p>
+        </article>
+        <article>
+          <strong>PDF</strong>
+          <h3 data-i18n="export_pdf_title">Field document</h3>
+          <p data-i18n="export_pdf_text">Print or archive a readable view of the technical installation.</p>
+        </article>
+        <article>
+          <strong data-i18n="export_patch_label">List</strong>
+          <h3 data-i18n="export_patch_title">Connection list</h3>
+          <p data-i18n="export_patch_text">Keep the cable list close when preparing, checking or rebuilding a setup.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="license-teaser">
+      <div>
+        <p class="kicker" data-i18n="license_kicker">License</p>
+        <h2 data-i18n="home_license_h2">Start free. Unlock Pro when your projects grow.</h2>
+        <p data-i18n="home_license_text">Free mode is enough to discover the workflow. Pro removes the project limits and adds advanced export and sub-project features.</p>
+      </div>
+      <a class="btn btn-primary" href="licence.html" data-i18n="license_compare_cta">Compare Free and Pro</a>
+    </section>
+
+    <section id="contact" class="contact">
+      <div class="section-head centered">
+        <p class="kicker" data-i18n="contact_kicker">Contact</p>
+        <h2 data-i18n="contact_h2">Need help or want to follow Wires?</h2>
+        <p data-i18n="contact_text">Join the community first, or send an email for license and support questions.</p>
+      </div>
+      <div class="contact-actions">
+        <a class="contact-link contact-card contact-discord" href="https://discord.gg/bXV6QcW4G9" target="_blank" rel="noopener">
+          <span class="contact-title">
+            <svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="currentColor" d="M20.3 4.4A16.5 16.5 0 0 0 16.2 3l-.2.4c-.2.4-.4.8-.5 1.2a15.4 15.4 0 0 0-7 0c-.2-.4-.3-.8-.6-1.2L7.8 3a16.8 16.8 0 0 0-4.1 1.4C1.1 8.2.4 11.9.8 15.6a16.7 16.7 0 0 0 5.1 2.6l.5-.7c.3-.4.5-.8.7-1.2-.4-.2-.8-.4-1.2-.6l.3-.2a11.8 11.8 0 0 0 11.6 0l.3.2c-.4.3-.8.5-1.2.6.2.4.4.8.7 1.2l.5.7a16.9 16.9 0 0 0 5.1-2.6c.5-4.3-.8-8-2.9-11.2ZM8.3 13.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm7.4 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"/>
+            </svg>
+            <span data-i18n="contact_discord_label">Discord</span>
+          </span>
+          <span class="contact-subtitle" data-i18n="contact_discord">Join the Wires Community</span>
+        </a>
+        <a class="contact-link contact-card" href="mailto:contact@alkoda-wires.com">
+          <span class="contact-title">
+            <svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="currentColor" d="M3.8 5h16.4c1 0 1.8.8 1.8 1.8v10.4c0 1-.8 1.8-1.8 1.8H3.8c-1 0-1.8-.8-1.8-1.8V6.8C2 5.8 2.8 5 3.8 5Zm.3 2.7v9.1h15.8V7.7l-7.1 5.1c-.5.4-1.1.4-1.6 0L4.1 7.7Zm1.4-.9 6.5 4.7 6.5-4.7h-13Z"/>
+            </svg>
+            <span data-i18n="contact_mail_label">Email address</span>
+          </span>
+          <span class="contact-subtitle">contact@alkoda-wires.com</span>
+        </a>
+        <a class="contact-link js-download" href="licence.html#download-wires" data-i18n="nav_download">Download Wires</a>
       </div>
     </section>
   </main>
@@ -244,12 +174,15 @@
   <footer class="site-footer">
     <div>
       <img src="Logos/Logo-horizontal-transparent.png" alt="Wires">
-      <p data-i18n="footer_text">Wires is published by Alkoda On Air.</p>
+      <p data-i18n="footer_text">Wires is published by Alkoda.</p>
     </div>
     <nav aria-label="Footer navigation">
-      <a href="#features" data-i18n="nav_features">Features</a>
-      <a href="#pricing" data-i18n="nav_pricing">License</a>
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="fonctions.html" data-i18n="nav_features">Features</a>
+      <a href="try-it.html" data-i18n="nav_try">Try Wires</a>
       <a href="help.html" data-i18n="nav_help">Help</a>
+      <a href="#contact" data-i18n="nav_contact">Contact</a>
+      <a href="licence.html" data-i18n="nav_license">License</a>
       <a href="terms-of-service-wires.html" data-i18n="footer_terms">Terms</a>
       <a href="refund-policy-wires.html" data-i18n="footer_refunds">Refunds</a>
     </nav>
