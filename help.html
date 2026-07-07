@@ -27,15 +27,16 @@ img{max-width:100%;display:block}
 .site-nav a{white-space:nowrap}
 .site-nav a:hover{color:#fff}
 .site-nav a.active{color:#fff}
-.nav-cta{padding:10px 16px;border-radius:999px;background:var(--accent);color:#03101d;box-shadow:0 12px 28px rgba(0,210,255,.22)}
+.nav-cta{padding:10px 16px;border-radius:999px;background:var(--accent);color:#03101c;box-shadow:0 12px 28px rgba(0,210,255,.22)}
 .nav-cta:hover{color:#03101d;background:#fff}
 .lang-selector{position:relative;flex-shrink:0}
-.lang-toggle{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid var(--line2);border-radius:8px;background:rgba(255,255,255,.06);color:var(--text);font:600 13px Inter,system-ui,sans-serif;cursor:pointer;transition:.2s}
+.lang-toggle{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.05);color:var(--text);font:800 13px Inter,system-ui,sans-serif;cursor:pointer;transition:.2s}
+.lang-toggle svg,.lang-opt svg{border-radius:2px;vertical-align:middle;display:block}
 .lang-toggle:hover{border-color:var(--accent)}
 .lang-arrow{font-size:10px;color:var(--dim)}
-.lang-drop{display:none;position:absolute;top:calc(100% + 8px);right:0;z-index:220;min-width:145px;padding:5px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:#0d1627;box-shadow:0 16px 42px rgba(0,0,0,.45)}
+.lang-drop{display:none;position:absolute;top:calc(100% + 8px);right:0;z-index:220;min-width:142px;padding:5px;border:1px solid var(--line);border-radius:10px;background:#0b1423;box-shadow:0 16px 42px rgba(0,0,0,.45)}
 .lang-drop.open{display:block}
-.lang-opt{display:flex;align-items:center;gap:9px;width:100%;padding:9px 11px;border:0;border-radius:7px;background:transparent;color:var(--text);font:600 13px Inter,system-ui,sans-serif;text-align:left;cursor:pointer}
+.lang-opt{display:flex;align-items:center;gap:9px;width:100%;padding:9px 11px;border:0;border-radius:7px;background:transparent;color:var(--text);font:700 13px Inter,system-ui,sans-serif;text-align:left;cursor:pointer}
 .lang-opt:hover,.lang-opt.active{background:rgba(255,255,255,.08);color:#fff}
 .menu-toggle{display:none;width:40px;height:38px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.04);padding:9px;cursor:pointer}
 .menu-toggle span{display:block;height:2px;margin:4px 0;background:#fff;border-radius:2px}
@@ -196,7 +197,7 @@ kbd{display:inline-block;padding:1px 6px;background:rgba(0,180,220,.08);border:1
       <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Changer de langue" aria-expanded="false">
         <span id="lang-flag" class="lang-flag"></span>
         <span id="lang-name" class="lang-name"></span>
-        <span class="lang-arrow">▾</span>
+        <span class="lang-arrow">v</span>
       </button>
       <div id="lang-drop" class="lang-drop" role="menu">
         <button id="lang-opt-en" class="lang-opt" type="button" data-lang="en" role="menuitem"><span id="drop-flag-en"></span><span>English</span></button>
