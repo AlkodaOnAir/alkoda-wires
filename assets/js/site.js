@@ -113,6 +113,8 @@ const STRINGS = {
     try_badge: "Online demo",
     try_h1: "Try Wires live here.",
     try_sub: "Add devices, create cables, place text or zones, and see how Wires makes your cabling easier to read.",
+    try_loading_title: "Loading the Wires demo",
+    try_loading_text: "Preparing the live workspace...",
     try_box_title: "Demo under construction",
     try_box_text: "This space is reserved for the future online Wires test interface.",
 
@@ -260,6 +262,8 @@ const STRINGS = {
     try_badge: "Démo en ligne",
     try_h1: "Tester Wires en ligne.",
     try_sub: "Ajoutez des appareils, créez des câbles, placez des textes ou des zones, et découvrez comment Wires rend votre câblage plus lisible.",
+    try_loading_title: "Chargement de la démo Wires",
+    try_loading_text: "Préparation de l'espace de travail en ligne...",
     try_box_title: "Démo en construction",
     try_box_text: "Cet espace est réservé à la future interface de test en ligne de Wires.",
 
@@ -407,6 +411,8 @@ const STRINGS = {
     try_badge: "Demo online",
     try_h1: "Probar Wires en linea.",
     try_sub: "Añade dispositivos, crea cables, coloca textos o zonas y descubre cómo Wires hace que tu cableado sea más legible.",
+    try_loading_title: "Cargando la demo de Wires",
+    try_loading_text: "Preparando el espacio de trabajo online...",
     try_box_title: "Demo en construccion",
     try_box_text: "Este espacio esta reservado para la futura interfaz de prueba online de Wires.",
 
@@ -572,10 +578,38 @@ function updateDocumentMeta(nextDoc) {
   }
 }
 
+function initDemoLoaders() {
+  document.querySelectorAll("[data-demo-loader]").forEach((wrapper) => {
+    if (wrapper.dataset.loaderBound === "1") return;
+
+    const iframe = wrapper.querySelector("iframe");
+    if (!iframe) return;
+
+    wrapper.dataset.loaderBound = "1";
+
+    const markReady = () => {
+      wrapper.classList.remove("is-loading");
+      wrapper.classList.add("is-ready");
+    };
+
+    const checkReady = () => {
+      try {
+        const readyState = iframe.contentDocument?.readyState;
+        if (readyState === "complete" || readyState === "interactive") markReady();
+      } catch (error) {}
+    };
+
+    iframe.addEventListener("load", markReady, { once: true });
+    checkReady();
+    window.setTimeout(checkReady, 1200);
+  });
+}
+
 function refreshPageContent() {
   updateDownloadLinks();
   setActiveNavigation();
   setLang(currentLang);
+  initDemoLoaders();
 }
 
 async function navigatePartial(url, addHistory = true) {

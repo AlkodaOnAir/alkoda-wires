@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&display=swap">
-  <link rel="stylesheet" href="assets/css/site.css?v=20260707">
+  <link rel="stylesheet" href="assets/css/site.css?v=20260707-2">
 </head>
 <body>
   <header class="site-header">
@@ -40,11 +40,16 @@
       <p class="eyebrow"><span></span><span data-i18n="try_badge">Online demo</span></p>
       <h1 data-i18n="try_h1">Try Wires live here.</h1>
       <p data-i18n="try_sub">Add devices, create cables, place text or zones, and see how Wires makes your cabling easier to read.</p>
-      <div class="try-demo-embed">
+      <div class="try-demo-embed is-loading" data-demo-loader>
+        <div class="try-demo-loader" aria-live="polite">
+          <span class="try-loader-mark"></span>
+          <strong data-i18n="try_loading_title">Loading the Wires demo</strong>
+          <small data-i18n="try_loading_text">Preparing the live workspace...</small>
+        </div>
         <iframe
           src="renderer-web-demo/index.html"
           title="Wires live demo"
-          loading="lazy"
+          loading="eager"
           sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads"
           referrerpolicy="no-referrer"
           allow="clipboard-read; clipboard-write"
@@ -80,6 +85,6 @@
       <a href="refund-policy-wires.html" data-i18n="footer_refunds">Refunds</a>
     </nav>
   </footer>
-  <script src="assets/js/site.js?v=20260707"></script>
+  <script src="assets/js/site.js?v=20260707-2"></script>
 </body>
 </html>
