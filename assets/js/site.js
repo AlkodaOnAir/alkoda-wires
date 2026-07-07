@@ -48,7 +48,6 @@ const STRINGS = {
     license_kicker: "License",
     home_license_h2: "Start free. Unlock Pro when your projects grow.",
     home_license_text: "Free mode is enough to discover the workflow. Pro removes the project limits and adds advanced export and sub-project features.",
-    license_compare_cta: "Compare Free and Pro",
 
     features_badge: "Signal-first documentation",
     features_page_h1: "What Wires brings to a technical setup.",
@@ -146,7 +145,7 @@ const STRINGS = {
     contact_text: "Join the community first, or send an email for license and support questions.",
     contact_discord_label: "Discord",
     contact_discord: "Join the Wires Community",
-    contact_mail_label: "Email address"
+    contact_mail_label: "Mail"
   },
   fr: {
     nav_home: "Accueil",
@@ -197,7 +196,6 @@ const STRINGS = {
     license_kicker: "Licence",
     home_license_h2: "Commencez gratuitement. Débloquez Pro quand vos projets grandissent.",
     home_license_text: "Le mode Free suffit pour découvrir le workflow. Pro retire les limites de projet et ajoute les exports avancés et les sous-projets.",
-    license_compare_cta: "Comparer Free et Pro",
 
     features_badge: "Fonctions Wires",
     features_page_h1: "Ce que Wires apporte à une installation technique.",
@@ -295,7 +293,7 @@ const STRINGS = {
     contact_text: "Rejoignez d'abord la communauté, ou envoyez un e-mail pour les questions de licence et de support.",
     contact_discord_label: "Discord",
     contact_discord: "Join the Wires Community",
-    contact_mail_label: "Adresse mail"
+    contact_mail_label: "Mail"
   },
   es: {
     nav_home: "Inicio",
@@ -346,7 +344,6 @@ const STRINGS = {
     license_kicker: "Licencia",
     home_license_h2: "Empieza gratis. Desbloquea Pro cuando tus proyectos crezcan.",
     home_license_text: "El modo Free basta para descubrir el flujo. Pro elimina limites de proyecto y anade exportaciones avanzadas y subproyectos.",
-    license_compare_cta: "Comparar Free y Pro",
 
     features_badge: "Documentacion centrada en la senal",
     features_page_h1: "Lo que Wires aporta a una instalacion tecnica.",
@@ -444,7 +441,7 @@ const STRINGS = {
     contact_text: "Unete primero a la comunidad, o envia un e-mail para preguntas de licencia y soporte.",
     contact_discord_label: "Discord",
     contact_discord: "Join the Wires Community",
-    contact_mail_label: "Direccion de e-mail"
+    contact_mail_label: "Mail"
   }
 };
 
@@ -476,6 +473,9 @@ function setLang(lang) {
   document.querySelectorAll("[data-i18n-alt]").forEach((el) => {
     el.setAttribute("alt", translate(el.getAttribute("data-i18n-alt")));
   });
+  document.querySelectorAll("[data-lang-page]").forEach((el) => {
+    el.classList.toggle("active", el.dataset.langPage === currentLang);
+  });
 
   const flag = document.getElementById("lang-flag");
   const name = document.getElementById("lang-name");
@@ -503,7 +503,14 @@ function closeLangDrop() {
   if (toggle) toggle.setAttribute("aria-expanded", "false");
 }
 
-const PARTIAL_PAGES = new Set(["index.html", "fonctions.html", "try-it.html", "licence.html"]);
+const PARTIAL_PAGES = new Set([
+  "index.html",
+  "fonctions.html",
+  "try-it.html",
+  "licence.html",
+  "terms-of-service-wires.html",
+  "refund-policy-wires.html"
+]);
 let isNavigating = false;
 let videoModal = null;
 let videoModalPlayer = null;

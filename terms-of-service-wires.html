@@ -1,128 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terms of Service - Wires</title>
-<meta name="description" content="Terms of Service for the Wires software.">
-<link rel="icon" href="Logos/favicon.ico">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap">
-<style>
-:root{--bg:#07101d;--card:#101b2f;--line:#22314f;--line2:#30456f;--text:#e8eefb;--muted:#9db0d0;--accent:#00d2ff}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.75;padding-bottom:60px}
-a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
-.nav{position:sticky;top:0;z-index:100;height:62px;padding:0 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,16,29,.9);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.06)}
-.back-btn{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted);transition:.2s}.back-btn:hover{color:var(--accent);text-decoration:none}.back-btn svg{width:16px;height:16px}
-.nav-right{display:flex;align-items:center;gap:16px}.nav-title{font-family:"Share Tech Mono",monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
-#lang-selector{position:relative}.lang-toggle{display:flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid var(--line2);border-radius:7px;background:rgba(255,255,255,.06);color:var(--text);font:600 13px Inter,system-ui,sans-serif;cursor:pointer}.lang-toggle:hover{border-color:var(--accent)}.lang-arrow{font-size:10px;color:var(--muted)}
-.lang-drop{display:none;position:absolute;top:calc(100% + 7px);right:0;z-index:200;min-width:145px;padding:5px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:#0d1627;box-shadow:0 16px 42px rgba(0,0,0,.45)}.lang-drop.open{display:block}
-.lang-opt{display:flex;align-items:center;gap:9px;width:100%;padding:9px 11px;border:0;border-radius:7px;background:transparent;color:var(--text);font:600 13px Inter,system-ui,sans-serif;text-align:left;cursor:pointer}.lang-opt:hover,.lang-opt.active{background:rgba(255,255,255,.08)}
-.shell{width:min(900px,calc(100% - 48px));margin:0 auto;padding-top:52px}.lang-page{display:none}.lang-page.active{display:block}
-.section-kicker{font-family:"Share Tech Mono",monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
-h1{font-size:clamp(32px,4vw,48px);font-weight:900;line-height:1.02;color:#fff;margin-bottom:12px}h2{font-size:20px;font-weight:700;color:#fff;margin:34px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}p{font-size:15px;color:var(--muted);font-weight:300;margin-bottom:12px}p strong{color:var(--text);font-weight:600}
-ul{margin:12px 0 12px 20px;color:var(--muted);font-size:15px;font-weight:300}.toc{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px 28px;margin:38px 0 52px}.toc-title{font-family:"Share Tech Mono",monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}.toc ul{list-style:none;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 24px}.toc li::before{content:"-> ";color:var(--line2);font-size:12px}.toc a{font-size:14px;color:var(--muted)}
-.info-grid{display:grid;grid-template-columns:auto 1fr;gap:4px 24px;margin:16px 0;font-size:14px}.info-grid dt{color:var(--muted);font-weight:400;white-space:nowrap}.info-grid dd{color:var(--text);font-weight:500}
-.highlight-box{background:rgba(0,210,255,.06);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:16px 20px;margin:16px 0}.highlight-box p{margin:0}.footer-note{margin-top:44px;font-family:"Share Tech Mono",monospace;font-size:11px;color:var(--muted);letter-spacing:.08em}
-@media(max-width:720px){.nav{padding:0 18px}.shell{width:calc(100% - 32px);padding-top:36px}.nav-title{display:none}.toc ul,.info-grid{grid-template-columns:1fr}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service - Wires</title>
+  <meta name="description" content="Terms of Service for the Wires software.">
+  <link rel="icon" href="Logos/favicon.ico">
+  <link rel="apple-touch-icon" href="Logos/ico.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&display=swap">
+  <link rel="stylesheet" href="assets/css/site.css?v=20260707-7">
 </head>
 <body>
-<nav class="nav">
-  <a class="back-btn" href="index.html">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
-    <span id="back-label">Back to site</span>
-  </a>
-  <div class="nav-right">
-    <span class="nav-title" id="nav-title">Terms of Service</span>
-    <div id="lang-selector">
-      <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Change language" aria-expanded="false"><span id="lang-flag"></span><span id="lang-name"></span><span class="lang-arrow">▾</span></button>
-      <div id="lang-drop" class="lang-drop" role="menu">
-        <button id="lang-opt-en" class="lang-opt" type="button" data-lang="en" role="menuitem"><span id="drop-flag-en"></span><span>English</span></button>
-        <button id="lang-opt-fr" class="lang-opt" type="button" data-lang="fr" role="menuitem"><span id="drop-flag-fr"></span><span>Français</span></button>
-        <button id="lang-opt-es" class="lang-opt" type="button" data-lang="es" role="menuitem"><span id="drop-flag-es"></span><span>Español</span></button>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Wires home">
+      <img src="Logos/Logo-horizontal-transparent.png" alt="Wires">
+    </a>
+    <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="fonctions.html" data-i18n="nav_features">Features</a>
+      <a href="try-it.html" data-i18n="nav_try">Try Wires</a>
+      <a href="help.html" data-i18n="nav_help">Help</a>
+      <a href="index.html#contact" data-i18n="nav_contact">Contact</a>
+      <a href="licence.html" data-i18n="nav_license">License</a>
+      <a class="nav-cta js-download" href="licence.html#download-wires" data-i18n="nav_download">Download Wires</a>
+      <div id="lang-selector" class="lang-selector">
+        <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Change language" aria-expanded="false">
+          <span id="lang-flag" class="lang-flag"></span>
+          <span id="lang-name" class="lang-name"></span>
+          <span class="lang-arrow">v</span>
+        </button>
+        <div id="lang-drop" class="lang-drop" role="menu">
+          <button id="lang-opt-en" class="lang-opt" type="button" data-lang="en" role="menuitem"><span id="drop-flag-en"></span><span>English</span></button>
+          <button id="lang-opt-fr" class="lang-opt" type="button" data-lang="fr" role="menuitem"><span id="drop-flag-fr"></span><span>Fran&ccedil;ais</span></button>
+          <button id="lang-opt-es" class="lang-opt" type="button" data-lang="es" role="menuitem"><span id="drop-flag-es"></span><span>Espa&ntilde;ol</span></button>
+        </div>
       </div>
-    </div>
-  </div>
-</nav>
+    </nav>
+  </header>
 
-<main class="shell">
-  <article class="lang-page" data-lang-page="en">
-    <div class="section-kicker">Legal documents</div>
-    <h1>Terms of Service<br>- Wires</h1>
-    <p>Terms applicable to the download, installation, activation and use of the Wires software.</p>
-    <div class="toc"><div class="toc-title">Contents</div><ul><li><a href="#legal-en">Legal notice</a></li><li><a href="#scope-en">Scope</a></li><li><a href="#software-en">Software</a></li><li><a href="#license-en">License</a></li><li><a href="#activation-en">Activation</a></li><li><a href="#use-en">Authorized use</a></li><li><a href="#content-en">User files</a></li><li><a href="#ip-en">Intellectual property</a></li><li><a href="#restrictions-en">Restrictions</a></li><li><a href="#liability-en">Liability</a></li><li><a href="#updates-en">Updates</a></li><li><a href="#contact-en">Contact</a></li></ul></div>
-    <div class="highlight-box"><p>Wires is published by <strong>Alkoda On Air</strong>. Installing, activating or using Wires implies acceptance of these terms.</p></div>
-    <h2 id="legal-en">Legal notice</h2><dl class="info-grid"><dt>Publisher</dt><dd>Alkoda On Air - Individual business</dd><dt>Responsible person</dt><dd>Christophe Koclejda</dd><dt>Address</dt><dd>25 rue Pradier - 75019 Paris, France</dd><dt>Email</dt><dd><a href="mailto:contact@alkoda-onair.com">contact@alkoda-onair.com</a></dd><dt>SIRET</dt><dd>820 390 409 00010</dd></dl>
-    <h2 id="scope-en">Scope</h2><p>These Terms of Service define the conditions under which Wires may be downloaded, installed, activated and used. They apply to both Free mode and Pro activation.</p>
-    <h2 id="software-en">Software presentation</h2><p>Wires is professional software for documenting and planning audiovisual signal architectures. It allows users to place devices on a canvas, connect them with cables, organize those connections into signal routes and generate interactive or printable documentation.</p>
-    <h2 id="license-en">License and versions</h2><p>Wires is distributed as a single desktop application. Without a license key, it runs in Free mode. A valid Pro license key unlocks Pro features inside the same application.</p><p>Free mode may include limitations such as a maximum number of devices, limited PDF export resolution or disabled sub-projects. Pro removes the limits described on the official Wires product page at the time of purchase.</p>
-    <h2 id="activation-en">Activation and license key</h2><p>A Wires Pro license key is personal, non-exclusive and non-transferable. Unless stated otherwise, it may be used by the same user on two computers. The key may not be resold, rented, shared publicly or distributed.</p>
-    <h2 id="use-en">Authorized use</h2><p>The user may use Wires to create diagrams, cable plans, workflows, technical documents and exports for personal or professional projects.</p>
-    <h2 id="content-en">Files created by the user</h2><p>Projects, diagrams, documents and exports created by the user remain the exclusive property of their author. Alkoda On Air claims no rights over user-created content.</p>
-    <h2 id="ip-en">Intellectual property</h2><p>Wires, its interface, code, name, graphic elements, documentation and related content are protected by intellectual property law. Buying a license does not transfer ownership of the software.</p>
-    <h2 id="restrictions-en">Restrictions</h2><p>It is prohibited to redistribute or resell the software without authorization, share a license key publicly, bypass activation mechanisms, decompile or modify the software except where mandatory law allows it, or use Wires for fraudulent or illegal purposes.</p>
-    <h2 id="liability-en">User responsibility and limitation of liability</h2><p>The user remains responsible for the technical verification of diagrams, wiring and compliance with the real constraints of an installation. Wires is a documentation and visualization tool; it does not replace technical expertise, safety rules or checks before implementation.</p><p>The software is provided as is. Alkoda On Air cannot be held liable for direct or indirect damage resulting from use or inability to use the software.</p>
-    <h2 id="updates-en">Availability, updates and refunds</h2><p>Alkoda On Air may modify, suspend or discontinue development or distribution of Wires. Corrective or minor updates may be provided. Major future versions may require a new license or paid upgrade.</p><p>Refund conditions are described in the <a href="refund-policy-wires.html">Refund Policy</a>.</p>
-    <h2 id="contact-en">Applicable law and contact</h2><p>These terms are governed by French law. For any question: <strong><a href="mailto:contact@alkoda-onair.com">contact@alkoda-onair.com</a></strong></p>
-    <p class="footer-note">© 2026 Alkoda On Air - Christophe Koclejda - SIRET 820 390 409 00010</p>
-  </article>
+  <main id="top" class="legal-shell">
+    <article class="lang-page" data-lang-page="en">
+        <div class="section-kicker">Legal documents</div>
+        <h1>Terms of Service<br>- Wires</h1>
+        <p>Terms applicable to the download, installation, activation and use of the Wires software.</p>
+        <div class="toc"><div class="toc-title">Contents</div><ul><li><a href="#legal-en">Legal notice</a></li><li><a href="#scope-en">Scope</a></li><li><a href="#software-en">Software</a></li><li><a href="#license-en">License</a></li><li><a href="#activation-en">Activation</a></li><li><a href="#use-en">Authorized use</a></li><li><a href="#content-en">User files</a></li><li><a href="#ip-en">Intellectual property</a></li><li><a href="#restrictions-en">Restrictions</a></li><li><a href="#liability-en">Liability</a></li><li><a href="#updates-en">Updates</a></li><li><a href="#contact-en">Contact</a></li></ul></div>
+        <div class="highlight-box"><p>Wires is published by <strong>Alkoda On Air</strong>. Installing, activating or using Wires implies acceptance of these terms.</p></div>
+        <h2 id="legal-en">Legal notice</h2><dl class="info-grid"><dt>Publisher</dt><dd>Alkoda On Air - Individual business</dd><dt>Responsible person</dt><dd>Christophe Koclejda</dd><dt>Address</dt><dd>25 rue Pradier - 75019 Paris, France</dd><dt>Email</dt><dd><a href="mailto:contact@alkoda-onair.com">contact@alkoda-onair.com</a></dd><dt>SIRET</dt><dd>820 390 409 00010</dd></dl>
+        <h2 id="scope-en">Scope</h2><p>These Terms of Service define the conditions under which Wires may be downloaded, installed, activated and used. They apply to both Free mode and Pro activation.</p>
+        <h2 id="software-en">Software presentation</h2><p>Wires is professional software for documenting and planning audiovisual signal architectures. It allows users to place devices on a canvas, connect them with cables, organize those connections into signal routes and generate interactive or printable documentation.</p>
+        <h2 id="license-en">License and versions</h2><p>Wires is distributed as a single desktop application. Without a license key, it runs in Free mode. A valid Pro license key unlocks Pro features inside the same application.</p><p>Free mode may include limitations such as a maximum number of devices, limited PDF export resolution or disabled sub-projects. Pro removes the limits described on the official Wires product page at the time of purchase.</p>
+        <h2 id="activation-en">Activation and license key</h2><p>A Wires Pro license key is personal, non-exclusive and non-transferable. Unless stated otherwise, it may be used by the same user on two computers. The key may not be resold, rented, shared publicly or distributed.</p>
+        <h2 id="use-en">Authorized use</h2><p>The user may use Wires to create diagrams, cable plans, workflows, technical documents and exports for personal or professional projects.</p>
+        <h2 id="content-en">Files created by the user</h2><p>Projects, diagrams, documents and exports created by the user remain the exclusive property of their author. Alkoda On Air claims no rights over user-created content.</p>
+        <h2 id="ip-en">Intellectual property</h2><p>Wires, its interface, code, name, graphic elements, documentation and related content are protected by intellectual property law. Buying a license does not transfer ownership of the software.</p>
+        <h2 id="restrictions-en">Restrictions</h2><p>It is prohibited to redistribute or resell the software without authorization, share a license key publicly, bypass activation mechanisms, decompile or modify the software except where mandatory law allows it, or use Wires for fraudulent or illegal purposes.</p>
+        <h2 id="liability-en">User responsibility and limitation of liability</h2><p>The user remains responsible for the technical verification of diagrams, wiring and compliance with the real constraints of an installation. Wires is a documentation and visualization tool; it does not replace technical expertise, safety rules or checks before implementation.</p><p>The software is provided as is. Alkoda On Air cannot be held liable for direct or indirect damage resulting from use or inability to use the software.</p>
+        <h2 id="updates-en">Availability, updates and refunds</h2><p>Alkoda On Air may modify, suspend or discontinue development or distribution of Wires. Corrective or minor updates may be provided. Major future versions may require a new license or paid upgrade.</p><p>Refund conditions are described in the <a href="refund-policy-wires.html">Refund Policy</a>.</p>
+        <h2 id="contact-en">Applicable law and contact</h2><p>These terms are governed by French law. For any question: <strong><a href="mailto:contact@alkoda-onair.com">contact@alkoda-onair.com</a></strong></p>
+        <p class="footer-note">© 2026 Alkoda On Air - Christophe Koclejda - SIRET 820 390 409 00010</p>
+      </article>
+    
+      <article class="lang-page" data-lang-page="fr">
+        <div class="section-kicker">Documents légaux</div>
+        <h1>Conditions d'utilisation<br>- Wires</h1>
+        <p>Conditions applicables au téléchargement, à l'installation, à l'activation et à l'utilisation du logiciel Wires.</p>
+        <div class="toc"><div class="toc-title">Sommaire</div><ul><li><a href="#legal-fr">Mentions légales</a></li><li><a href="#scope-fr">Objet</a></li><li><a href="#software-fr">Logiciel</a></li><li><a href="#license-fr">Licence</a></li><li><a href="#activation-fr">Activation</a></li><li><a href="#use-fr">Utilisation autorisée</a></li><li><a href="#content-fr">Fichiers utilisateur</a></li><li><a href="#ip-fr">Propriété intellectuelle</a></li><li><a href="#restrictions-fr">Restrictions</a></li><li><a href="#liability-fr">Responsabilité</a></li><li><a href="#updates-fr">Mises à jour</a></li><li><a href="#contact-fr">Contact</a></li></ul></div>
+        <div class="highlight-box"><p>Wires est édité par <strong>Alkoda On Air</strong>. Toute installation, activation ou utilisation de Wires implique l'acceptation des présentes conditions.</p></div>
+        <h2 id="legal-fr">Mentions légales</h2><dl class="info-grid"><dt>Éditeur</dt><dd>Alkoda On Air - Entreprise Individuelle</dd><dt>Responsable</dt><dd>Christophe Koclejda</dd><dt>Adresse</dt><dd>25 rue Pradier - 75019 Paris, France</dd><dt>Email</dt><dd><a href="mailto:contact@alkoda-onair.com">contact@alkoda-onair.com</a></dd><dt>SIRET</dt><dd>820 390 409 00010</dd></dl>
+        <h2 id="scope-fr">Objet</h2><p>Les présentes Conditions d'utilisation définissent les conditions dans lesquelles Wires peut être téléchargé, installé, activé et utilisé. Elles s'appliquent au mode Free comme à l'activation Pro.</p>
+        <h2 id="software-fr">Présentation du logiciel</h2><p>Wires est un logiciel professionnel de documentation et de planification d'architectures de signaux audiovisuels. Il permet de placer des appareils sur un canevas, de les connecter avec des câbles, d'organiser ces connexions en routes de signal et de générer une documentation interactive ou imprimable.</p>
+        <h2 id="license-fr">Licence et versions</h2><p>Wires est distribué comme une seule application desktop. Sans clé de licence, il fonctionne en mode Free. Une clé de licence Pro valide déverrouille les fonctions Pro dans la même application.</p><p>Le mode Free peut comporter des limites, notamment sur le nombre d'appareils, la résolution d'export PDF ou les sous-projets. Pro retire les limites indiquées sur la page officielle du produit au moment de l'achat.</p>
+        <h2 id="activation-fr">Activation et clé de licence</h2><p>La clé de licence Wires Pro est personnelle, non exclusive et non transférable. Sauf indication contraire, elle peut être utilisée par le même utilisateur sur deux ordinateurs. Elle ne peut pas être revendue, louée, partagée publiquement ni distribuée.</p>
+        <h2 id="use-fr">Utilisation autorisée</h2><p>L'utilisateur peut utiliser Wires pour créer des schémas, plans de câblage, workflows, documents techniques et exports liés à ses projets personnels ou professionnels.</p>
+        <h2 id="content-fr">Fichiers créés par l'utilisateur</h2><p>Les projets, schémas, documents et exports créés par l'utilisateur restent la propriété exclusive de leur auteur. Alkoda On Air ne revendique aucun droit sur les contenus créés par l'utilisateur.</p>
+        <h2 id="ip-fr">Propriété intellectuelle</h2><p>Wires, son interface, son code, son nom, ses éléments graphiques, sa documentation et ses contenus associés sont protégés par le droit de la propriété intellectuelle. L'achat d'une licence ne transfère aucun droit de propriété sur le logiciel.</p>
+        <h2 id="restrictions-fr">Restrictions</h2><p>Il est interdit de redistribuer ou revendre le logiciel sans autorisation, de partager publiquement une clé de licence, de contourner les mécanismes d'activation, de décompiler ou modifier le logiciel sauf disposition légale impérative contraire, ou d'utiliser Wires à des fins frauduleuses ou illégales.</p>
+        <h2 id="liability-fr">Responsabilité de l'utilisateur et limitation</h2><p>L'utilisateur reste responsable de la vérification technique de ses schémas, câblages et de leur conformité aux contraintes réelles d'une installation. Wires est un outil de documentation et de visualisation ; il ne remplace pas l'expertise technique, les règles de sécurité ni les vérifications nécessaires avant mise en œuvre.</p><p>Le logiciel est fourni en l'état. Alkoda On Air ne saurait être tenu responsable des dommages directs ou indirects résultant de l'utilisation ou de l'impossibilité d'utiliser le logiciel.</p>
+        <h2 id="updates-fr">Disponibilité, mises à jour et remboursements</h2><p>Alkoda On Air peut modifier, suspendre ou interrompre le développement ou la distribution de Wires. Des mises à jour correctives ou mineures peuvent être proposées. Les futures versions majeures peuvent nécessiter une nouvelle licence ou une mise à niveau payante.</p><p>Les conditions de remboursement sont décrites dans la <a href="refund-policy-wires.html">Politique de remboursement</a>.</p>
+        <h2 id="contact-fr">Droit applicable et contact</h2><p>Les présentes conditions sont régies par le droit français. Pour toute question : <strong><a href="mailto:contact@alkoda-onair.com">contact@alkoda-onair.com</a></strong></p>
+        <p class="footer-note">© 2026 Alkoda On Air - Christophe Koclejda - SIRET 820 390 409 00010</p>
+      </article>
+    
+      <article class="lang-page" data-lang-page="es">
+        <div class="section-kicker">Documentos legales</div>
+        <h1>Términos de servicio<br>- Wires</h1>
+        <p>Condiciones aplicables a la descarga, instalación, activación y uso del software Wires.</p>
+        <div class="toc"><div class="toc-title">Índice</div><ul><li><a href="#legal-es">Aviso legal</a></li><li><a href="#scope-es">Objeto</a></li><li><a href="#software-es">Software</a></li><li><a href="#license-es">Licencia</a></li><li><a href="#activation-es">Activación</a></li><li><a href="#use-es">Uso autorizado</a></li><li><a href="#content-es">Archivos de usuario</a></li><li><a href="#ip-es">Propiedad intelectual</a></li><li><a href="#restrictions-es">Restricciones</a></li><li><a href="#liability-es">Responsabilidad</a></li><li><a href="#updates-es">Actualizaciones</a></li><li><a href="#contact-es">Contacto</a></li></ul></div>
+        <div class="highlight-box"><p>Wires está publicado por <strong>Alkoda On Air</strong>. Toda instalación, activación o uso de Wires implica la aceptación de estos términos.</p></div>
+        <h2 id="legal-es">Aviso legal</h2><dl class="info-grid"><dt>Editor</dt><dd>Alkoda On Air - Empresa individual</dd><dt>Responsable</dt><dd>Christophe Koclejda</dd><dt>Dirección</dt><dd>25 rue Pradier - 75019 París, Francia</dd><dt>Email</dt><dd><a href="mailto:contact@alkoda-onair.com">contact@alkoda-onair.com</a></dd><dt>SIRET</dt><dd>820 390 409 00010</dd></dl>
+        <h2 id="scope-es">Objeto</h2><p>Estos Términos de servicio definen las condiciones en las que Wires puede descargarse, instalarse, activarse y utilizarse. Se aplican tanto al modo Free como a la activación Pro.</p>
+        <h2 id="software-es">Presentación del software</h2><p>Wires es un software profesional para documentar y planificar arquitecturas de señales audiovisuales. Permite colocar dispositivos en un lienzo, conectarlos con cables, organizar esas conexiones en rutas de señal y generar documentación interactiva o imprimible.</p>
+        <h2 id="license-es">Licencia y versiones</h2><p>Wires se distribuye como una única aplicación desktop. Sin clave de licencia, funciona en modo Free. Una clave Pro válida desbloquea las funciones Pro dentro de la misma aplicación.</p><p>El modo Free puede incluir límites, por ejemplo en el número de dispositivos, la resolución de exportación PDF o los subproyectos. Pro elimina los límites indicados en la página oficial del producto en el momento de la compra.</p>
+        <h2 id="activation-es">Activación y clave de licencia</h2><p>La clave de licencia Wires Pro es personal, no exclusiva y no transferible. Salvo indicación contraria, puede ser utilizada por el mismo usuario en dos ordenadores. No puede revenderse, alquilarse, compartirse públicamente ni distribuirse.</p>
+        <h2 id="use-es">Uso autorizado</h2><p>El usuario puede usar Wires para crear diagramas, planos de cableado, workflows, documentos técnicos y exportaciones relacionados con sus proyectos personales o profesionales.</p>
+        <h2 id="content-es">Archivos creados por el usuario</h2><p>Los proyectos, diagramas, documentos y exportaciones creados por el usuario siguen siendo propiedad exclusiva de su autor. Alkoda On Air no reclama ningún derecho sobre los contenidos creados por el usuario.</p>
+        <h2 id="ip-es">Propiedad intelectual</h2><p>Wires, su interfaz, código, nombre, elementos gráficos, documentación y contenidos asociados están protegidos por la ley de propiedad intelectual. Comprar una licencia no transfiere la propiedad del software.</p>
+        <h2 id="restrictions-es">Restricciones</h2><p>Está prohibido redistribuir o revender el software sin autorización, compartir públicamente una clave de licencia, eludir mecanismos de activación, descompilar o modificar el software salvo cuando la ley lo permita, o usar Wires con fines fraudulentos o ilegales.</p>
+        <h2 id="liability-es">Responsabilidad del usuario y limitación</h2><p>El usuario sigue siendo responsable de verificar técnicamente sus diagramas, cableados y su conformidad con las restricciones reales de una instalación. Wires es una herramienta de documentación y visualización; no sustituye la experiencia técnica, las normas de seguridad ni las comprobaciones necesarias antes de una implementación.</p><p>El software se proporciona tal cual. Alkoda On Air no será responsable de daños directos o indirectos resultantes del uso o de la imposibilidad de usar el software.</p>
+        <h2 id="updates-es">Disponibilidad, actualizaciones y reembolsos</h2><p>Alkoda On Air puede modificar, suspender o interrumpir el desarrollo o distribución de Wires. Pueden ofrecerse actualizaciones correctivas o menores. Futuras versiones mayores pueden requerir una nueva licencia o actualización de pago.</p><p>Las condiciones de reembolso se describen en la <a href="refund-policy-wires.html">Política de reembolso</a>.</p>
+        <h2 id="contact-es">Ley aplicable y contacto</h2><p>Estos términos se rigen por la ley francesa. Para cualquier pregunta: <strong><a href="mailto:contact@alkoda-onair.com">contact@alkoda-onair.com</a></strong></p>
+        <p class="footer-note">© 2026 Alkoda On Air - Christophe Koclejda - SIRET 820 390 409 00010</p>
+      </article>
+  </main>
 
-  <article class="lang-page" data-lang-page="fr">
-    <div class="section-kicker">Documents légaux</div>
-    <h1>Conditions d'utilisation<br>- Wires</h1>
-    <p>Conditions applicables au téléchargement, à l'installation, à l'activation et à l'utilisation du logiciel Wires.</p>
-    <div class="toc"><div class="toc-title">Sommaire</div><ul><li><a href="#legal-fr">Mentions légales</a></li><li><a href="#scope-fr">Objet</a></li><li><a href="#software-fr">Logiciel</a></li><li><a href="#license-fr">Licence</a></li><li><a href="#activation-fr">Activation</a></li><li><a href="#use-fr">Utilisation autorisée</a></li><li><a href="#content-fr">Fichiers utilisateur</a></li><li><a href="#ip-fr">Propriété intellectuelle</a></li><li><a href="#restrictions-fr">Restrictions</a></li><li><a href="#liability-fr">Responsabilité</a></li><li><a href="#updates-fr">Mises à jour</a></li><li><a href="#contact-fr">Contact</a></li></ul></div>
-    <div class="highlight-box"><p>Wires est édité par <strong>Alkoda On Air</strong>. Toute installation, activation ou utilisation de Wires implique l'acceptation des présentes conditions.</p></div>
-    <h2 id="legal-fr">Mentions légales</h2><dl class="info-grid"><dt>Éditeur</dt><dd>Alkoda On Air - Entreprise Individuelle</dd><dt>Responsable</dt><dd>Christophe Koclejda</dd><dt>Adresse</dt><dd>25 rue Pradier - 75019 Paris, France</dd><dt>Email</dt><dd><a href="mailto:contact@alkoda-onair.com">contact@alkoda-onair.com</a></dd><dt>SIRET</dt><dd>820 390 409 00010</dd></dl>
-    <h2 id="scope-fr">Objet</h2><p>Les présentes Conditions d'utilisation définissent les conditions dans lesquelles Wires peut être téléchargé, installé, activé et utilisé. Elles s'appliquent au mode Free comme à l'activation Pro.</p>
-    <h2 id="software-fr">Présentation du logiciel</h2><p>Wires est un logiciel professionnel de documentation et de planification d'architectures de signaux audiovisuels. Il permet de placer des appareils sur un canevas, de les connecter avec des câbles, d'organiser ces connexions en routes de signal et de générer une documentation interactive ou imprimable.</p>
-    <h2 id="license-fr">Licence et versions</h2><p>Wires est distribué comme une seule application desktop. Sans clé de licence, il fonctionne en mode Free. Une clé de licence Pro valide déverrouille les fonctions Pro dans la même application.</p><p>Le mode Free peut comporter des limites, notamment sur le nombre d'appareils, la résolution d'export PDF ou les sous-projets. Pro retire les limites indiquées sur la page officielle du produit au moment de l'achat.</p>
-    <h2 id="activation-fr">Activation et clé de licence</h2><p>La clé de licence Wires Pro est personnelle, non exclusive et non transférable. Sauf indication contraire, elle peut être utilisée par le même utilisateur sur deux ordinateurs. Elle ne peut pas être revendue, louée, partagée publiquement ni distribuée.</p>
-    <h2 id="use-fr">Utilisation autorisée</h2><p>L'utilisateur peut utiliser Wires pour créer des schémas, plans de câblage, workflows, documents techniques et exports liés à ses projets personnels ou professionnels.</p>
-    <h2 id="content-fr">Fichiers créés par l'utilisateur</h2><p>Les projets, schémas, documents et exports créés par l'utilisateur restent la propriété exclusive de leur auteur. Alkoda On Air ne revendique aucun droit sur les contenus créés par l'utilisateur.</p>
-    <h2 id="ip-fr">Propriété intellectuelle</h2><p>Wires, son interface, son code, son nom, ses éléments graphiques, sa documentation et ses contenus associés sont protégés par le droit de la propriété intellectuelle. L'achat d'une licence ne transfère aucun droit de propriété sur le logiciel.</p>
-    <h2 id="restrictions-fr">Restrictions</h2><p>Il est interdit de redistribuer ou revendre le logiciel sans autorisation, de partager publiquement une clé de licence, de contourner les mécanismes d'activation, de décompiler ou modifier le logiciel sauf disposition légale impérative contraire, ou d'utiliser Wires à des fins frauduleuses ou illégales.</p>
-    <h2 id="liability-fr">Responsabilité de l'utilisateur et limitation</h2><p>L'utilisateur reste responsable de la vérification technique de ses schémas, câblages et de leur conformité aux contraintes réelles d'une installation. Wires est un outil de documentation et de visualisation ; il ne remplace pas l'expertise technique, les règles de sécurité ni les vérifications nécessaires avant mise en œuvre.</p><p>Le logiciel est fourni en l'état. Alkoda On Air ne saurait être tenu responsable des dommages directs ou indirects résultant de l'utilisation ou de l'impossibilité d'utiliser le logiciel.</p>
-    <h2 id="updates-fr">Disponibilité, mises à jour et remboursements</h2><p>Alkoda On Air peut modifier, suspendre ou interrompre le développement ou la distribution de Wires. Des mises à jour correctives ou mineures peuvent être proposées. Les futures versions majeures peuvent nécessiter une nouvelle licence ou une mise à niveau payante.</p><p>Les conditions de remboursement sont décrites dans la <a href="refund-policy-wires.html">Politique de remboursement</a>.</p>
-    <h2 id="contact-fr">Droit applicable et contact</h2><p>Les présentes conditions sont régies par le droit français. Pour toute question : <strong><a href="mailto:contact@alkoda-onair.com">contact@alkoda-onair.com</a></strong></p>
-    <p class="footer-note">© 2026 Alkoda On Air - Christophe Koclejda - SIRET 820 390 409 00010</p>
-  </article>
-
-  <article class="lang-page" data-lang-page="es">
-    <div class="section-kicker">Documentos legales</div>
-    <h1>Términos de servicio<br>- Wires</h1>
-    <p>Condiciones aplicables a la descarga, instalación, activación y uso del software Wires.</p>
-    <div class="toc"><div class="toc-title">Índice</div><ul><li><a href="#legal-es">Aviso legal</a></li><li><a href="#scope-es">Objeto</a></li><li><a href="#software-es">Software</a></li><li><a href="#license-es">Licencia</a></li><li><a href="#activation-es">Activación</a></li><li><a href="#use-es">Uso autorizado</a></li><li><a href="#content-es">Archivos de usuario</a></li><li><a href="#ip-es">Propiedad intelectual</a></li><li><a href="#restrictions-es">Restricciones</a></li><li><a href="#liability-es">Responsabilidad</a></li><li><a href="#updates-es">Actualizaciones</a></li><li><a href="#contact-es">Contacto</a></li></ul></div>
-    <div class="highlight-box"><p>Wires está publicado por <strong>Alkoda On Air</strong>. Toda instalación, activación o uso de Wires implica la aceptación de estos términos.</p></div>
-    <h2 id="legal-es">Aviso legal</h2><dl class="info-grid"><dt>Editor</dt><dd>Alkoda On Air - Empresa individual</dd><dt>Responsable</dt><dd>Christophe Koclejda</dd><dt>Dirección</dt><dd>25 rue Pradier - 75019 París, Francia</dd><dt>Email</dt><dd><a href="mailto:contact@alkoda-onair.com">contact@alkoda-onair.com</a></dd><dt>SIRET</dt><dd>820 390 409 00010</dd></dl>
-    <h2 id="scope-es">Objeto</h2><p>Estos Términos de servicio definen las condiciones en las que Wires puede descargarse, instalarse, activarse y utilizarse. Se aplican tanto al modo Free como a la activación Pro.</p>
-    <h2 id="software-es">Presentación del software</h2><p>Wires es un software profesional para documentar y planificar arquitecturas de señales audiovisuales. Permite colocar dispositivos en un lienzo, conectarlos con cables, organizar esas conexiones en rutas de señal y generar documentación interactiva o imprimible.</p>
-    <h2 id="license-es">Licencia y versiones</h2><p>Wires se distribuye como una única aplicación desktop. Sin clave de licencia, funciona en modo Free. Una clave Pro válida desbloquea las funciones Pro dentro de la misma aplicación.</p><p>El modo Free puede incluir límites, por ejemplo en el número de dispositivos, la resolución de exportación PDF o los subproyectos. Pro elimina los límites indicados en la página oficial del producto en el momento de la compra.</p>
-    <h2 id="activation-es">Activación y clave de licencia</h2><p>La clave de licencia Wires Pro es personal, no exclusiva y no transferible. Salvo indicación contraria, puede ser utilizada por el mismo usuario en dos ordenadores. No puede revenderse, alquilarse, compartirse públicamente ni distribuirse.</p>
-    <h2 id="use-es">Uso autorizado</h2><p>El usuario puede usar Wires para crear diagramas, planos de cableado, workflows, documentos técnicos y exportaciones relacionados con sus proyectos personales o profesionales.</p>
-    <h2 id="content-es">Archivos creados por el usuario</h2><p>Los proyectos, diagramas, documentos y exportaciones creados por el usuario siguen siendo propiedad exclusiva de su autor. Alkoda On Air no reclama ningún derecho sobre los contenidos creados por el usuario.</p>
-    <h2 id="ip-es">Propiedad intelectual</h2><p>Wires, su interfaz, código, nombre, elementos gráficos, documentación y contenidos asociados están protegidos por la ley de propiedad intelectual. Comprar una licencia no transfiere la propiedad del software.</p>
-    <h2 id="restrictions-es">Restricciones</h2><p>Está prohibido redistribuir o revender el software sin autorización, compartir públicamente una clave de licencia, eludir mecanismos de activación, descompilar o modificar el software salvo cuando la ley lo permita, o usar Wires con fines fraudulentos o ilegales.</p>
-    <h2 id="liability-es">Responsabilidad del usuario y limitación</h2><p>El usuario sigue siendo responsable de verificar técnicamente sus diagramas, cableados y su conformidad con las restricciones reales de una instalación. Wires es una herramienta de documentación y visualización; no sustituye la experiencia técnica, las normas de seguridad ni las comprobaciones necesarias antes de una implementación.</p><p>El software se proporciona tal cual. Alkoda On Air no será responsable de daños directos o indirectos resultantes del uso o de la imposibilidad de usar el software.</p>
-    <h2 id="updates-es">Disponibilidad, actualizaciones y reembolsos</h2><p>Alkoda On Air puede modificar, suspender o interrumpir el desarrollo o distribución de Wires. Pueden ofrecerse actualizaciones correctivas o menores. Futuras versiones mayores pueden requerir una nueva licencia o actualización de pago.</p><p>Las condiciones de reembolso se describen en la <a href="refund-policy-wires.html">Política de reembolso</a>.</p>
-    <h2 id="contact-es">Ley aplicable y contacto</h2><p>Estos términos se rigen por la ley francesa. Para cualquier pregunta: <strong><a href="mailto:contact@alkoda-onair.com">contact@alkoda-onair.com</a></strong></p>
-    <p class="footer-note">© 2026 Alkoda On Air - Christophe Koclejda - SIRET 820 390 409 00010</p>
-  </article>
-</main>
-
-<script>
-const FLAGS={en:'<svg width="22" height="15" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg" style="border-radius:2px;vertical-align:middle;display:inline-block"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="4"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/></svg>',fr:'<svg width="22" height="15" viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg" style="border-radius:2px;vertical-align:middle;display:inline-block"><rect width="1" height="2" fill="#002395"/><rect x="1" width="1" height="2" fill="#fff"/><rect x="2" width="1" height="2" fill="#ED2939"/></svg>',es:'<svg width="22" height="15" viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg" style="border-radius:2px;vertical-align:middle;display:inline-block"><rect width="3" height="2" fill="#AA151B"/><rect y=".5" width="3" height="1" fill="#F1BF00"/></svg>'};
-const LABELS={en:{short:'EN',back:'Back to site',title:'Terms of Service',doc:'Terms of Service - Wires'},fr:{short:'FR',back:'Retour au site',title:"Conditions d'utilisation",doc:"Conditions d'utilisation - Wires"},es:{short:'ES',back:'Volver al sitio',title:'Términos de servicio',doc:'Términos de servicio - Wires'}};
-let currentLang='en';
-function setLang(lang){if(!LABELS[lang])lang='en';currentLang=lang;try{localStorage.setItem('wires_lang',lang)}catch(e){}document.documentElement.lang=lang;document.title=LABELS[lang].doc;document.getElementById('back-label').textContent=LABELS[lang].back;document.getElementById('nav-title').textContent=LABELS[lang].title;document.getElementById('lang-flag').innerHTML=FLAGS[lang];document.getElementById('lang-name').textContent=LABELS[lang].short;document.querySelectorAll('[data-lang-page]').forEach(el=>el.classList.toggle('active',el.dataset.langPage===lang));Object.keys(FLAGS).forEach(code=>{document.getElementById('drop-flag-'+code).innerHTML=FLAGS[code];const opt=document.getElementById('lang-opt-'+code);opt.classList.toggle('active',code===lang);opt.style.display=code===lang?'none':'flex'});closeLangDrop()}
-function toggleLangDrop(){const drop=document.getElementById('lang-drop');const open=drop.classList.toggle('open');document.getElementById('lang-toggle').setAttribute('aria-expanded',String(open))}
-function closeLangDrop(){document.getElementById('lang-drop').classList.remove('open');document.getElementById('lang-toggle').setAttribute('aria-expanded','false')}
-document.getElementById('lang-toggle').addEventListener('click',e=>{e.stopPropagation();toggleLangDrop()});document.querySelectorAll('.lang-opt[data-lang]').forEach(btn=>btn.addEventListener('click',()=>setLang(btn.dataset.lang)));document.addEventListener('click',e=>{if(!e.target.closest('#lang-selector'))closeLangDrop()});
-(function(){let lang;try{lang=localStorage.getItem('wires_lang')}catch(e){}if(!lang){const n=navigator.language||'en';lang=n.startsWith('fr')?'fr':n.startsWith('es')?'es':'en'}setLang(lang)})();
-</script>
+  <footer class="site-footer">
+    <div><img src="Logos/Logo-horizontal-transparent.png" alt="Wires"><p data-i18n="footer_text">Wires is published by Alkoda.</p></div>
+    <nav aria-label="Footer navigation">
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="fonctions.html" data-i18n="nav_features">Features</a>
+      <a href="try-it.html" data-i18n="nav_try">Try Wires</a>
+      <a href="help.html" data-i18n="nav_help">Help</a>
+      <a href="index.html#contact" data-i18n="nav_contact">Contact</a>
+      <a href="licence.html" data-i18n="nav_license">License</a>
+      <a href="terms-of-service-wires.html" data-i18n="footer_terms">Terms</a>
+      <a href="refund-policy-wires.html" data-i18n="footer_refunds">Refunds</a>
+    </nav>
+  </footer>
+  <script src="assets/js/site.js?v=20260707-7"></script>
 </body>
 </html>
