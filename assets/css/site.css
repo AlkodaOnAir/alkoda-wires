@@ -176,15 +176,16 @@ h1{font-size:clamp(42px,5vw,76px);line-height:.98;letter-spacing:-.035em;margin:
 .hero-product{
   margin:0;
   padding:10px;
-  border:1px solid var(--line-soft);
+  border:1px solid rgba(168,182,204,.5);
   border-radius:20px;
-  background:linear-gradient(135deg,rgba(0,210,255,.11),rgba(255,122,61,.04)),rgba(13,22,36,.72);
+  background:rgba(168,182,204,.5);
   box-shadow:var(--shadow);
 }
-.hero-product img{border-radius:14px;border:1px solid rgba(255,255,255,.08)}
+.hero-product img{border-radius:14px;border:1px solid rgba(3,10,18,.12)}
 
 .section-head{max-width:780px;margin:0 0 38px}
 .section-head.centered{text-align:center;margin-left:auto;margin-right:auto}
+.section-head-wide{max-width:980px}
 .kicker{
   font-family:"Share Tech Mono",monospace;
   color:var(--accent);
