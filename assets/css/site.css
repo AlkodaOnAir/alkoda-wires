@@ -290,6 +290,22 @@ h3{color:#fff}
   object-fit:cover;
   display:block;
 }
+.video-image-slot{
+  position:relative;
+  width:100%;
+  height:210px;
+  margin:0;
+  overflow:hidden;
+  border:1px solid rgba(0,210,255,.32);
+  border-radius:10px;
+  background:#050910;
+}
+.video-image-slot img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
 .video-link::after{
   content:"720p";
   position:absolute;
@@ -609,6 +625,10 @@ h3{color:#fff}
   gap:9px;
   color:#fff;
   font-weight:900;
+}
+.contact-discord .contact-title,
+.contact-mail .contact-title{
+  color:var(--accent);
 }
 .contact-card .contact-icon{width:24px;height:24px}
 .contact-subtitle{

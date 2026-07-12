@@ -104,7 +104,8 @@ const STRINGS = {
     video_device_title: "Device and ports",
     video_device_text: "Add a device, adjust its image, then place the ports directly on the equipment visual.",
     video_export_title: "Export and share",
-    video_export_text: "Capture 10-20 seconds showing the HTML viewer or PDF export workflow.",
+    video_export_text: "Export PDFs and an interactive HTML viewer with signal animation, device descriptions and signal-route details.",
+    video_export_alt: "Wires export to PDF and HTML",
     video_slot_label: "Video slot",
 
     try_h1: "Try Wires live here.",
@@ -248,7 +249,8 @@ const STRINGS = {
     video_device_title: "Appareil et ports",
     video_device_text: "Ajoutez un appareil, ajustez son image, puis placez les ports directement sur le visuel de l'équipement.",
     video_export_title: "Export et partage",
-    video_export_text: "Capture 10 à 20 secondes : workflow de visionneuse HTML ou d'export PDF.",
+    video_export_text: "Exportez des PDF et une visionneuse HTML interactive avec animation du signal, description des appareils et détail des routes de signal.",
+    video_export_alt: "Export Wires vers PDF et HTML",
     video_slot_label: "Emplacement vidéo",
 
     try_h1: "Tester Wires en ligne.",
@@ -392,7 +394,8 @@ const STRINGS = {
     video_device_title: "Dispositivo y puertos",
     video_device_text: "Añade un dispositivo, ajusta su imagen y coloca los puertos directamente sobre el visual del equipo.",
     video_export_title: "Exportar y compartir",
-    video_export_text: "Captura 10-20 segundos mostrando el visor HTML o el flujo de exportacion PDF.",
+    video_export_text: "Exporta PDF y un visor HTML interactivo con animacion de senal, descripciones de dispositivos y detalles de rutas de senal.",
+    video_export_alt: "Exportacion de Wires a PDF y HTML",
     video_slot_label: "Espacio video",
 
     try_h1: "Probar Wires en linea.",
