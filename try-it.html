@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&display=swap">
-  <link rel="stylesheet" href="assets/css/site.css?v=20260712-6">
+  <link rel="stylesheet" href="assets/css/site.css?v=20260712-7">
 </head>
 <body>
   <header class="site-header">
@@ -45,8 +45,13 @@
           <strong data-i18n="try_loading_title">Loading the Wires demo</strong>
           <small data-i18n="try_loading_text">Preparing the live workspace...</small>
         </div>
+        <div class="try-mobile-message" aria-live="polite">
+          <span class="try-mobile-mark"></span>
+          <strong data-i18n="try_mobile_title">Desktop version required</strong>
+          <small data-i18n="try_mobile_text">The online demo does not work on mobile. Please use the desktop version to try Wires.</small>
+        </div>
         <iframe
-          src="renderer-web-demo/index.html"
+          data-demo-src="renderer-web-demo/index.html"
           title="Wires live demo"
           loading="eager"
           sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads"
@@ -82,6 +87,6 @@
       <a href="refund-policy-wires.html" data-i18n="footer_refunds">Refunds</a>
     </nav>
   </footer>
-  <script src="assets/js/site.js?v=20260712-6"></script>
+  <script src="assets/js/site.js?v=20260712-7"></script>
 </body>
 </html>

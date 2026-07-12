@@ -605,6 +605,35 @@ h3{color:#fff}
 }
 .try-demo-loader strong{font-size:22px}
 .try-demo-loader small{color:var(--muted);font-size:15px}
+.try-mobile-message{
+  position:absolute;
+  inset:0;
+  z-index:3;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:28px;
+  text-align:center;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 50% 38%,rgba(0,210,255,.14),transparent 34%),
+    linear-gradient(180deg,rgba(5,9,16,.92),rgba(5,9,16,.98));
+  border:2px solid rgba(0,212,255,.34);
+  border-radius:16px;
+  box-shadow:0 0 40px rgba(0,212,255,.15);
+}
+.try-mobile-message strong{font-size:22px}
+.try-mobile-message small{max-width:360px;color:var(--muted);font-size:15px}
+.try-mobile-mark{
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  border:1px solid rgba(0,210,255,.44);
+  background:linear-gradient(135deg,rgba(0,210,255,.18),rgba(255,255,255,.04));
+  box-shadow:0 0 28px rgba(0,210,255,.18);
+}
 .try-loader-mark{
   width:42px;
   height:42px;
@@ -846,6 +875,9 @@ h3{color:#fff}
   h2{font-size:31px}
   .value-grid,.export-grid,.feature-grid,.use-case-grid,.license-table{grid-template-columns:1fr}
   .hero-actions .btn,.download-panel .btn{width:100%}
+  .try-demo-embed{aspect-ratio:auto;min-height:260px}
+  .try-demo-embed iframe,.try-demo-loader{display:none}
+  .try-mobile-message{display:flex}
   .story-row img{height:250px}
   .story-row video{height:auto}
   .video-link{min-height:0}
