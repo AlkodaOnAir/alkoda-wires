@@ -846,7 +846,10 @@ h3{color:#fff}
   h2{font-size:31px}
   .value-grid,.export-grid,.feature-grid,.use-case-grid,.license-table{grid-template-columns:1fr}
   .hero-actions .btn,.download-panel .btn{width:100%}
-  .story-row img,.story-row video{height:250px}
+  .story-row img{height:250px}
+  .story-row video{height:auto}
+  .video-link{min-height:0}
+  .video-link video{height:auto}
   .audience-visual,.audience-placeholder{min-height:260px}
   .site-footer{align-items:flex-start;flex-direction:column}
 }
