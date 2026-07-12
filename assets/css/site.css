@@ -199,6 +199,57 @@ h3{color:#fff}
 .section-head p:not(.kicker){font-size:17px;color:var(--muted);font-weight:350}
 
 .intro-band,.feature-band{background:linear-gradient(180deg,rgba(16,26,43,.72),rgba(7,11,18,.25))}
+.workflow-section{
+  background:rgba(4,8,14,.34);
+  padding-top:74px;
+  padding-bottom:74px;
+}
+.workflow-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+}
+.workflow-grid article{
+  position:relative;
+  min-height:220px;
+  padding:28px;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:
+    linear-gradient(135deg,rgba(0,210,255,.08),rgba(255,122,61,.03)),
+    rgba(16,26,43,.7);
+  overflow:hidden;
+}
+.workflow-grid article::after{
+  content:"";
+  position:absolute;
+  right:-36px;
+  bottom:-48px;
+  width:140px;
+  height:140px;
+  border:1px solid rgba(0,210,255,.18);
+  border-radius:50%;
+}
+.workflow-grid span{
+  display:inline-flex;
+  margin-bottom:34px;
+  color:var(--accent);
+  font-family:"Share Tech Mono",monospace;
+  font-size:13px;
+  letter-spacing:.18em;
+}
+.workflow-grid h3{
+  max-width:260px;
+  margin:0 0 10px;
+  font-size:22px;
+  line-height:1.12;
+}
+.workflow-grid p{
+  max-width:320px;
+  margin:0;
+  color:var(--muted);
+  font-size:15px;
+}
 .value-grid,.export-grid,.feature-grid{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -757,6 +808,7 @@ h3{color:#fff}
 @media(max-width:1120px){
   .hero,.audience-section,.story-row,.story-row.reverse{grid-template-columns:1fr}
   .story-row.reverse div,.story-row.reverse figure{order:initial}
+  .workflow-grid{grid-template-columns:1fr}
   .value-grid,.feature-grid,.use-case-grid{grid-template-columns:repeat(2,1fr)}
   .export-grid{grid-template-columns:repeat(3,minmax(0,1fr));max-width:940px}
   .video-grid{grid-template-columns:1fr}
