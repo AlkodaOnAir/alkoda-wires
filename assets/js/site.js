@@ -469,6 +469,8 @@ const PARTIAL_PAGES = new Set([
 let isNavigating = false;
 let videoModal = null;
 let videoModalPlayer = null;
+let managedVideoObserver = null;
+let managedVideoResizeTimer = 0;
 
 function getPageName(pathname = location.pathname) {
   const cleanPath = pathname.replace(/\\/g, "/");
@@ -612,11 +614,56 @@ function initDemoLoaders() {
   });
 }
 
+function initManagedFeatureVideos() {
+  const videos = [...document.querySelectorAll(".feature-story video, .video-examples-section .video-link video")];
+  if (managedVideoObserver) {
+    managedVideoObserver.disconnect();
+    managedVideoObserver = null;
+  }
+  if (!videos.length) return;
+
+  const shouldManage = window.matchMedia("(max-width: 760px), (hover: none) and (pointer: coarse)").matches;
+  videos.forEach((video) => {
+    video.muted = true;
+    video.playsInline = true;
+  });
+
+  if (!shouldManage) {
+    videos.forEach((video) => {
+      video.setAttribute("autoplay", "");
+      video.play().catch(() => {});
+    });
+    return;
+  }
+
+  videos.forEach((video) => {
+    video.removeAttribute("autoplay");
+    video.pause();
+  });
+
+  managedVideoObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const video = entry.target;
+      if (entry.isIntersecting && entry.intersectionRatio >= 0.35) {
+        videos.forEach((otherVideo) => {
+          if (otherVideo !== video) otherVideo.pause();
+        });
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
+  }, { rootMargin: "120px 0px", threshold: [0, 0.35, 0.65] });
+
+  videos.forEach((video) => managedVideoObserver.observe(video));
+}
+
 function refreshPageContent() {
   updateDownloadLinks();
   setActiveNavigation();
   setLang(currentLang);
   initDemoLoaders();
+  initManagedFeatureVideos();
 }
 
 async function navigatePartial(url, addHistory = true) {
@@ -746,6 +793,8 @@ document.addEventListener("click", (event) => {
 
 window.addEventListener("resize", () => {
   if (videoModal?.classList.contains("open")) sizeVideoModal();
+  if (managedVideoResizeTimer) window.clearTimeout(managedVideoResizeTimer);
+  managedVideoResizeTimer = window.setTimeout(initManagedFeatureVideos, 180);
 });
 
 document.addEventListener("keydown", (event) => {
