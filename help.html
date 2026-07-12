@@ -161,10 +161,16 @@ kbd{display:inline-block;padding:1px 6px;background:rgba(0,180,220,.08);border:1
 .surround-side{flex-shrink:0;width:140px}
 .surround-body{flex:1;min-width:0}
 
+.help-mobile-tools,.help-toc-scrim{display:none}
+.help-toc-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;border:1px solid var(--line2);border-radius:10px;background:rgba(8,18,32,.92);color:var(--text);font:800 13px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 12px 28px rgba(0,0,0,.28)}
+.help-toc-toggle span:last-child{color:var(--accent);font-family:"Share Tech Mono",monospace}
+.help-drawer-title,.toc-close{display:none}
+
 /* search result highlight */
 .srch-hl{background:rgba(0,210,255,.18);border-radius:3px;outline:2px solid var(--accent)}
 @media(max-width:760px){
   :root{--top-nav-h:64px}
+  body{display:block;overflow-x:hidden}
   .site-header{height:var(--top-nav-h);padding:0 18px}
   .brand img{height:30px}
   .menu-toggle{display:block}
@@ -174,6 +180,27 @@ kbd{display:inline-block;padding:1px 6px;background:rgba(0,180,220,.08);border:1
   .nav-cta{text-align:center;margin-top:8px}
   .lang-selector{margin-top:10px;align-self:flex-start}
   .lang-drop{left:0;right:auto}
+  .help-mobile-tools{display:block;position:fixed;top:var(--top-nav-h);left:0;right:0;z-index:150;padding:10px 18px;background:rgba(4,8,14,.88);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
+  .help-toc-scrim{position:fixed;inset:var(--top-nav-h) 0 0;z-index:290;background:rgba(0,0,0,.55);backdrop-filter:blur(3px)}
+  body.help-toc-open .help-toc-scrim{display:block}
+  .sidebar{width:min(92vw,360px);transform:translateX(-105%);transition:transform .22s ease;z-index:310;box-shadow:18px 0 50px rgba(0,0,0,.45)}
+  body.help-toc-open .sidebar{transform:translateX(0)}
+  .sb-head{padding:12px 14px 14px}
+  .help-drawer-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;color:#fff;font:800 13px Inter,system-ui,sans-serif}
+  .toc-close{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid var(--line2);border-radius:8px;background:rgba(255,255,255,.05);color:var(--muted);font-size:20px;line-height:1;cursor:pointer}
+  .toc-close:hover{border-color:var(--accent);color:#fff}
+  .content{margin-left:0;margin-top:calc(var(--top-nav-h) + 62px);display:block;min-height:auto}
+  .ch-panel{min-width:0;overflow:visible}
+  .ch-section{padding:32px 18px 48px}
+  h2.chapter-heading{font-size:25px}
+  .results-panel{display:none}
+  .results-panel.active{position:fixed;top:calc(var(--top-nav-h) + 74px);left:18px;right:18px;z-index:330;width:auto;max-height:45vh;border:1px solid var(--line2);border-radius:12px;box-shadow:0 18px 45px rgba(0,0,0,.5)}
+  .ch-layout,.sec-layout,.surround-layout{display:block}
+  .ch-imgs,.sec-imgs,.surround-side{position:static;width:auto;margin:18px 0}
+  .ch-nav{gap:12px}
+  .ch-nav-btn{flex:1;padding:9px 12px}
+  .table-wrap{overflow-x:auto}
+  .help-table{min-width:560px}
 }
 </style>
 </head>
@@ -209,8 +236,20 @@ kbd{display:inline-block;padding:1px 6px;background:rgba(0,180,220,.08);border:1
   </nav>
 </header>
 
+<div class="help-mobile-tools">
+  <button class="help-toc-toggle" type="button" aria-expanded="false" aria-controls="toc">
+    <span data-help-i18n="help_toc_toggle">Sommaire de l'aide</span>
+    <span aria-hidden="true">+</span>
+  </button>
+</div>
+<div class="help-toc-scrim" aria-hidden="true"></div>
+
 <aside class="sidebar">
   <div class="sb-head">
+    <div class="help-drawer-title">
+      <span data-help-i18n="help_toc_title">Sommaire de l'aide</span>
+      <button class="toc-close" type="button" aria-label="Fermer">&times;</button>
+    </div>
     <div class="search-wrap">
       <span class="search-icon">&#128269;</span>
       <input class="search-input" type="text" id="srch" placeholder="Rechercher dans l'aide…" autocomplete="off">
@@ -1851,6 +1890,8 @@ const HELP_HEADER_STRINGS = {
     "nav_help": "Help",
     "nav_contact": "Contact",
     "nav_download": "Download Wires",
+    "help_toc_toggle": "Help summary",
+    "help_toc_title": "Help summary",
     "img_activer_src": "images/EN/activer-en.png",
     "img_activer_alt": "activer",
     "img_activer2_src": "images/EN/activer2-en.png",
@@ -1899,6 +1940,8 @@ const HELP_HEADER_STRINGS = {
     "nav_help": "Aide",
     "nav_contact": "Contact",
     "nav_download": "Télécharger Wires",
+    "help_toc_toggle": "Sommaire de l'aide",
+    "help_toc_title": "Sommaire de l'aide",
     "title_intro-propos-de-wires": "À propos de Wires",
     "intro-propos-de-wires_p1": "Wires est un outil de documentation et de planification pour le routage des signaux audio/vidéo/lumière. Il vous permet de modéliser l'architecture technique d'une installation en plaçant des appareils sur un canevas, en les connectant avec des câbles et en organisant ces connexions en routes de signal logiques et visuels.",
     "sec_sec-qui-s-adresse-t-il": "<strong>À qui s’adresse-t-il ?</strong>",
@@ -3696,6 +3739,8 @@ const HELP_HEADER_STRINGS = {
     "nav_help": "Ayuda",
     "nav_contact": "Contacto",
     "nav_download": "Descargar Wires",
+    "help_toc_toggle": "Sumario de ayuda",
+    "help_toc_title": "Sumario de ayuda",
     "img_activer_src": "images/ES/activer-es.png",
     "img_activer_alt": "activer",
     "img_activer2_src": "images/ES/activer2-es.png",
@@ -3820,6 +3865,42 @@ document.addEventListener("click", (event) => {
   try { lang = localStorage.getItem("wires_lang") || "fr"; } catch (error) {}
   setHelpHeaderLang(lang);
 })();
+
+const helpTocToggle = document.querySelector(".help-toc-toggle");
+const helpTocClose = document.querySelector(".toc-close");
+const helpTocScrim = document.querySelector(".help-toc-scrim");
+
+function isHelpMobile() {
+  return window.matchMedia("(max-width: 760px)").matches;
+}
+
+function openHelpToc() {
+  document.body.classList.add("help-toc-open");
+  helpTocToggle?.setAttribute("aria-expanded", "true");
+}
+
+function closeHelpToc() {
+  document.body.classList.remove("help-toc-open");
+  helpTocToggle?.setAttribute("aria-expanded", "false");
+}
+
+helpTocToggle?.addEventListener("click", () => {
+  if (document.body.classList.contains("help-toc-open")) closeHelpToc();
+  else openHelpToc();
+});
+helpTocClose?.addEventListener("click", closeHelpToc);
+helpTocScrim?.addEventListener("click", closeHelpToc);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeHelpToc();
+});
+document.querySelectorAll(".toc-ch-link,.toc-sec").forEach((link) => {
+  link.addEventListener("click", () => {
+    if (isHelpMobile()) setTimeout(closeHelpToc, 80);
+  });
+});
+window.addEventListener("resize", () => {
+  if (!isHelpMobile()) closeHelpToc();
+});
 
 const allChIds = ['intro-propos-de-wires', 'intro-versions-free-et-pro', 'ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10', 'ch11', 'ch12', 'ch13', 'ch14', 'ch15'];
 document.addEventListener('DOMContentLoaded', () => {
