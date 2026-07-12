@@ -585,21 +585,66 @@ function initDemoLoaders() {
 
     wrapper.dataset.loaderBound = "1";
 
+    let isReady = false;
+    let pollTimer = 0;
+
+    function onDemoReadyMessage(event) {
+      if (event.source !== iframe.contentWindow) return;
+      if (event.data?.type !== "wires-demo-ready") return;
+      window.requestAnimationFrame(() => window.requestAnimationFrame(markReady));
+    }
+
+    const cleanup = () => {
+      if (pollTimer) window.clearTimeout(pollTimer);
+      window.removeEventListener("message", onDemoReadyMessage);
+    };
+
     const markReady = () => {
+      if (isReady) return;
+      isReady = true;
+      cleanup();
       wrapper.classList.remove("is-loading");
       wrapper.classList.add("is-ready");
     };
 
-    const checkReady = () => {
+    const hasRenderedDemo = () => {
       try {
-        const readyState = iframe.contentDocument?.readyState;
-        if (readyState === "complete" || readyState === "interactive") markReady();
-      } catch (error) {}
+        const doc = iframe.contentDocument;
+        if (!doc || doc.readyState === "loading") return false;
+        if (doc.body?.dataset.demoReady === "1") return true;
+
+        const canvasRoot = doc.getElementById("canvas-root");
+        const renderedNodes = doc.querySelectorAll("#nodes-layer .node").length;
+        const renderedCables = doc.querySelectorAll("#cables-svg .cable-visual").length;
+        const images = [...doc.querySelectorAll("#nodes-layer .node img")];
+        const imagesReady = images.every((img) => img.complete && img.naturalWidth > 0);
+
+        return Boolean(canvasRoot && renderedNodes > 0 && renderedCables > 0 && imagesReady);
+      } catch (error) {
+        return false;
+      }
     };
 
-    iframe.addEventListener("load", markReady, { once: true });
-    checkReady();
-    window.setTimeout(checkReady, 1200);
+    const startedAt = Date.now();
+    const maxWaitMs = 15000;
+
+    const waitForDemo = () => {
+      if (hasRenderedDemo()) {
+        window.requestAnimationFrame(() => window.requestAnimationFrame(markReady));
+        return;
+      }
+
+      if (Date.now() - startedAt > maxWaitMs) {
+        markReady();
+        return;
+      }
+
+      pollTimer = window.setTimeout(waitForDemo, 160);
+    };
+
+    window.addEventListener("message", onDemoReadyMessage);
+    iframe.addEventListener("load", waitForDemo, { once: true });
+    waitForDemo();
   });
 }
 
