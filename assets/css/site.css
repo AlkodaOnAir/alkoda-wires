@@ -536,7 +536,9 @@ h3{color:#fff}
 .story-row.reverse figure{order:1}
 .story-row p:not(.kicker){color:var(--muted)}
 .story-row figure{margin:0;border-radius:16px;overflow:hidden;border:1px solid var(--line-soft);background:#050910}
-.story-row img,.story-row video{width:100%;height:360px;object-fit:cover;display:block}
+.story-row img,.story-row video{width:100%;height:360px;display:block}
+.story-row img{object-fit:cover}
+.story-row video{object-fit:contain}
 
 .try-hero{padding-bottom:86px}
 .try-hero>p:not(.eyebrow){max-width:900px}
