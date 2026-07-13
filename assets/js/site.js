@@ -901,6 +901,32 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("click", (event) => {
+  const downloadButton = event.target.closest("a[data-download-url]");
+  if (!downloadButton) return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+  const guideHref = downloadButton.getAttribute("href") || "";
+  const downloadUrl = downloadButton.dataset.downloadUrl;
+  if (!guideHref.startsWith("#") || !downloadUrl) return;
+
+  event.preventDefault();
+
+  const guideUrl = new URL(guideHref, location.href);
+  if (guideUrl.href !== location.href) {
+    history.pushState({ partial: true }, "", guideUrl.href);
+  }
+  scrollToPageTarget(guideUrl.hash);
+
+  const fileLink = document.createElement("a");
+  fileLink.href = downloadUrl;
+  fileLink.download = downloadButton.dataset.downloadFilename || "";
+  fileLink.hidden = true;
+  document.body.appendChild(fileLink);
+  fileLink.click();
+  fileLink.remove();
+});
+
+document.addEventListener("click", (event) => {
   const link = event.target.closest("a[href]");
   if (!link) return;
   const rawHref = link.getAttribute("href").trim();
