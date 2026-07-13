@@ -692,6 +692,8 @@ h3{color:#fff}
 .install-card p{margin:0 0 16px;color:var(--muted)}
 .install-card p:last-child{margin-bottom:0}
 .install-note{margin-top:auto!important;padding:14px 16px;border-left:3px solid var(--accent);border-radius:0 10px 10px 0;background:rgba(0,210,255,.07);color:var(--text)!important}
+.install-card-linux{grid-column:1/-1;align-items:center;justify-content:center;padding-top:24px;padding-bottom:24px;text-align:center}
+.install-card-linux h2{margin-bottom:12px}
 
 .download-section{background:rgba(4,8,14,.45)}
 .download-panel{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}

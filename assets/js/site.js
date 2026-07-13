@@ -147,7 +147,9 @@ const STRINGS = {
     install_macos_note: "<strong>ℹ️ Blocked on first launch?</strong> In Applications, right-click Wires and choose Open. Confirm Open again in the dialog.",
     install_windows_title: "Installing Wires on Windows",
     install_windows_text: "Double-click the downloaded <strong>.exe</strong>, then follow the steps in the Wires setup wizard.",
-    install_windows_note: "<strong>ℹ️ Windows SmartScreen may appear the first time.</strong> Choose More info to reveal Run anyway, then confirm."
+    install_windows_note: "<strong>ℹ️ Windows SmartScreen may appear the first time.</strong> Choose More info to reveal Run anyway, then confirm.",
+    install_linux_title: "Installing Wires on Linux",
+    install_linux_text: "Run the <strong>.AppImage</strong> file to install Wires."
   },
   fr: {
     nav_home: "Accueil",
@@ -297,7 +299,9 @@ const STRINGS = {
     install_macos_note: "<strong>ℹ️ Première ouverture bloquée ?</strong> Dans Applications, faites un clic droit sur Wires et choisissez Ouvrir. Validez encore une fois dans la fenêtre de confirmation.",
     install_windows_title: "Installer Wires sur Windows",
     install_windows_text: "Double-cliquez sur le fichier <strong>.exe</strong> téléchargé, puis suivez les étapes de l’assistant d’installation de Wires.",
-    install_windows_note: "<strong>ℹ️ Windows SmartScreen peut apparaître au premier lancement.</strong> Cliquez sur Informations complémentaires pour faire apparaître Exécuter quand même, puis confirmez."
+    install_windows_note: "<strong>ℹ️ Windows SmartScreen peut apparaître au premier lancement.</strong> Cliquez sur Informations complémentaires pour faire apparaître Exécuter quand même, puis confirmez.",
+    install_linux_title: "Installer Wires sur Linux",
+    install_linux_text: "Lancez le fichier <strong>.AppImage</strong> pour installer Wires."
   },
   es: {
     nav_home: "Inicio",
@@ -447,7 +451,9 @@ const STRINGS = {
     install_macos_note: "<strong>ℹ️ ¿Bloqueado en el primer inicio?</strong> En Aplicaciones, haz clic derecho sobre Wires y elige Abrir. Confirma de nuevo en la ventana que aparece.",
     install_windows_title: "Instalar Wires en Windows",
     install_windows_text: "Haz doble clic en el archivo <strong>.exe</strong> descargado y sigue los pasos del asistente de instalación de Wires.",
-    install_windows_note: "<strong>ℹ️ Windows SmartScreen puede aparecer durante el primer inicio.</strong> Pulsa Más información para mostrar Ejecutar de todas formas y confirma."
+    install_windows_note: "<strong>ℹ️ Windows SmartScreen puede aparecer durante el primer inicio.</strong> Pulsa Más información para mostrar Ejecutar de todas formas y confirma.",
+    install_linux_title: "Instalar Wires en Linux",
+    install_linux_text: "Ejecuta el archivo <strong>.AppImage</strong> para instalar Wires."
   }
 };
 
