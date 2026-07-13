@@ -542,9 +542,8 @@ function closeMobileMenu() {
 }
 
 function updateDownloadLinks() {
-  const onDownloadsPage = getPageName() === "downloads.html";
   document.querySelectorAll(".js-download").forEach((link) => {
-    link.href = onDownloadsPage ? "#downloads" : "downloads.html";
+    link.href = "downloads.html";
   });
 }
 
