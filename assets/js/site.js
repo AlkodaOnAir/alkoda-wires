@@ -123,16 +123,31 @@ const STRINGS = {
     license_pdf_pro: "PDF export 75-600 dpi",
     download_kicker: "Download",
     download_h2: "Download Wires.",
-    download_text: "Installer links will be placed here. Free mode is available immediately after installation.",
-    download_windows: "Windows download coming soon",
-    download_macos: "macOS download coming soon",
+    download_text: "Choose your platform to open the Wires download page.",
+    download_windows: "Download for Windows",
+    download_macos: "Download for macOS",
+    download_linux: "Download for Linux",
 
     contact_kicker: "Contact",
     contact_h2: "Need help or want to follow Wires?",
     contact_text: "Join the community first, or send an email for license and support questions.",
     contact_discord_label: "Discord",
     contact_discord: "Join the Wires Community",
-    contact_mail_label: "Mail"
+    contact_mail_label: "Mail",
+    downloads_h1: "Download Wires",
+    downloads_latest_h2: "Download the latest version of Wires",
+    downloads_windows: "Windows",
+    downloads_macos_intel: "macOS Intel",
+    downloads_macos_apple: "macOS Apple Silicon",
+    downloads_linux: "Linux",
+    downloads_version: "Version v1.0.0",
+    downloads_soon: "Download",
+    install_macos_title: "Installing Wires on macOS",
+    install_macos_text: "Open the downloaded <strong>.dmg</strong> file and place Wires in Applications. Wait for the copy to finish, then open the app from that folder.",
+    install_macos_note: "<strong>ℹ️ Blocked on first launch?</strong> In Applications, right-click Wires and choose Open. Confirm Open again in the dialog.",
+    install_windows_title: "Installing Wires on Windows",
+    install_windows_text: "Double-click the downloaded <strong>.exe</strong>, then follow the steps in the Wires setup wizard.",
+    install_windows_note: "<strong>ℹ️ Windows SmartScreen may appear the first time.</strong> Choose More info to reveal Run anyway, then confirm."
   },
   fr: {
     nav_home: "Accueil",
@@ -258,16 +273,31 @@ const STRINGS = {
     license_pdf_pro: "Export PDF 75-600 dpi",
     download_kicker: "Téléchargement",
     download_h2: "Télécharger Wires.",
-    download_text: "Les liens d'installation seront placés ici. Le mode Free est disponible immédiatement après installation.",
-    download_windows: "Téléchargement Windows bientôt disponible",
-    download_macos: "Téléchargement macOS bientôt disponible",
+    download_text: "Choisissez votre plateforme pour accéder aux téléchargements de Wires.",
+    download_windows: "Télécharger pour Windows",
+    download_macos: "Télécharger pour macOS",
+    download_linux: "Télécharger pour Linux",
 
     contact_kicker: "Contact",
     contact_h2: "Besoin d'aide ou envie de suivre Wires ?",
     contact_text: "Rejoignez d'abord la communauté, ou envoyez un e-mail pour les questions de licence et de support.",
     contact_discord_label: "Discord",
     contact_discord: "Join the Wires Community",
-    contact_mail_label: "Mail"
+    contact_mail_label: "Mail",
+    downloads_h1: "Télécharger Wires",
+    downloads_latest_h2: "Télécharger la dernière version de Wires",
+    downloads_windows: "Windows",
+    downloads_macos_intel: "macOS Intel",
+    downloads_macos_apple: "macOS Apple Silicon",
+    downloads_linux: "Linux",
+    downloads_version: "Version v1.0.0",
+    downloads_soon: "Télécharger",
+    install_macos_title: "Installer Wires sur macOS",
+    install_macos_text: "Ouvrez le fichier <strong>.dmg</strong> téléchargé et placez Wires dans Applications. Attendez la fin de la copie, puis lancez le logiciel depuis ce dossier.",
+    install_macos_note: "<strong>ℹ️ Première ouverture bloquée ?</strong> Dans Applications, faites un clic droit sur Wires et choisissez Ouvrir. Validez encore une fois dans la fenêtre de confirmation.",
+    install_windows_title: "Installer Wires sur Windows",
+    install_windows_text: "Double-cliquez sur le fichier <strong>.exe</strong> téléchargé, puis suivez les étapes de l’assistant d’installation de Wires.",
+    install_windows_note: "<strong>ℹ️ Windows SmartScreen peut apparaître au premier lancement.</strong> Cliquez sur Informations complémentaires pour faire apparaître Exécuter quand même, puis confirmez."
   },
   es: {
     nav_home: "Inicio",
@@ -393,16 +423,31 @@ const STRINGS = {
     license_pdf_pro: "Exportacion PDF 75-600 dpi",
     download_kicker: "Descarga",
     download_h2: "Descargar Wires.",
-    download_text: "Los enlaces de instalacion se colocaran aqui. El modo Free esta disponible inmediatamente despues de instalar.",
-    download_windows: "Descarga Windows proximamente",
-    download_macos: "Descarga macOS proximamente",
+    download_text: "Elige tu plataforma para acceder a las descargas de Wires.",
+    download_windows: "Descargar para Windows",
+    download_macos: "Descargar para macOS",
+    download_linux: "Descargar para Linux",
 
     contact_kicker: "Contacto",
     contact_h2: "Necesitas ayuda o quieres seguir Wires?",
     contact_text: "Unete primero a la comunidad, o envia un e-mail para preguntas de licencia y soporte.",
     contact_discord_label: "Discord",
     contact_discord: "Join the Wires Community",
-    contact_mail_label: "Mail"
+    contact_mail_label: "Mail",
+    downloads_h1: "Descargar Wires",
+    downloads_latest_h2: "Descargar la última versión de Wires",
+    downloads_windows: "Windows",
+    downloads_macos_intel: "macOS Intel",
+    downloads_macos_apple: "macOS Apple Silicon",
+    downloads_linux: "Linux",
+    downloads_version: "Version v1.0.0",
+    downloads_soon: "Descargar",
+    install_macos_title: "Instalar Wires en macOS",
+    install_macos_text: "Abre el archivo <strong>.dmg</strong> descargado y coloca Wires en Aplicaciones. Espera a que termine la copia y abre el programa desde esa carpeta.",
+    install_macos_note: "<strong>ℹ️ ¿Bloqueado en el primer inicio?</strong> En Aplicaciones, haz clic derecho sobre Wires y elige Abrir. Confirma de nuevo en la ventana que aparece.",
+    install_windows_title: "Instalar Wires en Windows",
+    install_windows_text: "Haz doble clic en el archivo <strong>.exe</strong> descargado y sigue los pasos del asistente de instalación de Wires.",
+    install_windows_note: "<strong>ℹ️ Windows SmartScreen puede aparecer durante el primer inicio.</strong> Pulsa Más información para mostrar Ejecutar de todas formas y confirma."
   }
 };
 
@@ -469,6 +514,7 @@ const PARTIAL_PAGES = new Set([
   "fonctions.html",
   "try-it.html",
   "licence.html",
+  "downloads.html",
   "terms-of-service-wires.html",
   "refund-policy-wires.html"
 ]);
@@ -496,9 +542,9 @@ function closeMobileMenu() {
 }
 
 function updateDownloadLinks() {
-  const onLicensePage = getPageName() === "licence.html";
+  const onDownloadsPage = getPageName() === "downloads.html";
   document.querySelectorAll(".js-download").forEach((link) => {
-    link.href = onLicensePage ? "#download-wires" : "licence.html#download-wires";
+    link.href = onDownloadsPage ? "#downloads" : "downloads.html";
   });
 }
 

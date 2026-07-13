@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wires - Download</title>
+  <link rel="icon" href="Logos/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="Logos/ico.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/site.css?v=20260713-3">
+  <style>
+    .page-hero.compact.downloads-hero{padding-bottom:24px}
+    .downloads-hero h1{font-size:clamp(36px,4vw,58px);margin-top:0;margin-bottom:0}
+    .downloads-wrap{padding:64px max(24px,calc((100vw - var(--max)) / 2)) 72px}
+    .downloads-list-heading{max-width:980px;margin:0 auto 24px;color:var(--text);font-size:18px;font-weight:700;line-height:1.4;text-align:left}
+    .download-list{max-width:980px;margin:0 auto;display:grid;gap:14px}
+    .download-row{display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:center;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:rgba(17,29,50,.72);box-shadow:var(--shadow)}
+    .download-row h3{margin:0 0 5px;color:var(--accent);font-size:20px}
+    .download-version{color:var(--muted);font-weight:800;white-space:nowrap}
+    .download-row .btn{color:#fff;white-space:nowrap}
+    .download-row .btn:hover{background:rgba(255,255,255,.05);color:var(--accent);transform:none}
+    .install-section{padding-top:72px;padding-bottom:72px;scroll-margin-top:72px;background:linear-gradient(180deg,rgba(16,26,43,.56),rgba(7,11,18,.2))}
+    .install-grid{max-width:980px;margin:0 auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .install-card{display:flex;flex-direction:column;padding:28px;border:1px solid var(--line);border-radius:16px;scroll-margin-top:96px;background:rgba(17,29,50,.72)}
+    .install-card h2{margin:0 0 18px;font-size:24px;line-height:1.2}
+    .install-card p{margin:0 0 16px;color:var(--muted)}
+    .install-card p:last-child{margin-bottom:0}
+    .install-note{margin-top:auto!important;padding:14px 16px;border-left:3px solid var(--accent);border-radius:0 10px 10px 0;background:rgba(0,210,255,.07);color:var(--text)!important}
+    @media (max-width:760px){
+      .downloads-wrap{padding-top:44px}
+      .download-row{grid-template-columns:1fr}
+      .download-version{white-space:normal}
+      .download-row .btn{justify-content:center;width:100%}
+      .install-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Wires home">
+      <img src="Logos/Logo-horizontal-transparent.png" alt="Wires">
+    </a>
+    <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="fonctions.html" data-i18n="nav_features">Features</a>
+      <a href="try-it.html" data-i18n="nav_try">Try Wires</a>
+      <a href="help.html" data-i18n="nav_help">Help</a>
+      <a href="#contact" data-i18n="nav_contact">Contact</a>
+      <a href="licence.html" data-i18n="nav_license">License</a>
+      <a class="nav-cta js-download" href="#downloads" data-i18n="nav_download">Download Wires</a>
+      <div id="lang-selector" class="lang-selector">
+        <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Change language" aria-expanded="false"><span id="lang-flag"></span><span id="lang-name"></span><span class="lang-arrow">v</span></button>
+        <div id="lang-drop" class="lang-drop" role="menu">
+          <button id="lang-opt-en" class="lang-opt" type="button" data-lang="en" role="menuitem"><span id="drop-flag-en"></span><span>English</span></button>
+          <button id="lang-opt-fr" class="lang-opt" type="button" data-lang="fr" role="menuitem"><span id="drop-flag-fr"></span><span>Français</span></button>
+          <button id="lang-opt-es" class="lang-opt" type="button" data-lang="es" role="menuitem"><span id="drop-flag-es"></span><span>Español</span></button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero compact downloads-hero">
+      <h1 data-i18n="downloads_h1">Download Wires</h1>
+    </section>
+
+    <section id="downloads" class="downloads-wrap">
+      <p class="downloads-list-heading" data-i18n="downloads_latest_h2">Download the latest version of Wires</p>
+      <div class="download-list">
+        <article class="download-row">
+          <div>
+            <h3 data-i18n="downloads_windows">Windows</h3>
+          </div>
+          <span class="download-version" data-i18n="downloads_version">Version v1.0.0</span>
+          <a class="btn btn-secondary" href="#installing-windows" data-i18n="downloads_soon">Download</a>
+        </article>
+
+        <article class="download-row">
+          <div>
+            <h3 data-i18n="downloads_macos_intel">macOS Intel</h3>
+          </div>
+          <span class="download-version" data-i18n="downloads_version">Version v1.0.0</span>
+          <a class="btn btn-secondary" href="#installing-macos" data-i18n="downloads_soon">Download</a>
+        </article>
+
+        <article class="download-row">
+          <div>
+            <h3 data-i18n="downloads_macos_apple">macOS Apple Silicon</h3>
+          </div>
+          <span class="download-version" data-i18n="downloads_version">Version v1.0.0</span>
+          <a class="btn btn-secondary" href="#installing-macos" data-i18n="downloads_soon">Download</a>
+        </article>
+
+        <article class="download-row">
+          <div>
+            <h3 data-i18n="downloads_linux">Linux</h3>
+          </div>
+          <span class="download-version" data-i18n="downloads_version">Version v1.0.0</span>
+          <a class="btn btn-secondary" href="#installation-guide" data-i18n="downloads_soon">Download</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="installation-guide" class="install-section" aria-label="Installation instructions">
+      <div class="install-grid">
+        <article id="installing-macos" class="install-card">
+          <h2>
+            <span data-i18n="install_macos_title">Installing Wires on macOS</span>
+          </h2>
+          <p data-i18n="install_macos_text">Open the downloaded <strong>.dmg</strong> file and place Wires in Applications. Wait for the copy to finish, then open the app from that folder.</p>
+          <p class="install-note" data-i18n="install_macos_note"><strong>ℹ️ Blocked on first launch?</strong> In Applications, right-click Wires and choose Open. Confirm Open again in the dialog.</p>
+        </article>
+
+        <article id="installing-windows" class="install-card">
+          <h2>
+            <span data-i18n="install_windows_title">Installing Wires on Windows</span>
+          </h2>
+          <p data-i18n="install_windows_text">Double-click the downloaded <strong>.exe</strong>, then follow the steps in the Wires setup wizard.</p>
+          <p class="install-note" data-i18n="install_windows_note"><strong>ℹ️ Windows SmartScreen may appear the first time.</strong> Choose More info to reveal Run anyway, then confirm.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="contact" class="contact">
+      <div class="section-head centered">
+        <p class="kicker" data-i18n="contact_kicker">Contact</p>
+        <h2 data-i18n="contact_h2">Need help or want to follow Wires?</h2>
+        <p data-i18n="contact_text">Join the community first, or send an email for license and support questions.</p>
+      </div>
+      <div class="contact-actions">
+        <a class="contact-link contact-card contact-discord" href="https://discord.gg/bXV6QcW4G9" target="_blank" rel="noopener">
+          <span class="contact-title">
+            <svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="currentColor" d="M20.3 4.4A16.5 16.5 0 0 0 16.2 3l-.2.4c-.2.4-.4.8-.5 1.2a15.4 15.4 0 0 0-7 0c-.2-.4-.3-.8-.6-1.2L7.8 3a16.8 16.8 0 0 0-4.1 1.4C1.1 8.2.4 11.9.8 15.6a16.7 16.7 0 0 0 5.1 2.6l.5-.7c.3-.4.5-.8.7-1.2-.4-.2-.8-.4-1.2-.6l.3-.2a11.8 11.8 0 0 0 11.6 0l.3.2c-.4.3-.8.5-1.2.6.2.4.4.8.7 1.2l.5.7a16.9 16.9 0 0 0 5.1-2.6c.5-4.3-.8-8-2.9-11.2ZM8.3 13.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm7.4 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"/>
+            </svg>
+            <span data-i18n="contact_discord_label">Discord</span>
+          </span>
+          <span class="contact-subtitle" data-i18n="contact_discord">Join the Wires Community</span>
+        </a>
+        <a class="contact-link contact-card contact-mail" href="mailto:contact@alkoda-wires.com">
+          <span class="contact-title">
+            <svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="currentColor" d="M3.8 5h16.4c1 0 1.8.8 1.8 1.8v10.4c0 1-.8 1.8-1.8 1.8H3.8c-1 0-1.8-.8-1.8-1.8V6.8C2 5.8 2.8 5 3.8 5Zm.3 2.7v9.1h15.8V7.7l-7.1 5.1c-.5.4-1.1.4-1.6 0L4.1 7.7Zm1.4-.9 6.5 4.7 6.5-4.7h-13Z"/>
+            </svg>
+            <span data-i18n="contact_mail_label">Mail</span>
+          </span>
+          <span class="contact-subtitle">contact@alkoda-wires.com</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <img src="Logos/Logo-horizontal-transparent.png" alt="Wires">
+      <p data-i18n="footer_text">Wires is published by Alkoda.</p>
+    </div>
+    <nav aria-label="Footer navigation">
+      <a href="terms-of-service-wires.html" data-i18n="footer_terms">Terms</a>
+        <a href="refund-policy-wires.html" data-i18n="footer_refunds">Refund policy</a>
+      <a href="#contact" data-i18n="nav_contact">Contact</a>
+    </nav>
+  </footer>
+
+  <script src="assets/js/site.js?v=20260713-downloads-1"></script>
+</body>
+</html>

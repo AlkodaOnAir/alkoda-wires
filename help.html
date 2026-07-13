@@ -27,8 +27,8 @@ img{max-width:100%;display:block}
 .site-nav a{white-space:nowrap}
 .site-nav a:hover{color:#fff}
 .site-nav a.active{color:#fff}
-.nav-cta{padding:10px 16px;border-radius:999px;background:var(--accent);color:#03101c;box-shadow:0 12px 28px rgba(0,210,255,.22)}
-.nav-cta:hover{color:#03101d;background:#fff}
+.nav-cta{padding:10px 16px;border-radius:999px;background:var(--accent);color:#03101c;box-shadow:0 12px 28px rgba(0,210,255,.22);transition:background .18s ease}
+.site-nav .nav-cta:hover{color:var(--muted);background:#39ddff}
 .lang-selector{position:relative;flex-shrink:0}
 .lang-toggle{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.05);color:var(--text);font:800 13px Inter,system-ui,sans-serif;cursor:pointer;transition:.2s}
 .lang-toggle svg,.lang-opt svg{border-radius:2px;vertical-align:middle;display:block}
@@ -220,7 +220,7 @@ kbd{display:inline-block;padding:1px 6px;background:rgba(0,180,220,.08);border:1
     <a class="active" href="help.html" data-help-i18n="nav_help">Aide</a>
     <a href="index.html#contact" data-help-i18n="nav_contact">Contact</a>
     <a href="licence.html" data-help-i18n="nav_pricing">Licence</a>
-    <a class="nav-cta" href="licence.html#download-wires" data-help-i18n="nav_download">Télécharger Wires</a>
+    <a class="nav-cta" href="downloads.html" data-help-i18n="nav_download">Télécharger Wires</a>
     <div id="lang-selector" class="lang-selector">
       <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Changer de langue" aria-expanded="false">
         <span id="lang-flag" class="lang-flag"></span>
