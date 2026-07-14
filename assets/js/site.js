@@ -127,6 +127,7 @@ const STRINGS = {
     license_download_button: "Download Wires",
     license_download_platforms: "Windows, Mac, Linux",
     license_buy_button: "Buy Wires Pro",
+    checkout_close_label: "Close payment",
     download_kicker: "Download",
     download_h2: "Download Wires.",
     download_text: "Choose your platform to open the Wires download page.",
@@ -285,6 +286,7 @@ const STRINGS = {
     license_download_button: "Télécharger Wires",
     license_download_platforms: "Windows, Mac, Linux",
     license_buy_button: "Acheter Wires Pro",
+    checkout_close_label: "Fermer le paiement",
     download_kicker: "Téléchargement",
     download_h2: "Télécharger Wires.",
     download_text: "Choisissez votre plateforme pour accéder aux téléchargements de Wires.",
@@ -443,6 +445,7 @@ const STRINGS = {
     license_download_button: "Descargar Wires",
     license_download_platforms: "Windows, Mac, Linux",
     license_buy_button: "Comprar Wires Pro",
+    checkout_close_label: "Cerrar el pago",
     download_kicker: "Descarga",
     download_h2: "Descargar Wires.",
     download_text: "Elige tu plataforma para acceder a las descargas de Wires.",
@@ -946,21 +949,18 @@ document.addEventListener("click", (event) => {
 });
 
 let lemonSqueezyLoader = null;
+let lemonCheckoutObserver = null;
 
 function loadLemonSqueezy() {
-  if (window.LemonSqueezy?.Url?.Open) {
-    return Promise.resolve({ api: window.LemonSqueezy, loadedNow: false });
-  }
+  if (window.LemonSqueezy?.Url?.Open) return Promise.resolve(window.LemonSqueezy);
   if (lemonSqueezyLoader) return lemonSqueezyLoader;
 
   lemonSqueezyLoader = new Promise((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = "https://assets.lemonsqueezy.com/lemon.js";
+    script.src = "https://app.lemonsqueezy.com/js/lemon.js";
     script.defer = true;
     script.onload = () => {
-      if (window.LemonSqueezy?.Url?.Open) {
-        resolve({ api: window.LemonSqueezy, loadedNow: true });
-      }
+      if (window.LemonSqueezy?.Url?.Open) resolve(window.LemonSqueezy);
       else reject(new Error("Lemon Squeezy did not initialize"));
     };
     script.onerror = () => reject(new Error("Unable to load Lemon Squeezy"));
@@ -970,14 +970,66 @@ function loadLemonSqueezy() {
   return lemonSqueezyLoader;
 }
 
-function initLemonCheckout() {
-  if (!document.querySelector(".lemonsqueezy-button")) return;
+function getLemonCheckoutIframe() {
+  return Array.from(document.body.children).find((element) => (
+    element.tagName === "IFRAME"
+    && element.src.includes(".lemonsqueezy.com/checkout/")
+  ));
+}
 
-  loadLemonSqueezy()
-    .then(({ api, loadedNow }) => {
-      if (!loadedNow) api.Refresh?.();
-    })
-    .catch(() => {});
+function closeLemonCheckout() {
+  const checkoutIframe = getLemonCheckoutIframe();
+  window.LemonSqueezy?.Url?.Close?.();
+  window.setTimeout(() => checkoutIframe?.remove(), 50);
+  document.getElementById("lemon-checkout-close-fallback")?.remove();
+}
+
+function syncLemonCheckoutCloseButton() {
+  const checkoutIframe = getLemonCheckoutIframe();
+  let closeButton = document.getElementById("lemon-checkout-close-fallback");
+
+  if (!checkoutIframe) {
+    closeButton?.remove();
+    return;
+  }
+
+  if (!closeButton) {
+    closeButton = document.createElement("button");
+    closeButton.id = "lemon-checkout-close-fallback";
+    closeButton.className = "lemon-checkout-close-fallback";
+    closeButton.type = "button";
+    closeButton.textContent = "×";
+    closeButton.addEventListener("click", closeLemonCheckout);
+  }
+
+  closeButton.setAttribute("aria-label", translate("checkout_close_label"));
+  if (!document.body.contains(closeButton)
+    || !(checkoutIframe.compareDocumentPosition(closeButton) & Node.DOCUMENT_POSITION_FOLLOWING)) {
+    document.body.appendChild(closeButton);
+  }
+}
+
+function initLemonCheckout() {
+  const checkoutButton = document.querySelector(".js-lemon-checkout");
+  if (!checkoutButton) return;
+
+  if (!lemonCheckoutObserver) {
+    lemonCheckoutObserver = new MutationObserver(syncLemonCheckoutCloseButton);
+    lemonCheckoutObserver.observe(document.body, { childList: true });
+  }
+
+  if (checkoutButton.dataset.lemonCheckoutBound === "true") return;
+  checkoutButton.dataset.lemonCheckoutBound = "true";
+  checkoutButton.addEventListener("click", async (event) => {
+    event.preventDefault();
+    try {
+      const api = await loadLemonSqueezy();
+      api.Url.Open(checkoutButton.href);
+      window.setTimeout(syncLemonCheckoutCloseButton, 0);
+    } catch (error) {
+      window.location.href = checkoutButton.href;
+    }
+  });
 }
 
 document.addEventListener("click", (event) => {

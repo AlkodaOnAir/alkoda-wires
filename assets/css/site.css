@@ -681,6 +681,9 @@ h3{color:#fff}
 .license-card-action-stacked{flex-direction:column;gap:2px;line-height:1.25}
 .license-card-platforms{font-size:12px;font-weight:600;opacity:.72}
 .license-card-action:hover{transform:none}
+.lemon-checkout-close-fallback{position:fixed;top:20px;right:28px;z-index:2147483647;display:flex;align-items:center;justify-content:center;width:50px;height:50px;padding:0;border:0;border-radius:50%;background:#fff;color:#111;font:300 40px/1 Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.22);-webkit-appearance:none;appearance:none}
+.lemon-checkout-close-fallback:hover{background:#f2f2f2;transform:none}
+@media (max-width:640px){.lemon-checkout-close-fallback{top:14px;right:14px;width:44px;height:44px;font-size:34px}}
 .license-column ul{list-style:none;margin:0;padding:0;display:grid;gap:12px;flex:1}
 .license-column li{position:relative;padding-left:30px;color:var(--muted);font-weight:700}
 .license-column li::before{content:"\2713";position:absolute;left:0;color:var(--green);font-weight:900}
