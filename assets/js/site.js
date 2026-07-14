@@ -993,6 +993,8 @@ function syncLemonCheckoutCloseButton() {
     return;
   }
 
+  checkoutIframe.style.zIndex = "2147483646";
+
   if (!closeButton) {
     closeButton = document.createElement("button");
     closeButton.id = "lemon-checkout-close-fallback";
