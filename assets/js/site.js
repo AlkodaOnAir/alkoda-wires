@@ -121,7 +121,12 @@ const STRINGS = {
     license_pro_devices: "Unlimited devices",
     license_subprojects: "Sub-projects",
     license_pdf_pro: "PDF export 75-600 dpi",
-    license_activation_note: "This license allows up to 2 computer activations and includes minor updates for Wires 1.x.x",
+    license_price_note: "Excl. tax • One-time purchase",
+    license_version_note: "2 activations for V1.x.x",
+    license_free_forever: "Free forever",
+    license_download_button: "Download Wires",
+    license_download_platforms: "Windows, Mac, Linux",
+    license_buy_button: "Buy Wires Pro",
     download_kicker: "Download",
     download_h2: "Download Wires.",
     download_text: "Choose your platform to open the Wires download page.",
@@ -274,7 +279,12 @@ const STRINGS = {
     license_pro_devices: "Appareils illimités",
     license_subprojects: "Sous-projets",
     license_pdf_pro: "Export PDF 75-600 dpi",
-    license_activation_note: "Cette licence autorise l’activation sur 2 ordinateurs maximum et inclut les mises à jour mineures de Wires 1.x.x",
+    license_price_note: "Hors taxes • Achat unique",
+    license_version_note: "2 activations pour V1.x.x",
+    license_free_forever: "Gratuit pour toujours",
+    license_download_button: "Télécharger Wires",
+    license_download_platforms: "Windows, Mac, Linux",
+    license_buy_button: "Acheter Wires Pro",
     download_kicker: "Téléchargement",
     download_h2: "Télécharger Wires.",
     download_text: "Choisissez votre plateforme pour accéder aux téléchargements de Wires.",
@@ -427,7 +437,12 @@ const STRINGS = {
     license_pro_devices: "Dispositivos ilimitados",
     license_subprojects: "Subproyectos",
     license_pdf_pro: "Exportacion PDF 75-600 dpi",
-    license_activation_note: "Esta licencia permite activar Wires en un máximo de 2 ordenadores e incluye las actualizaciones menores de Wires 1.x.x",
+    license_price_note: "Impuestos no incluidos • Pago único",
+    license_version_note: "2 activaciones para V1.x.x",
+    license_free_forever: "Gratis para siempre",
+    license_download_button: "Descargar Wires",
+    license_download_platforms: "Windows, Mac, Linux",
+    license_buy_button: "Comprar Wires Pro",
     download_kicker: "Descarga",
     download_h2: "Descargar Wires.",
     download_text: "Elige tu plataforma para acceder a las descargas de Wires.",
@@ -734,6 +749,7 @@ function refreshPageContent() {
   setLang(currentLang);
   initDemoLoaders();
   initManagedFeatureVideos();
+  initLemonCheckout();
 }
 
 async function navigatePartial(url, addHistory = true) {
@@ -928,6 +944,38 @@ document.addEventListener("click", (event) => {
   fileLink.click();
   fileLink.remove();
 });
+
+let lemonSqueezyLoader = null;
+
+function loadLemonSqueezy() {
+  if (window.LemonSqueezy?.Url?.Open) return Promise.resolve(window.LemonSqueezy);
+  if (lemonSqueezyLoader) return lemonSqueezyLoader;
+
+  lemonSqueezyLoader = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://assets.lemonsqueezy.com/lemon.js";
+    script.defer = true;
+    script.onload = () => {
+      if (window.LemonSqueezy?.Url?.Open) resolve(window.LemonSqueezy);
+      else reject(new Error("Lemon Squeezy did not initialize"));
+    };
+    script.onerror = () => reject(new Error("Unable to load Lemon Squeezy"));
+    document.head.appendChild(script);
+  });
+
+  return lemonSqueezyLoader;
+}
+
+function initLemonCheckout() {
+  if (!document.querySelector(".lemonsqueezy-button")) return;
+
+  loadLemonSqueezy()
+    .then(() => {
+      if (typeof window.createLemonSqueezy === "function") window.createLemonSqueezy();
+      else window.LemonSqueezy?.Refresh?.();
+    })
+    .catch(() => {});
+}
 
 document.addEventListener("click", (event) => {
   const link = event.target.closest("a[href]");

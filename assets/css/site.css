@@ -666,10 +666,22 @@ h3{color:#fff}
   border:1px solid var(--line);
   border-radius:18px;
   background:rgba(16,26,43,.78);
+  display:flex;
+  flex-direction:column;
 }
 .license-column.pro{border-color:rgba(0,210,255,.55);box-shadow:0 0 0 1px rgba(0,210,255,.12),var(--shadow)}
-.license-column h2{font-size:34px;margin-bottom:20px}
-.license-column ul{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.license-column-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;min-height:82px;margin-bottom:20px}
+.license-column h2{font-size:34px;margin:0}
+.license-price-block{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right}
+.license-free-meta{padding-top:61px}
+.license-price{font-size:24px;font-weight:800;color:var(--text);white-space:nowrap}
+.license-price-note{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap}
+.license-column.pro .license-price{color:var(--cyan)}
+.license-card-action{justify-content:center;width:100%;min-height:64px;margin:28px 0 0;transform:none}
+.license-card-action-stacked{flex-direction:column;gap:2px;line-height:1.25}
+.license-card-platforms{font-size:12px;font-weight:600;opacity:.72}
+.license-card-action:hover{transform:none}
+.license-column ul{list-style:none;margin:0;padding:0;display:grid;gap:12px;flex:1}
 .license-column li{position:relative;padding-left:30px;color:var(--muted);font-weight:700}
 .license-column li::before{content:"\2713";position:absolute;left:0;color:var(--green);font-weight:900}
 .license-column li.limited{color:#ffcf6a}

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&display=swap">
-  <link rel="stylesheet" href="assets/css/site.css?v=20260713-9">
+  <link rel="stylesheet" href="assets/css/site.css?v=20260714-5">
 </head>
 <body>
   <header class="site-header">
@@ -44,7 +44,12 @@
     <section class="license-table-section">
       <div class="license-table">
         <div class="license-column">
-          <h2>Free</h2>
+          <div class="license-column-heading">
+            <h2>Free</h2>
+            <div class="license-price-block license-free-meta">
+              <span class="license-price-note" data-i18n="license_free_forever">Free forever</span>
+            </div>
+          </div>
           <ul>
             <li class="limited" data-i18n="license_free_devices">Up to 10 devices</li>
             <li data-i18n="license_canvas">Canvas and cables</li>
@@ -58,9 +63,20 @@
             <li class="limited" data-i18n="license_pdf_free">PDF export 75 dpi</li>
             <li class="missing" data-i18n="license_no_subprojects">No sub-projects</li>
           </ul>
+          <a class="btn btn-secondary license-card-action license-card-action-stacked" href="downloads.html">
+            <span data-i18n="license_download_button">Download Wires</span>
+            <span class="license-card-platforms" data-i18n="license_download_platforms">Windows, Mac, Linux</span>
+          </a>
         </div>
         <div class="license-column pro">
-          <h2>Pro</h2>
+          <div class="license-column-heading">
+            <h2>Pro</h2>
+            <div class="license-price-block">
+              <span class="license-price">30€</span>
+              <span class="license-price-note" data-i18n="license_price_note">Excl. tax • One-time purchase</span>
+              <span class="license-price-note" data-i18n="license_version_note">2 activations for V1.x.x</span>
+            </div>
+          </div>
           <ul>
             <li data-i18n="license_pro_devices">Unlimited devices</li>
             <li data-i18n="license_canvas">Canvas and cables</li>
@@ -74,23 +90,8 @@
             <li data-i18n="license_pdf_pro">PDF export 75-600 dpi</li>
             <li data-i18n="license_subprojects">Sub-projects</li>
           </ul>
+          <a id="buy-wires-pro" class="btn btn-primary license-card-action lemonsqueezy-button" href="https://alkoda.lemonsqueezy.com/checkout/buy/abc7d380-63f2-4dad-a0cf-8d057882b6d5?embed=1&amp;discount=0" aria-haspopup="dialog" data-i18n="license_buy_button">Buy Wires Pro</a>
         </div>
-      </div>
-      <div class="section-head centered" style="margin-top:28px;margin-bottom:0">
-        <p data-i18n="license_activation_note">This license allows up to 2 computer activations and includes minor updates for Wires 1.x.x</p>
-      </div>
-    </section>
-
-    <section id="download-wires" class="download-section">
-      <div class="section-head centered">
-        <p class="kicker" data-i18n="download_kicker">Download</p>
-        <h2 data-i18n="download_h2">Download Wires.</h2>
-        <p data-i18n="download_text">Choose your platform to open the Wires download page.</p>
-      </div>
-      <div class="download-panel">
-        <a class="btn btn-primary" href="downloads.html" data-i18n="download_windows">Download for Windows</a>
-        <a class="btn btn-secondary" href="downloads.html" data-i18n="download_macos">Download for macOS</a>
-        <a class="btn btn-primary" href="downloads.html" data-i18n="download_linux">Download for Linux</a>
       </div>
     </section>
 
@@ -120,6 +121,6 @@
       <a href="refund-policy-wires.html" data-i18n="footer_refunds">Refunds</a>
     </nav>
   </footer>
-  <script src="assets/js/site.js?v=20260714-1"></script>
+  <script src="assets/js/site.js?v=20260714-7"></script>
 </body>
 </html>
