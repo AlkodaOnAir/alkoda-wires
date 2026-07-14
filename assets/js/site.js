@@ -948,7 +948,9 @@ document.addEventListener("click", (event) => {
 let lemonSqueezyLoader = null;
 
 function loadLemonSqueezy() {
-  if (window.LemonSqueezy?.Url?.Open) return Promise.resolve(window.LemonSqueezy);
+  if (window.LemonSqueezy?.Url?.Open) {
+    return Promise.resolve({ api: window.LemonSqueezy, loadedNow: false });
+  }
   if (lemonSqueezyLoader) return lemonSqueezyLoader;
 
   lemonSqueezyLoader = new Promise((resolve, reject) => {
@@ -956,7 +958,9 @@ function loadLemonSqueezy() {
     script.src = "https://assets.lemonsqueezy.com/lemon.js";
     script.defer = true;
     script.onload = () => {
-      if (window.LemonSqueezy?.Url?.Open) resolve(window.LemonSqueezy);
+      if (window.LemonSqueezy?.Url?.Open) {
+        resolve({ api: window.LemonSqueezy, loadedNow: true });
+      }
       else reject(new Error("Lemon Squeezy did not initialize"));
     };
     script.onerror = () => reject(new Error("Unable to load Lemon Squeezy"));
@@ -970,9 +974,8 @@ function initLemonCheckout() {
   if (!document.querySelector(".lemonsqueezy-button")) return;
 
   loadLemonSqueezy()
-    .then(() => {
-      if (typeof window.createLemonSqueezy === "function") window.createLemonSqueezy();
-      else window.LemonSqueezy?.Refresh?.();
+    .then(({ api, loadedNow }) => {
+      if (!loadedNow) api.Refresh?.();
     })
     .catch(() => {});
 }
