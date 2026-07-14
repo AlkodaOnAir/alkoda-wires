@@ -1022,18 +1022,6 @@ function initLemonCheckout() {
   checkoutButton.dataset.lemonCheckoutBound = "true";
   checkoutButton.addEventListener("click", async (event) => {
     event.preventDefault();
-
-    const isSafari = /Safari/i.test(navigator.userAgent)
-      && !/Chrome|Chromium|CriOS|Edg|OPR|Android/i.test(navigator.userAgent);
-    if (isSafari) {
-      const hostedUrl = new URL(checkoutButton.href);
-      hostedUrl.searchParams.delete("embed");
-      const checkoutWindow = window.open(hostedUrl.toString(), "_blank");
-      if (checkoutWindow) checkoutWindow.opener = null;
-      else window.location.href = hostedUrl.toString();
-      return;
-    }
-
     try {
       const api = await loadLemonSqueezy();
       api.Url.Open(checkoutButton.href);
