@@ -35,3 +35,8 @@ function _showStartupScreen(){
 const _realSetLang=setLang;
 setLang=function(e){_realSetLang("en")};
 const LICENSE={init:async()=>({isPro:!0,hasKey:!0,isExpired:!1}),initUI:()=>{},isPro:()=>!0,gate:(e,t)=>t(),showGate:()=>{},showPaywall:()=>{},getStatus:()=>({isPro:!0,hasKey:!0,isExpired:!1})};
+
+// --- stubs démo web : modules about-ui.js / export.js omis du bundle ---
+// (sans ça, app.js bootstrap plante sur ABOUT.init()/initExportDialog() avant initFileIO)
+const ABOUT={init:()=>{}};
+function initExportDialog(){}
