@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&display=swap">
-  <link rel="stylesheet" href="assets/css/site.css?v=20260715-17">
+  <link rel="stylesheet" href="assets/css/site.css?v=20260715-18">
 </head>
 <body>
   <header class="site-header">
@@ -84,7 +84,7 @@
                 <span class="try-guide-control try-guide-plus">+</span>
                 <div>
                   <p data-i18n="try_guide_add">Open the creation menu:</p>
-                  <small data-i18n="try_guide_add_items">New device, cable, text or zone.</small>
+                  <small data-i18n="try_guide_add_items">New Device · New Cable · Add Text Label · Add Zone</small>
                 </div>
               </div>
             </div>
@@ -114,8 +114,10 @@
                 <p data-i18n="try_guide_shift_click_text">Bring it to front, above any overlapping device.</p>
               </div>
               <div class="try-guide-step">
-                <strong class="try-guide-danger" data-i18n="try_guide_delete_device_button">Delete this device</strong>
-                <p data-i18n="try_guide_delete_device_text">Delete this device from the Info panel.</p>
+                <strong class="try-guide-trash" aria-label="Delete this device">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"/></svg>
+                </strong>
+                <p data-i18n="try_guide_delete_device_text">Use the red trash icon in the Info panel to delete this device.</p>
               </div>
             </div>
           </details>
@@ -273,6 +275,6 @@
       <a href="refund-policy-wires.html" data-i18n="footer_refunds">Refunds</a>
     </nav>
   </footer>
-  <script src="assets/js/site.js?v=20260715-21"></script>
+  <script src="assets/js/site.js?v=20260715-23"></script>
 </body>
 </html>

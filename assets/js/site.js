@@ -109,7 +109,7 @@ const STRINGS = {
     try_guide_commands: "Main controls",
     try_guide_routes: "Open the Signal Routes panel.",
     try_guide_add: "Open the creation menu:",
-    try_guide_add_items: "New device, cable, text or zone.",
+    try_guide_add_items: "New Device · New Cable · Add Text Label · Add Zone",
     try_guide_device_edit: "Edit a device",
     try_guide_device_name: "Click the device name",
     try_guide_device_name_text: "Rename it, type the new name and press Enter.",
@@ -121,8 +121,7 @@ const STRINGS = {
     try_guide_device_resize_text: "Resize it proportionally.",
     try_guide_shift_key: "Shift",
     try_guide_shift_click_text: "Bring it to front, above any overlapping device.",
-    try_guide_delete_device_button: "Delete this device",
-    try_guide_delete_device_text: "Delete this device from the Info panel.",
+    try_guide_delete_device_text: "Use the red trash icon in the Info panel to delete this device.",
     try_guide_paths: "Edit a cable path",
     try_guide_drag: "Drag a segment",
     try_guide_drag_text: "Move it perpendicularly to adjust the path.",
@@ -329,7 +328,7 @@ const STRINGS = {
     try_guide_commands: "Commandes principales",
     try_guide_routes: "Ouvrir le panneau Routes de signal.",
     try_guide_add: "Ouvrir le menu de création :",
-    try_guide_add_items: "Nouvel appareil, câble, texte ou zone.",
+    try_guide_add_items: "New Device · New Cable · Add Text Label · Add Zone",
     try_guide_device_edit: "Modification d'un appareil",
     try_guide_device_name: "Cliquer sur le nom de l'appareil",
     try_guide_device_name_text: "Le renommer, saisir le nouveau nom et appuyer sur Entrée.",
@@ -341,16 +340,15 @@ const STRINGS = {
     try_guide_device_resize_text: "Redimensionner l'appareil proportionnellement.",
     try_guide_shift_key: "Maj",
     try_guide_shift_click_text: "Mettre l'appareil au premier plan, devant tout appareil qui le chevauche.",
-    try_guide_delete_device_button: "Supprimer cet appareil",
-    try_guide_delete_device_text: "Supprimer cet appareil depuis le panneau Info.",
+    try_guide_delete_device_text: "Utiliser l'icône corbeille rouge du panneau Info pour supprimer cet appareil.",
     try_guide_paths: "Modifier un chemin de câble",
     try_guide_drag: "Faire glisser un segment",
     try_guide_drag_text: "Le déplacer perpendiculairement pour ajuster le chemin.",
     try_guide_right_click: "Clic droit près d'un appareil",
-    try_guide_right_click_text: "Ouvrir le menu Changer de direction / Créer un coude.",
-    try_guide_change_dir: "Après Changer de direction :",
+    try_guide_right_click_text: "Ouvrir le menu « Change direction / Create bend ».",
+    try_guide_change_dir: "Après « Change direction » :",
     try_guide_change_dir_text: "modifier la direction de sortie du segment.",
-    try_guide_add_bend: "Après Créer un coude :",
+    try_guide_add_bend: "Après « Create bend » :",
     try_guide_add_bend_text: "insérer un coude à 90°.",
     try_guide_multi: "Sélectionner plusieurs appareils",
     try_guide_drag_action: "cliquer et glisser",
@@ -549,7 +547,7 @@ const STRINGS = {
     try_guide_commands: "Controles principales",
     try_guide_routes: "Abrir el panel Rutas de señal.",
     try_guide_add: "Abrir el menú de creación:",
-    try_guide_add_items: "Nuevo dispositivo, cable, texto o zona.",
+    try_guide_add_items: "New Device · New Cable · Add Text Label · Add Zone",
     try_guide_device_edit: "Editar un dispositivo",
     try_guide_device_name: "Hacer clic en el nombre del dispositivo",
     try_guide_device_name_text: "Cambiar el nombre, escribir el nuevo y pulsar Intro.",
@@ -561,16 +559,15 @@ const STRINGS = {
     try_guide_device_resize_text: "Cambiar su tamaño proporcionalmente.",
     try_guide_shift_key: "Mayús",
     try_guide_shift_click_text: "Traerlo al frente, delante de cualquier dispositivo superpuesto.",
-    try_guide_delete_device_button: "Eliminar este dispositivo",
-    try_guide_delete_device_text: "Eliminar el dispositivo desde el panel Info.",
+    try_guide_delete_device_text: "Usar el icono rojo de la papelera del panel Info para eliminar este dispositivo.",
     try_guide_paths: "Editar la ruta de un cable",
     try_guide_drag: "Arrastrar un segmento",
     try_guide_drag_text: "Moverlo perpendicularmente para ajustar la ruta.",
     try_guide_right_click: "Clic derecho cerca de un dispositivo",
-    try_guide_right_click_text: "Abrir el menú Cambiar dirección / Crear codo.",
-    try_guide_change_dir: "Después de Cambiar dirección:",
+    try_guide_right_click_text: "Abrir el menú « Change direction / Create bend ».",
+    try_guide_change_dir: "Después de « Change direction »:",
     try_guide_change_dir_text: "cambiar la dirección de salida del segmento.",
-    try_guide_add_bend: "Después de Crear codo:",
+    try_guide_add_bend: "Después de « Create bend »:",
     try_guide_add_bend_text: "insertar un codo de 90°.",
     try_guide_multi: "Seleccionar varios dispositivos",
     try_guide_drag_action: "hacer clic y arrastrar",
@@ -1101,6 +1098,19 @@ document.querySelectorAll(".lang-opt[data-lang]").forEach((button) => {
 
 document.addEventListener("click", (event) => {
   if (!event.target.closest("#lang-selector")) closeLangDrop();
+});
+
+document.addEventListener("click", (event) => {
+  const summary = event.target.closest(".try-guide-group > summary");
+  if (!summary) return;
+
+  const currentGroup = summary.parentElement;
+  currentGroup
+    .closest(".try-guide-menu-list")
+    ?.querySelectorAll(".try-guide-group[open]")
+    .forEach((group) => {
+      if (group !== currentGroup) group.removeAttribute("open");
+    });
 });
 
 document.addEventListener("click", (event) => {

@@ -745,7 +745,18 @@ h3{color:#fff}
 .try-guide-step::before{content:"";position:absolute;left:0;top:15px;width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 9px rgba(0,210,255,.5)}
 .try-guide-step>strong{display:block;margin-bottom:3px;color:#e8f2ff;font-size:11px;line-height:1.35}
 .try-guide-step>strong+strong{margin-top:5px}
-.try-guide-step>.try-guide-danger{color:#ff4d59}
+.try-guide-step>.try-guide-trash{
+  display:inline-flex;
+  width:27px;
+  height:27px;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,77,89,.38);
+  border-radius:7px;
+  background:rgba(255,77,89,.09);
+  color:#ff4d59;
+}
+.try-guide-trash svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .try-guide-key-step{padding-left:0}
 .try-guide-key-step::before{display:none}
 .try-guide-key-step p{margin-top:7px}
