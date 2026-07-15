@@ -540,7 +540,6 @@ const PARTIAL_PAGES = new Set([
   "index.html",
   "fonctions.html",
   "try-it.html",
-  "licence.html",
   "downloads.html",
   "terms-of-service-wires.html",
   "refund-policy-wires.html"
@@ -752,7 +751,6 @@ function refreshPageContent() {
   setLang(currentLang);
   initDemoLoaders();
   initManagedFeatureVideos();
-  initLemonCheckout();
 }
 
 async function navigatePartial(url, addHistory = true) {
@@ -947,68 +945,6 @@ document.addEventListener("click", (event) => {
   fileLink.click();
   fileLink.remove();
 });
-
-function getLemonCheckoutIframe() {
-  return Array.from(document.body.children).find((element) => (
-    element.tagName === "IFRAME"
-    && element.src.includes(".lemonsqueezy.com/checkout/")
-  ));
-}
-
-function closeLemonCheckout() {
-  const checkoutIframe = getLemonCheckoutIframe();
-  checkoutIframe?.remove();
-  document.getElementById("lemon-checkout-close-fallback")?.remove();
-  document.documentElement.style.overflow = "";
-  document.body.style.overflow = "";
-}
-
-function syncLemonCheckoutCloseButton() {
-  const checkoutIframe = getLemonCheckoutIframe();
-  let closeButton = document.getElementById("lemon-checkout-close-fallback");
-
-  if (!checkoutIframe) {
-    closeButton?.remove();
-    return;
-  }
-
-  if (!closeButton) {
-    closeButton = document.createElement("button");
-    closeButton.id = "lemon-checkout-close-fallback";
-    closeButton.className = "lemon-checkout-close-fallback";
-    closeButton.type = "button";
-    closeButton.textContent = "×";
-    closeButton.addEventListener("click", closeLemonCheckout);
-  }
-
-  closeButton.setAttribute("aria-label", translate("checkout_close_label"));
-  if (!document.body.contains(closeButton)
-    || !(checkoutIframe.compareDocumentPosition(closeButton) & Node.DOCUMENT_POSITION_FOLLOWING)) {
-    document.body.appendChild(closeButton);
-  }
-}
-
-function initLemonCheckout() {
-  const checkoutButton = document.querySelector(".js-lemon-checkout");
-  if (!checkoutButton) return;
-
-  if (checkoutButton.dataset.lemonCheckoutBound === "true") return;
-  checkoutButton.dataset.lemonCheckoutBound = "true";
-  checkoutButton.addEventListener("click", (event) => {
-    event.preventDefault();
-    if (getLemonCheckoutIframe()) return;
-
-    const checkoutIframe = document.createElement("iframe");
-    checkoutIframe.src = checkoutButton.href;
-    checkoutIframe.title = translate("license_buy_button");
-    checkoutIframe.setAttribute("allow", "payment *");
-    checkoutIframe.style.cssText = "position:fixed;inset:0;width:100%;height:100%;border:0;z-index:2147483647";
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-    document.body.appendChild(checkoutIframe);
-    syncLemonCheckoutCloseButton();
-  });
-}
 
 document.addEventListener("click", (event) => {
   const link = event.target.closest("a[href]");
