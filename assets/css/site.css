@@ -143,6 +143,7 @@ section{padding:88px max(22px,calc((100vw - var(--max)) / 2))}
   gap:42px;
   align-items:center;
 }
+.hero-home{min-height:auto;padding-bottom:42px}
 .hero-copy{max-width:590px}
 .eyebrow{
   display:inline-flex;
@@ -205,7 +206,7 @@ h3{color:#fff}
 .intro-band,.feature-band{background:linear-gradient(180deg,rgba(16,26,43,.72),rgba(7,11,18,.25))}
 .workflow-section{
   background:rgba(4,8,14,.34);
-  padding-top:74px;
+  padding-top:42px;
   padding-bottom:74px;
 }
 .workflow-grid{
@@ -909,6 +910,8 @@ h3{color:#fff}
   .legal-shell{width:calc(100% - 32px);padding-top:104px}
   .legal-shell .toc ul,.legal-shell .info-grid{grid-template-columns:1fr}
   .hero{min-height:auto;padding-top:112px}
+  .hero-home{padding-bottom:36px}
+  .workflow-section{padding-top:42px}
   h1{font-size:40px}
   h2{font-size:31px}
   .value-grid,.export-grid,.feature-grid,.use-case-grid,.license-table{grid-template-columns:1fr}
