@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&display=swap">
-  <link rel="stylesheet" href="assets/css/site.css?v=20260715-14">
+  <link rel="stylesheet" href="assets/css/site.css?v=20260715-17">
 </head>
 <body>
   <header class="site-header">
@@ -72,6 +72,7 @@
             </div>
           </div>
 
+          <div class="try-guide-menu-list">
           <details class="try-guide-group">
             <summary data-i18n="try_guide_commands">Main controls</summary>
             <div class="try-guide-content">
@@ -85,6 +86,36 @@
                   <p data-i18n="try_guide_add">Open the creation menu:</p>
                   <small data-i18n="try_guide_add_items">New device, cable, text or zone.</small>
                 </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="try-guide-group">
+            <summary data-i18n="try_guide_device_edit">Edit a device</summary>
+            <div class="try-guide-content try-guide-steps">
+              <div class="try-guide-step">
+                <strong data-i18n="try_guide_device_name">Click the device name</strong>
+                <p data-i18n="try_guide_device_name_text">Rename it, type the new name and press Enter.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong data-i18n="try_guide_device_double_click">Double-click the device</strong>
+                <p data-i18n="try_guide_device_double_click_text">Open image configuration to edit its image and ports.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong data-i18n="try_guide_device_drag">Drag the device</strong>
+                <p data-i18n="try_guide_device_drag_text">Move it on the canvas.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong data-i18n="try_guide_device_resize">Drag its top-left corner</strong>
+                <p data-i18n="try_guide_device_resize_text">Resize it proportionally.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong><span class="try-guide-shortcut"><kbd data-i18n="try_guide_shift_key">Shift</kbd><span>+</span><span data-i18n="try_guide_device_click">device click</span></span></strong>
+                <p data-i18n="try_guide_shift_click_text">Bring it to front, above any overlapping device.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong class="try-guide-danger" data-i18n="try_guide_delete_device_button">Delete this device</strong>
+                <p data-i18n="try_guide_delete_device_text">Delete this device from the Info panel.</p>
               </div>
             </div>
           </details>
@@ -206,6 +237,12 @@
               </div>
             </div>
           </details>
+          </div>
+
+          <a class="try-guide-full-help" href="help.html" target="_blank" rel="noopener">
+            <span data-i18n="try_guide_full_help">Open the full help</span>
+            <small data-i18n="try_guide_new_tab">(new tab)</small>
+          </a>
         </aside>
       </div>
     </section>
@@ -236,6 +273,6 @@
       <a href="refund-policy-wires.html" data-i18n="footer_refunds">Refunds</a>
     </nav>
   </footer>
-  <script src="assets/js/site.js?v=20260715-17"></script>
+  <script src="assets/js/site.js?v=20260715-21"></script>
 </body>
 </html>

@@ -676,7 +676,9 @@ h3{color:#fff}
   bottom:0;
   width:266px;
   padding:18px 14px 16px;
-  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
   text-align:left;
   color:var(--text);
   border:1px solid rgba(0,212,255,.24);
@@ -698,6 +700,14 @@ h3{color:#fff}
 }
 .try-guide-head small{display:block;color:var(--accent);font:700 9px/1.2 "Share Tech Mono",monospace;letter-spacing:.16em}
 .try-guide-head h2{margin:3px 0 0;font-size:18px;line-height:1.15}
+.try-guide-menu-list{
+  flex:1 1 auto;
+  min-height:0;
+  padding-right:3px;
+  overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(0,210,255,.42) transparent;
+}
 .try-guide-group{margin-top:9px;border:1px solid var(--line);border-radius:11px;background:rgba(5,10,18,.48);overflow:hidden}
 .try-guide-group summary{
   position:relative;
@@ -735,6 +745,7 @@ h3{color:#fff}
 .try-guide-step::before{content:"";position:absolute;left:0;top:15px;width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 9px rgba(0,210,255,.5)}
 .try-guide-step>strong{display:block;margin-bottom:3px;color:#e8f2ff;font-size:11px;line-height:1.35}
 .try-guide-step>strong+strong{margin-top:5px}
+.try-guide-step>.try-guide-danger{color:#ff4d59}
 .try-guide-key-step{padding-left:0}
 .try-guide-key-step::before{display:none}
 .try-guide-key-step p{margin-top:7px}
@@ -781,12 +792,38 @@ h3{color:#fff}
   letter-spacing:.05em;
   text-transform:uppercase;
 }
+.try-guide-full-help{
+  display:flex;
+  width:100%;
+  min-height:38px;
+  flex:0 0 auto;
+  margin-top:16px;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:2px;
+  padding:9px 12px;
+  border:1px solid rgba(0,210,255,.48);
+  border-radius:9px;
+  background:rgba(0,210,255,.12);
+  color:var(--accent);
+  font:700 11px/1.3 Inter,system-ui,sans-serif;
+  text-align:center;
+  transition:background .2s ease,border-color .2s ease,color .2s ease;
+}
+.try-guide-full-help small{color:var(--muted);font-size:9px;font-weight:500}
+.try-guide-full-help:hover{
+  border-color:var(--accent);
+  background:rgba(0,210,255,.2);
+  color:#fff;
+}
 @keyframes loader-spin{to{transform:rotate(360deg)}}
 
 @media(max-width:1050px){
   .try-demo-workspace{width:100%;margin-left:0;transform:none}
   .try-demo-embed{width:100%}
   .try-quick-guide{position:static;width:100%;margin-top:18px;overflow:visible}
+  .try-guide-menu-list{overflow:visible}
   .try-guide-content{grid-template-columns:repeat(2,minmax(0,1fr))}
   .try-guide-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
   .try-guide-step{border-bottom:0}
