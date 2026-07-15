@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&display=swap">
-  <link rel="stylesheet" href="assets/css/site.css?v=20260715-12">
+  <link rel="stylesheet" href="assets/css/site.css?v=20260715-14">
 </head>
 <body>
   <header class="site-header">
@@ -41,25 +41,172 @@
     <section class="page-hero try-hero">
       <h1 data-i18n="try_h1">Try Wires live here.</h1>
       <p data-i18n="try_sub">Add devices, create cables, place text or zones, and see how Wires makes your cabling easier to read.</p>
-      <div class="try-demo-embed is-loading" data-demo-loader>
-        <div class="try-demo-loader" aria-live="polite">
-          <span class="try-loader-mark"></span>
-          <strong data-i18n="try_loading_title">Loading the Wires demo</strong>
-          <small data-i18n="try_loading_text">Preparing the live workspace...</small>
+      <div class="try-demo-workspace">
+        <div class="try-demo-embed is-loading" data-demo-loader>
+          <div class="try-demo-loader" aria-live="polite">
+            <span class="try-loader-mark"></span>
+            <strong data-i18n="try_loading_title">Loading the Wires demo</strong>
+            <small data-i18n="try_loading_text">Preparing the live workspace...</small>
+          </div>
+          <div class="try-mobile-message" aria-live="polite">
+            <span class="try-mobile-mark"></span>
+            <strong data-i18n="try_mobile_title">Desktop version required</strong>
+            <small data-i18n="try_mobile_text">The online demo does not work on mobile. Please use the desktop version to try Wires.</small>
+          </div>
+          <iframe
+            data-demo-src="renderer-web-demo/index.html"
+            title="Wires live demo"
+            loading="eager"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads"
+            referrerpolicy="no-referrer"
+            allow="clipboard-read; clipboard-write">
+          </iframe>
         </div>
-        <div class="try-mobile-message" aria-live="polite">
-          <span class="try-mobile-mark"></span>
-          <strong data-i18n="try_mobile_title">Desktop version required</strong>
-          <small data-i18n="try_mobile_text">The online demo does not work on mobile. Please use the desktop version to try Wires.</small>
-        </div>
-        <iframe
-          data-demo-src="renderer-web-demo/index.html"
-          title="Wires live demo"
-          loading="eager"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads"
-          referrerpolicy="no-referrer"
-          allow="clipboard-read; clipboard-write">
-        </iframe>
+
+        <aside class="try-quick-guide" aria-label="Wires quick guide">
+          <div class="try-guide-head">
+            <img class="try-guide-head-logo" src="Logos/ico-transparent.png" alt="" aria-hidden="true">
+            <div>
+              <small data-i18n="try_guide_eyebrow">QUICK HELP</small>
+              <h2 data-i18n="try_guide_title">Useful controls</h2>
+            </div>
+          </div>
+
+          <details class="try-guide-group">
+            <summary data-i18n="try_guide_commands">Main controls</summary>
+            <div class="try-guide-content">
+              <div class="try-guide-item">
+                <span class="try-guide-control try-guide-routes">ROUTES</span>
+                <p data-i18n="try_guide_routes">Open the Signal Routes panel.</p>
+              </div>
+              <div class="try-guide-item">
+                <span class="try-guide-control try-guide-plus">+</span>
+                <div>
+                  <p data-i18n="try_guide_add">Open the creation menu:</p>
+                  <small data-i18n="try_guide_add_items">New device, cable, text or zone.</small>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="try-guide-group">
+            <summary data-i18n="try_guide_paths">Edit a cable path</summary>
+            <div class="try-guide-content try-guide-steps">
+              <div class="try-guide-step">
+                <strong data-i18n="try_guide_drag">Drag a segment</strong>
+                <p data-i18n="try_guide_drag_text">Move it perpendicularly to adjust the path.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong data-i18n="try_guide_right_click">Right-click near a device</strong>
+                <p data-i18n="try_guide_right_click_text">Open the Change direction / Create bend menu.</p>
+              </div>
+              <div class="try-guide-step try-guide-key-step">
+                <div class="try-guide-keys" aria-label="Arrow keys"><kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd></div>
+                <p><strong data-i18n="try_guide_change_dir">After Change direction:</strong> <span data-i18n="try_guide_change_dir_text">change the segment exit direction.</span></p>
+              </div>
+              <div class="try-guide-step try-guide-key-step">
+                <div class="try-guide-keys" aria-label="Arrow keys"><kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd></div>
+                <p><strong data-i18n="try_guide_add_bend">After Create bend:</strong> <span data-i18n="try_guide_add_bend_text">insert a 90-degree bend.</span></p>
+              </div>
+            </div>
+          </details>
+
+          <details class="try-guide-group">
+            <summary data-i18n="try_guide_multi">Select multiple devices</summary>
+            <div class="try-guide-content try-guide-steps">
+              <div class="try-guide-step">
+                <strong><span class="try-guide-shortcut"><kbd>Alt</kbd><span>+</span><span data-i18n="try_guide_drag_action">click and drag</span></span></strong>
+                <p data-i18n="try_guide_alt_drag_text">Draw a selection rectangle. Every device it touches is selected.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong><span class="try-guide-platform">Windows</span> <span class="try-guide-shortcut"><kbd>Ctrl</kbd><span>+</span><span data-i18n="try_guide_device_click">device click</span></span></strong>
+                <strong><span class="try-guide-platform">Mac</span> <span class="try-guide-shortcut"><kbd>⌘</kbd><span>+</span><span data-i18n="try_guide_device_click">device click</span></span></strong>
+                <p data-i18n="try_guide_ctrl_click_text">Add or remove that device from the current selection.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong data-i18n="try_guide_selected_click">Click a selected device</strong>
+                <p data-i18n="try_guide_selected_click_text">Remove that device from the selection.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong data-i18n="try_guide_canvas_click">Click the canvas</strong>
+                <p data-i18n="try_guide_canvas_click_text">Clear the selection.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong data-i18n="try_guide_canvas_drag">Click and drag the canvas</strong>
+                <p data-i18n="try_guide_canvas_drag_text">Pan the view without losing the selection.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong><span class="try-guide-shortcut"><kbd data-i18n="try_guide_delete_key">Del</kbd></span></strong>
+                <p data-i18n="try_guide_delete_text">Delete all selected devices after confirmation.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong><span class="try-guide-shortcut"><kbd>Esc</kbd></span></strong>
+                <p data-i18n="try_guide_escape_text">Clear the selection.</p>
+              </div>
+            </div>
+          </details>
+
+          <details class="try-guide-group">
+            <summary data-i18n="try_guide_image">Configure a device image</summary>
+            <div class="try-guide-content try-guide-steps">
+              <div class="try-guide-step">
+                <strong data-i18n="try_guide_image_double_click">Double-click a device</strong>
+                <p data-i18n="try_guide_image_double_click_text">Open its image configuration.</p>
+              </div>
+            </div>
+          </details>
+
+          <details class="try-guide-group">
+            <summary data-i18n="try_guide_zoom">Zoom</summary>
+            <div class="try-guide-content try-guide-steps">
+              <div class="try-guide-step">
+                <strong data-i18n="try_guide_wheel">Mouse wheel</strong>
+                <p data-i18n="try_guide_wheel_text">Zoom in or out around the pointer.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong><span class="try-guide-shortcut"><kbd>+</kbd><span data-i18n="try_guide_or">or</span><kbd>−</kbd></span></strong>
+                <p data-i18n="try_guide_zoom_keys_text">Zoom in or zoom out.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong data-i18n="try_guide_pinch">Pinch gesture</strong>
+                <p data-i18n="try_guide_pinch_text">Zoom on a touch surface.</p>
+              </div>
+            </div>
+          </details>
+
+          <details class="try-guide-group">
+            <summary data-i18n="try_guide_pan">Pan the view</summary>
+            <div class="try-guide-content try-guide-steps">
+              <div class="try-guide-step">
+                <strong><span class="try-guide-platform">Windows</span> <span data-i18n="try_guide_right_drag">Right-click and drag</span></strong>
+                <p data-i18n="try_guide_right_drag_text">Pan even when the pointer is over a device.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong><span class="try-guide-platform">Mac</span> <span class="try-guide-shortcut"><kbd data-i18n="try_guide_space_key">Space</kbd><span>+</span><span data-i18n="try_guide_drag_action">click and drag</span></span></strong>
+                <p data-i18n="try_guide_space_drag_text">Pan the view.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong data-i18n="try_guide_left_drag">Left-click and drag an empty area</strong>
+                <p data-i18n="try_guide_space_drag_text">Pan the view.</p>
+              </div>
+            </div>
+          </details>
+
+          <details class="try-guide-group">
+            <summary data-i18n="try_guide_box_select">Rectangle selection</summary>
+            <div class="try-guide-content try-guide-steps">
+              <div class="try-guide-step">
+                <strong><span class="try-guide-shortcut"><kbd>Alt</kbd><span>+</span><span data-i18n="try_guide_drag_action">click and drag</span></span></strong>
+                <p data-i18n="try_guide_alt_drag_text">Draw a selection rectangle. Every device it touches is selected.</p>
+              </div>
+              <div class="try-guide-step">
+                <strong><span class="try-guide-platform">Windows</span> <span class="try-guide-shortcut"><kbd>Ctrl</kbd><span>+</span><span data-i18n="try_guide_device_click">device click</span></span></strong>
+                <strong><span class="try-guide-platform">Mac</span> <span class="try-guide-shortcut"><kbd>⌘</kbd><span>+</span><span data-i18n="try_guide_device_click">device click</span></span></strong>
+                <p data-i18n="try_guide_ctrl_click_text">Add or remove that device from the current selection.</p>
+              </div>
+            </div>
+          </details>
+        </aside>
       </div>
     </section>
 
@@ -89,6 +236,6 @@
       <a href="refund-policy-wires.html" data-i18n="footer_refunds">Refunds</a>
     </nav>
   </footer>
-  <script src="assets/js/site.js?v=20260715-15"></script>
+  <script src="assets/js/site.js?v=20260715-17"></script>
 </body>
 </html>

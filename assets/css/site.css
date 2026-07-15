@@ -573,10 +573,16 @@ h3{color:#fff}
 .demo-frame-inner{text-align:center;color:var(--muted)}
 .demo-dot{display:block;width:14px;height:14px;margin:0 auto 18px;border-radius:50%;background:var(--accent);box-shadow:0 0 24px var(--accent)}
 .demo-frame h2{font-size:32px;margin-bottom:8px}
+.try-demo-workspace{
+  width:min(1500px,calc(100vw - 44px));
+  margin:42px 0 0 50%;
+  position:relative;
+  transform:translateX(-50%);
+}
 .try-demo-embed{
-  width:min(1152px,100%);
+  width:calc(100% - 286px);
   aspect-ratio:16/10;
-  margin:42px auto 0;
+  margin:0;
   position:relative;
   overflow:hidden;
   border-radius:16px;
@@ -663,7 +669,128 @@ h3{color:#fff}
   visibility:hidden;
   pointer-events:none;
 }
+.try-quick-guide{
+  position:absolute;
+  top:0;
+  right:0;
+  bottom:0;
+  width:266px;
+  padding:18px 14px 16px;
+  overflow-y:auto;
+  text-align:left;
+  color:var(--text);
+  border:1px solid rgba(0,212,255,.24);
+  border-radius:16px;
+  background:
+    radial-gradient(circle at 100% 0,rgba(0,210,255,.12),transparent 34%),
+    linear-gradient(180deg,rgba(16,26,43,.96),rgba(8,15,27,.98));
+  box-shadow:0 18px 50px rgba(0,0,0,.3);
+  scrollbar-width:thin;
+  scrollbar-color:rgba(0,210,255,.42) transparent;
+}
+.try-guide-head{display:flex;align-items:center;gap:11px;padding:2px 4px 15px}
+.try-guide-head-logo{
+  width:34px;
+  height:34px;
+  flex:0 0 auto;
+  object-fit:contain;
+  filter:drop-shadow(0 0 10px rgba(0,210,255,.22));
+}
+.try-guide-head small{display:block;color:var(--accent);font:700 9px/1.2 "Share Tech Mono",monospace;letter-spacing:.16em}
+.try-guide-head h2{margin:3px 0 0;font-size:18px;line-height:1.15}
+.try-guide-group{margin-top:9px;border:1px solid var(--line);border-radius:11px;background:rgba(5,10,18,.48);overflow:hidden}
+.try-guide-group summary{
+  position:relative;
+  padding:11px 31px 11px 12px;
+  cursor:pointer;
+  list-style:none;
+  color:#dce9fb;
+  font:700 12px/1.3 Inter,system-ui,sans-serif;
+}
+.try-guide-group summary::-webkit-details-marker{display:none}
+.try-guide-group summary::after{content:"+";position:absolute;right:12px;top:8px;color:var(--accent);font:400 18px/1 "Share Tech Mono",monospace}
+.try-guide-group[open] summary{border-bottom:1px solid var(--line)}
+.try-guide-group[open] summary::after{content:"−"}
+.try-guide-content{display:grid;gap:10px;padding:11px}
+.try-guide-item{display:grid;grid-template-columns:64px 1fr;gap:9px;align-items:start}
+.try-guide-item p,.try-guide-step p{margin:0;color:var(--muted);font-size:11px;line-height:1.45}
+.try-guide-item small{display:block;margin-top:3px;color:var(--dim);font-size:10px;line-height:1.4}
+.try-guide-control{
+  display:inline-flex;
+  min-height:27px;
+  align-items:center;
+  justify-content:center;
+  padding:5px 7px;
+  border:1px solid rgba(0,210,255,.34);
+  border-radius:7px;
+  background:rgba(0,210,255,.09);
+  color:var(--accent);
+  font:700 9px/1 "Share Tech Mono",monospace;
+  letter-spacing:.08em;
+}
+.try-guide-plus{width:29px;min-width:29px;font-size:17px;justify-self:center}
+.try-guide-steps{gap:0;padding-top:4px;padding-bottom:4px}
+.try-guide-step{position:relative;padding:9px 0 9px 13px;border-bottom:1px solid rgba(255,255,255,.06)}
+.try-guide-step:last-child{border-bottom:0}
+.try-guide-step::before{content:"";position:absolute;left:0;top:15px;width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 9px rgba(0,210,255,.5)}
+.try-guide-step>strong{display:block;margin-bottom:3px;color:#e8f2ff;font-size:11px;line-height:1.35}
+.try-guide-step>strong+strong{margin-top:5px}
+.try-guide-key-step{padding-left:0}
+.try-guide-key-step::before{display:none}
+.try-guide-key-step p{margin-top:7px}
+.try-guide-key-step p strong{color:#e8f2ff}
+.try-guide-keys{display:flex;gap:4px}
+.try-guide-keys kbd{
+  display:inline-flex;
+  width:25px;
+  height:23px;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #34506f;
+  border-bottom-width:2px;
+  border-radius:5px;
+  background:#122035;
+  color:#dff8ff;
+  font:700 13px/1 "Share Tech Mono",monospace;
+  box-shadow:inset 0 1px rgba(255,255,255,.06);
+}
+.try-guide-shortcut{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}
+.try-guide-shortcut kbd{
+  display:inline-flex;
+  min-width:23px;
+  min-height:21px;
+  align-items:center;
+  justify-content:center;
+  padding:3px 6px;
+  border:1px solid #34506f;
+  border-bottom-width:2px;
+  border-radius:5px;
+  background:#122035;
+  color:#dff8ff;
+  font:700 10px/1 "Share Tech Mono",monospace;
+}
+.try-guide-shortcut>span{color:var(--muted);font-size:10px;font-weight:500}
+.try-guide-platform{
+  display:inline-flex;
+  margin-right:4px;
+  padding:2px 5px;
+  border-radius:4px;
+  background:rgba(0,210,255,.1);
+  color:var(--accent);
+  font:700 8px/1.3 "Share Tech Mono",monospace;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
 @keyframes loader-spin{to{transform:rotate(360deg)}}
+
+@media(max-width:1050px){
+  .try-demo-workspace{width:100%;margin-left:0;transform:none}
+  .try-demo-embed{width:100%}
+  .try-quick-guide{position:static;width:100%;margin-top:18px;overflow:visible}
+  .try-guide-content{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .try-guide-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .try-guide-step{border-bottom:0}
+}
 
 .license-table-section{padding-top:30px;padding-bottom:42px}
 .license-table-section + .contact{padding-top:42px}
@@ -943,6 +1070,7 @@ h3{color:#fff}
   .try-demo-embed{aspect-ratio:auto;min-height:260px}
   .try-demo-embed iframe,.try-demo-loader{display:none}
   .try-mobile-message{display:flex}
+  .try-quick-guide{display:none}
   .story-row img{height:250px}
   .story-row video{height:auto}
   .video-link{min-height:0}
