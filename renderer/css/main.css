@@ -678,7 +678,9 @@ html, body {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.6);
-  z-index: 9999;
+  /* Au-dessus de TOUS les overlays (licence 100001, about 100002, gate 200000) :
+     une confirmation bloquante doit toujours rester au premier plan. */
+  z-index: 300000;
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(2px);
@@ -1528,18 +1530,6 @@ html, body {
   font-weight: 600; letter-spacing: .5px;
 }
 
-/* Trial status block */
-.license-status-block { margin-bottom: 20px; }
-.license-trial-label  { font-family: var(--body); font-size: 13px; margin-bottom: 8px; }
-.license-trial-bar-wrap { }
-.license-trial-bar {
-  height: 4px; background: rgba(255,255,255,.08); border-radius: 2px; overflow: hidden;
-}
-.license-trial-fill {
-  height: 100%; background: linear-gradient(90deg, #ffc107, #ff6b35);
-  border-radius: 2px; transition: width .4s ease;
-}
-
 /* Feature comparison */
 .license-compare {
   display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
@@ -1680,11 +1670,15 @@ html, body {
   font-size: 11px; padding: 2px 9px; border-radius: 4px;
 }
 .about-license-badge.pro     { background: rgba(0,212,255,.12); color: var(--accent); border: 1px solid rgba(0,212,255,.25); }
-.about-license-badge.trial   { background: rgba(255,193,7,.1);  color: #ffc107;       border: 1px solid rgba(255,193,7,.3); }
 .about-license-badge.expired { background: rgba(255,85,85,.1);  color: #ff5555;       border: 1px solid rgba(255,85,85,.3); }
 .about-links {
-  display: flex; gap: 8px; margin-bottom: 14px;
+  display: flex; justify-content: center; gap: 8px; margin-bottom: 14px;
 }
+.about-website-link {
+  color: var(--accent); font-family: var(--body); font-size: 12px;
+  text-decoration: none;
+}
+.about-website-link:hover { text-decoration: underline; }
 .about-link-btn {
   flex: 1; background: transparent;
   border: 1px solid rgba(255,255,255,.1);
@@ -1772,6 +1766,18 @@ html, body {
 }
 .license-pro-detail-val {
   font-size: 13px; color: var(--text); font-family: monospace;
+}
+.license-copy-btn {
+  background: transparent; border: 1px solid rgba(0,212,255,.3); color: var(--accent);
+  border-radius: 4px; padding: 2px 8px; font-size: 10px; cursor: pointer;
+  font-family: var(--body); text-transform: uppercase; letter-spacing: .04em;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+  margin-left: auto;
+}
+.license-copy-btn:hover { background: rgba(0,212,255,.12); }
+.license-copy-btn.copied { color: #4caf50; border-color: rgba(76,175,80,.5); }
+.license-copy-all-btn {
+  display: block; width: 100%; margin: 0 0 18px; padding: 8px 12px; font-size: 11px;
 }
 .license-deactivate-section {
   display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
