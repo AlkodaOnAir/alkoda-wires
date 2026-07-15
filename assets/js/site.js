@@ -952,16 +952,19 @@ let lemonSqueezyLoader = null;
 let lemonCheckoutObserver = null;
 
 function loadLemonSqueezy() {
-  if (window.LemonSqueezy?.Url?.Open) return Promise.resolve(window.LemonSqueezy);
+  if (window.LemonSqueezy || window.createLemonSqueezy) {
+    window.createLemonSqueezy?.();
+    return Promise.resolve();
+  }
   if (lemonSqueezyLoader) return lemonSqueezyLoader;
 
   lemonSqueezyLoader = new Promise((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = "https://app.lemonsqueezy.com/js/lemon.js";
+    script.src = "https://assets.lemonsqueezy.com/lemon.js";
     script.defer = true;
     script.onload = () => {
-      if (window.LemonSqueezy?.Url?.Open) resolve(window.LemonSqueezy);
-      else reject(new Error("Lemon Squeezy did not initialize"));
+      window.createLemonSqueezy?.();
+      resolve();
     };
     script.onerror = () => reject(new Error("Unable to load Lemon Squeezy"));
     document.head.appendChild(script);
@@ -1010,7 +1013,7 @@ function syncLemonCheckoutCloseButton() {
 }
 
 function initLemonCheckout() {
-  const checkoutButton = document.querySelector(".js-lemon-checkout");
+  const checkoutButton = document.querySelector(".lemonsqueezy-button");
   if (!checkoutButton) return;
 
   if (!lemonCheckoutObserver) {
@@ -1018,18 +1021,7 @@ function initLemonCheckout() {
     lemonCheckoutObserver.observe(document.body, { childList: true });
   }
 
-  if (checkoutButton.dataset.lemonCheckoutBound === "true") return;
-  checkoutButton.dataset.lemonCheckoutBound = "true";
-  checkoutButton.addEventListener("click", async (event) => {
-    event.preventDefault();
-    try {
-      const api = await loadLemonSqueezy();
-      api.Url.Open(checkoutButton.href);
-      window.setTimeout(syncLemonCheckoutCloseButton, 0);
-    } catch (error) {
-      window.location.href = checkoutButton.href;
-    }
-  });
+  loadLemonSqueezy().catch(() => {});
 }
 
 document.addEventListener("click", (event) => {
