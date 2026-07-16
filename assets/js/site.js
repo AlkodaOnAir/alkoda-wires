@@ -10,6 +10,18 @@ const STRINGS = {
     footer_terms: "Terms",
     footer_refunds: "Refunds",
     footer_text: "Wires is published by Alkoda.",
+    privacy_h1: "Privacy and cookies",
+    privacy_intro: "This page explains how Wires uses statistical cookies and Google Analytics.",
+    privacy_analytics_h2: "Google Analytics",
+    privacy_analytics_text: "Google Analytics is used only after you have explicitly accepted statistical cookies. Before acceptance, no Analytics resource is loaded and no Analytics data is sent.",
+    privacy_data_h2: "Traffic data measured",
+    privacy_data_text: "When accepted, Analytics measures visits and page views, the pages viewed, approximate visit duration, device and browser information, and the general source of traffic. Wires does not use Analytics to collect information entered into the software or the online demo.",
+    privacy_choice_h2: "Your choice",
+    privacy_choice_text: "You can accept or refuse statistical cookies. You can withdraw or change your choice at any time with the Cookie settings link in the footer. When consent is withdrawn, Analytics is disabled and Analytics cookies are deleted when technically possible.",
+    privacy_duration_h2: "Consent duration",
+    privacy_duration_text: "Your acceptance or refusal is stored on this device for six months. After that period, you will be asked again.",
+    privacy_controller_h2: "Site controller",
+    privacy_controller_text: "The site controller is Alkoda On Air - Christophe Koclejda EI.",
 
     home_h1: "Make your cabling readable and alive.",
     home_sub: "Wires makes your signal visible: real device images, precise ports, animated paths and clean documentation for streamers, churches, conference rooms and small technical teams.",
@@ -229,6 +241,18 @@ const STRINGS = {
     footer_terms: "Conditions",
     footer_refunds: "Remboursements",
     footer_text: "Wires est édité par Alkoda.",
+    privacy_h1: "Confidentialité et cookies",
+    privacy_intro: "Cette page explique comment Wires utilise les cookies statistiques et Google Analytics.",
+    privacy_analytics_h2: "Google Analytics",
+    privacy_analytics_text: "Google Analytics est utilisé uniquement après votre acceptation explicite des cookies statistiques. Avant votre accord, aucune ressource Analytics n'est chargée et aucune donnée Analytics n'est envoyée.",
+    privacy_data_h2: "Données de fréquentation mesurées",
+    privacy_data_text: "Après acceptation, Analytics mesure les visites et pages vues, les pages consultées, la durée approximative des visites, les informations sur l'appareil et le navigateur, ainsi que la provenance générale du trafic. Wires n'utilise pas Analytics pour collecter les informations saisies dans le logiciel ou la démo en ligne.",
+    privacy_choice_h2: "Votre choix",
+    privacy_choice_text: "Vous pouvez accepter ou refuser les cookies statistiques. Vous pouvez retirer ou modifier votre choix à tout moment avec le lien Gérer les cookies du pied de page. Lors du retrait du consentement, Analytics est désactivé et ses cookies sont supprimés lorsque cela est techniquement possible.",
+    privacy_duration_h2: "Durée du choix",
+    privacy_duration_text: "Votre acceptation ou votre refus est conservé sur cet appareil pendant six mois. Après cette durée, votre choix sera demandé à nouveau.",
+    privacy_controller_h2: "Responsable du site",
+    privacy_controller_text: "Le responsable du site est Alkoda On Air - Christophe Koclejda EI.",
 
     home_h1: "Rendez votre câblage lisible et vivant.",
     home_sub: "Wires rend votre signal visible : images réelles d'appareils, ports précis, chemins animés et documentation claire pour streamers, églises, salles de conférence et petites équipes techniques.",
@@ -448,6 +472,18 @@ const STRINGS = {
     footer_terms: "Terminos",
     footer_refunds: "Reembolsos",
     footer_text: "Wires esta publicado por Alkoda.",
+    privacy_h1: "Privacidad y cookies",
+    privacy_intro: "Esta página explica cómo Wires utiliza las cookies estadísticas y Google Analytics.",
+    privacy_analytics_h2: "Google Analytics",
+    privacy_analytics_text: "Google Analytics se utiliza únicamente después de aceptar explícitamente las cookies estadísticas. Antes de aceptar, no se carga ningún recurso de Analytics ni se envía ningún dato de Analytics.",
+    privacy_data_h2: "Datos de tráfico medidos",
+    privacy_data_text: "Tras la aceptación, Analytics mide las visitas y páginas vistas, las páginas consultadas, la duración aproximada de las visitas, la información del dispositivo y navegador, y la procedencia general del tráfico. Wires no utiliza Analytics para recopilar información introducida en el software o la demo en línea.",
+    privacy_choice_h2: "Tu elección",
+    privacy_choice_text: "Puedes aceptar o rechazar las cookies estadísticas. Puedes retirar o cambiar tu elección en cualquier momento mediante el enlace Configurar cookies del pie de página. Al retirar el consentimiento, Analytics se desactiva y sus cookies se eliminan cuando es técnicamente posible.",
+    privacy_duration_h2: "Duración de la elección",
+    privacy_duration_text: "Tu aceptación o rechazo se guarda en este dispositivo durante seis meses. Después de ese periodo, se te preguntará de nuevo.",
+    privacy_controller_h2: "Responsable del sitio",
+    privacy_controller_text: "El responsable del sitio es Alkoda On Air - Christophe Koclejda EI.",
 
     home_h1: "Haz que tu cableado sea legible y vivo.",
     home_sub: "Wires hace visible tu senal: imagenes reales de dispositivos, puertos precisos, rutas animadas y documentacion clara para streamers, iglesias, salas de conferencia y pequenos equipos tecnicos.",
@@ -998,6 +1034,7 @@ async function navigatePartial(url, addHistory = true) {
 
     if (addHistory) history.pushState({ partial: true }, "", url.href);
     refreshPageContent();
+    window.dispatchEvent(new CustomEvent("wires:pageview"));
     requestAnimationFrame(() => scrollToPageTarget(url.hash));
   } catch (error) {
     location.href = url.href;

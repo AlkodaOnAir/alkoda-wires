@@ -2,10 +2,11 @@
 
 ## Changements
 
-- Métadonnées SEO complètes sur les huit pages publiques : titre, description, canonical absolue, robots, Open Graph et Twitter.
+- Métadonnées SEO complètes sur les neuf pages publiques : titre, description, canonical absolue, robots, Open Graph et Twitter.
 - Métadonnées adaptées en anglais, français et espagnol par le sélecteur de langue existant, sans modification du contenu visible.
 - Données structurées `SoftwareApplication` sur la page d'accueil, limitées aux informations déjà présentes dans le projet.
-- Création de `sitemap.xml` pour les huit pages publiques et de `robots.txt` avec le lien absolu vers le sitemap.
+- Création de `sitemap.xml` pour les neuf pages publiques et de `robots.txt` avec le lien absolu vers le sitemap.
+- Ajout d'une page publique de confidentialité et de gestion des cookies, disponible dans les trois langues.
 - La démo interne `renderer-web-demo/index.html` reste volontairement en `noindex` et hors du sitemap.
 
 ## Limite du SEO multilingue

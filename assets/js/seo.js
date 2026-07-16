@@ -41,6 +41,11 @@
       en: ["Wires Refund Policy | Digital Software License", "Read the refund policy and eligibility conditions for Wires digital audiovisual system documentation software licenses.", "Refund policy and eligibility conditions for Wires digital software licenses."],
       fr: ["Politique de remboursement Wires | Licence numérique", "Consultez la politique de remboursement et les conditions d'éligibilité applicables aux licences numériques du logiciel Wires.", "Politique de remboursement et conditions d'éligibilité des licences numériques Wires."],
       es: ["Política de reembolso de Wires | Licencia digital", "Consulta la política de reembolso y las condiciones de elegibilidad de las licencias digitales del software Wires.", "Política de reembolso y condiciones de elegibilidad de las licencias digitales Wires."]
+    },
+    "privacy-cookies.html": {
+      en: ["Wires Privacy and Cookies | Analytics Consent", "Learn how Wires uses Google Analytics only after consent, what traffic data is measured and how to refuse or withdraw consent.", "How Wires handles Analytics consent, traffic measurement and statistical cookies."],
+      fr: ["Confidentialité et cookies Wires | Consentement Analytics", "Découvrez comment Wires utilise Google Analytics uniquement après consentement, quelles données sont mesurées et comment refuser ou retirer votre accord.", "Gestion du consentement Analytics, des mesures de fréquentation et des cookies statistiques sur Wires."],
+      es: ["Privacidad y cookies de Wires | Consentimiento Analytics", "Descubre cómo Wires utiliza Google Analytics solo tras el consentimiento, qué datos mide y cómo rechazar o retirar tu elección.", "Gestión del consentimiento de Analytics, la medición de visitas y las cookies estadísticas en Wires."]
     }
   };
 
