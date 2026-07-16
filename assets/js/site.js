@@ -1201,7 +1201,7 @@ document.addEventListener("click", (event) => {
       const objectUrl = URL.createObjectURL(blob);
       const fileLink = document.createElement("a");
       fileLink.href = objectUrl;
-      fileLink.download = directDownload.getAttribute("download") || "Wires-example-project.wires";
+      fileLink.download = directDownload.getAttribute("download") || "test-project.wires";
       fileLink.hidden = true;
       document.body.appendChild(fileLink);
       fileLink.click();
