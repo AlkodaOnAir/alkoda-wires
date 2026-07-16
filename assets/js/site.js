@@ -676,6 +676,7 @@ function setLang(lang) {
   currentLang = STRINGS[lang] ? lang : "en";
   try { localStorage.setItem("wires_lang", currentLang); } catch (error) {}
   document.documentElement.lang = currentLang;
+  if (window.WiresSEO) window.WiresSEO.apply(currentLang);
 
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     el.innerHTML = translate(el.getAttribute("data-i18n"));
@@ -792,11 +793,33 @@ function scrollToPageTarget(hash) {
 function updateDocumentMeta(nextDoc) {
   if (nextDoc.title) document.title = nextDoc.title;
 
-  const currentDescription = document.querySelector('meta[name="description"]');
-  const nextDescription = nextDoc.querySelector('meta[name="description"]');
-  if (currentDescription && nextDescription) {
-    currentDescription.setAttribute("content", nextDescription.getAttribute("content") || "");
-  }
+  const selectors = [
+    'meta[name="description"]',
+    'meta[name="robots"]',
+    'meta[property="og:title"]',
+    'meta[property="og:description"]',
+    'meta[property="og:type"]',
+    'meta[property="og:url"]',
+    'meta[property="og:site_name"]',
+    'meta[property="og:locale"]',
+    'meta[property="og:image"]',
+    'meta[property="og:image:alt"]',
+    'meta[name="twitter:card"]',
+    'meta[name="twitter:title"]',
+    'meta[name="twitter:description"]',
+    'meta[name="twitter:image"]',
+    'meta[name="twitter:image:alt"]'
+  ];
+  selectors.forEach((selector) => {
+    const currentMeta = document.querySelector(selector);
+    const nextMeta = nextDoc.querySelector(selector);
+    if (currentMeta && nextMeta) currentMeta.setAttribute("content", nextMeta.getAttribute("content") || "");
+  });
+
+  const currentCanonical = document.querySelector('link[rel="canonical"]');
+  const nextCanonical = nextDoc.querySelector('link[rel="canonical"]');
+  if (currentCanonical && nextCanonical) currentCanonical.setAttribute("href", nextCanonical.getAttribute("href") || "");
+  if (window.WiresSEO) window.WiresSEO.apply(currentLang);
 }
 
 function initDemoLoaders() {

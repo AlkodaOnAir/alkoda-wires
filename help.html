@@ -3,7 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Wires — Aide</title>
+<title>Documentation Wires | Documentation d'installation audiovisuelle</title>
+<meta name="description" content="Consultez la documentation Wires pour créer des plans avec un logiciel de schéma de câblage audiovisuel et un logiciel de flux de signal AV.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://alkoda-wires.com/help.html">
+<meta property="og:title" content="Documentation Wires | Documentation d'installation audiovisuelle">
+<meta property="og:description" content="Guide complet du logiciel de schéma de câblage audiovisuel Wires, de la création du projet aux exports.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://alkoda-wires.com/help.html">
+<meta property="og:site_name" content="Wires">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:image" content="https://alkoda-wires.com/images/FR/wires-fr.png">
+<meta property="og:image:alt" content="Documentation du logiciel de flux de signal AV Wires">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Documentation Wires | Documentation d'installation audiovisuelle">
+<meta name="twitter:description" content="Guide complet du logiciel de schéma de câblage audiovisuel Wires, de la création du projet aux exports.">
+<meta name="twitter:image" content="https://alkoda-wires.com/images/FR/wires-fr.png">
+<meta name="twitter:image:alt" content="Documentation du logiciel de flux de signal AV Wires">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -11,6 +27,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap">
+<script src="assets/js/seo.js?v=20260716-1"></script>
 <style>
 :root{
   --bg:#07101d;--bg2:#0b1526;--bg3:#101b2f;
@@ -3794,6 +3811,7 @@ const HELP_HEADER_LANG_NAMES = { en: "English", fr: "Français", es: "Español" 
 function setHelpHeaderLang(lang) {
   if (!HELP_HEADER_STRINGS[lang]) lang = "fr";
   try { localStorage.setItem("wires_lang", lang); } catch (error) {}
+  if (window.WiresSEO) window.WiresSEO.apply(lang);
   document.querySelectorAll("[data-help-i18n]").forEach((el) => {
     const key = el.getAttribute("data-help-i18n");
     el.textContent = HELP_HEADER_STRINGS[lang][key] || key;
