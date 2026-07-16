@@ -221,6 +221,10 @@ const STRINGS = {
     downloads_linux: "Linux",
     downloads_version: "Version v1.0.0",
     downloads_soon: "Download",
+    downloads_example_title: "Test project",
+    downloads_example_text: "Open this project to quickly try Wires.",
+    downloads_example_alt: "Example AV project open in Wires",
+    downloads_example_button: "Download test project",
     install_macos_title: "Installing Wires on macOS",
     install_macos_text: "Open the downloaded <strong>.dmg</strong> file and place Wires in Applications. Wait for the copy to finish, then open the app from that folder.",
     install_macos_note: "<strong>ℹ️ Blocked on first launch?</strong> In Applications, right-click Wires and choose Open. Confirm Open again in the dialog.",
@@ -452,6 +456,10 @@ const STRINGS = {
     downloads_linux: "Linux",
     downloads_version: "Version v1.0.0",
     downloads_soon: "Télécharger",
+    downloads_example_title: "Projet test",
+    downloads_example_text: "Ouvrez ce projet pour tester rapidement Wires.",
+    downloads_example_alt: "Projet audiovisuel d’exemple ouvert dans Wires",
+    downloads_example_button: "Télécharger le projet test",
     install_macos_title: "Installer Wires sur macOS",
     install_macos_text: "Ouvrez le fichier <strong>.dmg</strong> téléchargé et placez Wires dans Applications. Attendez la fin de la copie, puis lancez le logiciel depuis ce dossier.",
     install_macos_note: "<strong>ℹ️ Première ouverture bloquée ?</strong> Dans Applications, faites un clic droit sur Wires et choisissez Ouvrir. Validez encore une fois dans la fenêtre de confirmation.",
@@ -683,6 +691,10 @@ const STRINGS = {
     downloads_linux: "Linux",
     downloads_version: "Version v1.0.0",
     downloads_soon: "Descargar",
+    downloads_example_title: "Proyecto de prueba",
+    downloads_example_text: "Abra este proyecto para probar Wires rápidamente.",
+    downloads_example_alt: "Proyecto audiovisual de ejemplo abierto en Wires",
+    downloads_example_button: "Descargar el proyecto de prueba",
     install_macos_title: "Instalar Wires en macOS",
     install_macos_text: "Abre el archivo <strong>.dmg</strong> descargado y coloca Wires en Aplicaciones. Espera a que termine la copia y abre el programa desde esa carpeta.",
     install_macos_note: "<strong>ℹ️ ¿Bloqueado en el primer inicio?</strong> En Aplicaciones, haz clic derecho sobre Wires y elige Abrir. Confirma de nuevo en la ventana que aparece.",
@@ -1170,6 +1182,34 @@ document.addEventListener("click", (event) => {
     ?.querySelectorAll(".try-guide-group[open]")
     .forEach((group) => {
       if (group !== currentGroup) group.removeAttribute("open");
+    });
+});
+
+document.addEventListener("click", (event) => {
+  const directDownload = event.target.closest("a[data-direct-download]");
+  if (!directDownload) return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+  event.preventDefault();
+
+  fetch(directDownload.href)
+    .then((response) => {
+      if (!response.ok) throw new Error(`Download failed: ${response.status}`);
+      return response.blob();
+    })
+    .then((blob) => {
+      const objectUrl = URL.createObjectURL(blob);
+      const fileLink = document.createElement("a");
+      fileLink.href = objectUrl;
+      fileLink.download = directDownload.getAttribute("download") || "Wires-example-project.wires";
+      fileLink.hidden = true;
+      document.body.appendChild(fileLink);
+      fileLink.click();
+      fileLink.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    })
+    .catch(() => {
+      window.location.assign(directDownload.href);
     });
 });
 
