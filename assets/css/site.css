@@ -485,22 +485,17 @@ h3{color:#fff}
   background:#050910;
 }
 .audience-video-panel::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  background:linear-gradient(180deg,transparent 50%,rgba(4,8,14,.72));
+  content:none;
 }
 .audience-video-caption{
-  position:absolute;
-  left:28px;
-  bottom:28px;
-  z-index:1;
-  max-width:360px;
-  font-size:28px;
+  display:block;
+  padding:20px 28px 22px;
+  border-top:1px solid var(--line);
+  font-size:clamp(13px,1.25vw,18px);
   line-height:1.08;
   font-weight:900;
   color:#fff;
+  white-space:nowrap;
 }
 .audience-placeholder{
   height:100%;
