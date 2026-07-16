@@ -258,7 +258,7 @@ const STRINGS = {
     privacy_controller_h2: "Responsable du site",
     privacy_controller_text: "Le responsable du site est Alkoda On Air - Christophe Koclejda EI.",
 
-    home_h1: "Vos schémas de câblage, enfin compréhensibles.",
+    home_h1: "Vos schémas de câblage, enfin clairs.",
     home_sub: "Wires est le logiciel qui transforme vos schémas de câblage en une documentation audiovisuelle claire, interactive et facile à partager.",
     home_features_cta: "Voir les fonctions",
     home_wires_img: "images/FR/wires-fr.png",
