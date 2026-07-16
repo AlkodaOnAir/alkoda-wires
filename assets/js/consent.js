@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const MEASUREMENT_ID = "G-QZ4D2DV0YX";
+  const MEASUREMENT_ID = "G-QZ4D2DV0VX";
   const STORAGE_KEY = "wires_analytics_consent";
   const CONSENT_LIFETIME_MS = 180 * 24 * 60 * 60 * 1000;
   const GOOGLE_SCRIPT_ID = "wires-google-analytics";
