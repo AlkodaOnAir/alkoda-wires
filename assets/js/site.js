@@ -15,7 +15,7 @@ const STRINGS = {
     privacy_analytics_h2: "Google Analytics",
     privacy_analytics_text: "Google Analytics is used only after you have explicitly accepted statistical cookies. Before acceptance, no Analytics resource is loaded and no Analytics data is sent.",
     privacy_data_h2: "Traffic data measured",
-    privacy_data_text: "When accepted, Analytics measures visits and page views, the pages viewed, approximate visit duration, device and browser information, and the general source of traffic. Wires does not use Analytics to collect information entered into the software or the online demo.",
+    privacy_data_text: "When accepted, Analytics measures visits and page views, download clicks, the pages viewed, approximate visit duration, device and browser information, and the general source of traffic. Wires does not use Analytics to collect information entered into the software or the online demo.",
     privacy_choice_h2: "Your choice",
     privacy_choice_text: "You can accept or refuse statistical cookies. You can withdraw or change your choice at any time with the Cookie settings link in the footer. When consent is withdrawn, Analytics is disabled and Analytics cookies are deleted when technically possible.",
     privacy_duration_h2: "Consent duration",
@@ -251,7 +251,7 @@ const STRINGS = {
     privacy_analytics_h2: "Google Analytics",
     privacy_analytics_text: "Google Analytics est utilisé uniquement après votre acceptation explicite des cookies statistiques. Avant votre accord, aucune ressource Analytics n'est chargée et aucune donnée Analytics n'est envoyée.",
     privacy_data_h2: "Données de fréquentation mesurées",
-    privacy_data_text: "Après acceptation, Analytics mesure les visites et pages vues, les pages consultées, la durée approximative des visites, les informations sur l'appareil et le navigateur, ainsi que la provenance générale du trafic. Wires n'utilise pas Analytics pour collecter les informations saisies dans le logiciel ou la démo en ligne.",
+    privacy_data_text: "Après acceptation, Analytics mesure les visites et pages vues, les clics de téléchargement, les pages consultées, la durée approximative des visites, les informations sur l'appareil et le navigateur, ainsi que la provenance générale du trafic. Wires n'utilise pas Analytics pour collecter les informations saisies dans le logiciel ou la démo en ligne.",
     privacy_choice_h2: "Votre choix",
     privacy_choice_text: "Vous pouvez accepter ou refuser les cookies statistiques. Vous pouvez retirer ou modifier votre choix à tout moment avec le lien Gérer les cookies du pied de page. Lors du retrait du consentement, Analytics est désactivé et ses cookies sont supprimés lorsque cela est techniquement possible.",
     privacy_duration_h2: "Durée du choix",
@@ -487,7 +487,7 @@ const STRINGS = {
     privacy_analytics_h2: "Google Analytics",
     privacy_analytics_text: "Google Analytics se utiliza únicamente después de aceptar explícitamente las cookies estadísticas. Antes de aceptar, no se carga ningún recurso de Analytics ni se envía ningún dato de Analytics.",
     privacy_data_h2: "Datos de tráfico medidos",
-    privacy_data_text: "Tras la aceptación, Analytics mide las visitas y páginas vistas, las páginas consultadas, la duración aproximada de las visitas, la información del dispositivo y navegador, y la procedencia general del tráfico. Wires no utiliza Analytics para recopilar información introducida en el software o la demo en línea.",
+    privacy_data_text: "Tras la aceptación, Analytics mide las visitas y páginas vistas, los clics de descarga, las páginas consultadas, la duración aproximada de las visitas, la información del dispositivo y navegador, y la procedencia general del tráfico. Wires no utiliza Analytics para recopilar información introducida en el software o la demo en línea.",
     privacy_choice_h2: "Tu elección",
     privacy_choice_text: "Puedes aceptar o rechazar las cookies estadísticas. Puedes retirar o cambiar tu elección en cualquier momento mediante el enlace Configurar cookies del pie de página. Al retirar el consentimiento, Analytics se desactiva y sus cookies se eliminan cuando es técnicamente posible.",
     privacy_duration_h2: "Duración de la elección",
@@ -1188,12 +1188,33 @@ document.addEventListener("click", (event) => {
     });
 });
 
+function trackFileDownload(link, linkUrl) {
+  if (typeof window.gtag !== "function") return;
+
+  const resolvedUrl = new URL(linkUrl, location.href);
+  const fileName = link.dataset.downloadFilename || link.getAttribute("download") || resolvedUrl.pathname.split("/").pop() || "";
+  const extensionIndex = fileName.lastIndexOf(".");
+  const fileExtension = extensionIndex >= 0 ? fileName.slice(extensionIndex + 1).toLowerCase() : "";
+
+  window.gtag("event", "file_download", {
+    file_name: fileName,
+    file_extension: fileExtension,
+    link_url: resolvedUrl.href,
+    link_domain: resolvedUrl.hostname || location.hostname,
+    link_text: link.textContent.trim(),
+    download_platform: link.dataset.downloadPlatform || "unknown",
+    download_type: link.dataset.downloadType || "unknown",
+    app_version: link.dataset.downloadVersion || ""
+  });
+}
+
 document.addEventListener("click", (event) => {
   const directDownload = event.target.closest("a[data-direct-download]");
   if (!directDownload) return;
   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
 
   event.preventDefault();
+  trackFileDownload(directDownload, directDownload.href);
 
   fetch(directDownload.href)
     .then((response) => {
@@ -1226,6 +1247,7 @@ document.addEventListener("click", (event) => {
   if (!guideHref.startsWith("#") || !downloadUrl) return;
 
   event.preventDefault();
+  trackFileDownload(downloadButton, downloadUrl);
 
   const guideUrl = new URL(guideHref, location.href);
   if (guideUrl.href !== location.href) {
