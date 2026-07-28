@@ -9,6 +9,7 @@ const STRINGS = {
     nav_download: "Download Wires",
     footer_terms: "Terms",
     footer_refunds: "Refunds",
+    footer_privacy: "Privacy & cookies",
     footer_text: "Wires is published by Alkoda.",
     privacy_h1: "Privacy and cookies",
     privacy_intro: "This page explains how Wires uses statistical cookies and Google Analytics.",
@@ -245,6 +246,7 @@ const STRINGS = {
     nav_download: "Télécharger Wires",
     footer_terms: "Conditions",
     footer_refunds: "Remboursements",
+    footer_privacy: "Confidentialité et cookies",
     footer_text: "Wires est édité par Alkoda.",
     privacy_h1: "Confidentialité et cookies",
     privacy_intro: "Cette page explique comment Wires utilise les cookies statistiques et Google Analytics.",
@@ -481,6 +483,7 @@ const STRINGS = {
     nav_download: "Descargar Wires",
     footer_terms: "Terminos",
     footer_refunds: "Reembolsos",
+    footer_privacy: "Privacidad y cookies",
     footer_text: "Wires esta publicado por Alkoda.",
     privacy_h1: "Privacidad y cookies",
     privacy_intro: "Esta página explica cómo Wires utiliza las cookies estadísticas y Google Analytics.",
@@ -1242,18 +1245,20 @@ document.addEventListener("click", (event) => {
   if (!downloadButton) return;
   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
 
-  const guideHref = downloadButton.getAttribute("href") || "";
-  const downloadUrl = downloadButton.dataset.downloadUrl;
-  if (!guideHref.startsWith("#") || !downloadUrl) return;
+  const guideHref = downloadButton.dataset.guideTarget || "";
+  const downloadUrl = downloadButton.getAttribute("href") || downloadButton.dataset.downloadUrl;
+  if (!downloadUrl) return;
 
   event.preventDefault();
   trackFileDownload(downloadButton, downloadUrl);
 
-  const guideUrl = new URL(guideHref, location.href);
-  if (guideUrl.href !== location.href) {
-    history.pushState({ partial: true }, "", guideUrl.href);
+  if (guideHref.startsWith("#")) {
+    const guideUrl = new URL(guideHref, location.href);
+    if (guideUrl.href !== location.href) {
+      history.pushState({ partial: true }, "", guideUrl.href);
+    }
+    scrollToPageTarget(guideUrl.hash);
   }
-  scrollToPageTarget(guideUrl.hash);
 
   const fileLink = document.createElement("a");
   fileLink.href = downloadUrl;
