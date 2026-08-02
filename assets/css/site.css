@@ -947,12 +947,18 @@ h3{color:#fff}
   color:#fff;
   font-weight:900;
 }
-.contact-discord .contact-title,
 .contact-mail .contact-title{
   color:var(--accent);
 }
 .contact-youtube .contact-icon{color:#ff0000}
-.contact-youtube-blue .contact-icon{color:var(--accent)}
+.contact-discord .contact-title{color:#fff}
+.contact-discord .contact-icon{
+  box-sizing:content-box;
+  padding:5px;
+  color:#fff;
+  background:#5865f2;
+  border-radius:50%;
+}
 .contact-card .contact-icon{width:24px;height:24px}
 .contact-subtitle{
   color:var(--muted);
