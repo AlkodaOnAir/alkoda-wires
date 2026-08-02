@@ -951,6 +951,8 @@ h3{color:#fff}
 .contact-mail .contact-title{
   color:var(--accent);
 }
+.contact-youtube .contact-icon{color:#ff0000}
+.contact-youtube-blue .contact-icon{color:var(--accent)}
 .contact-card .contact-icon{width:24px;height:24px}
 .contact-subtitle{
   color:var(--muted);
