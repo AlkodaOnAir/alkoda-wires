@@ -363,7 +363,7 @@ kbd{display:inline-block;padding:1px 6px;background:rgba(0,180,220,.08);border:1
 <span class="toc-ch-label" data-i18n="toc_title_ch10">Routes de signal</span>
 <span class="toc-arrow">►</span>
 </button>
-<ul class="toc-secs" hidden=""><li><a class="toc-sec" data-i18n="toc_sec_sec-ouverture-du-panneau-routes" href="#sec-ouverture-du-panneau-routes" onclick="showChapter('ch10')">Ouverture du panneau Routes</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-structure-de-la-route" href="#sec-structure-de-la-route" onclick="showChapter('ch10')">Structure de la route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-chemins" href="#sec-chemins" onclick="showChapter('ch10')">Chemins</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-affectation-de-c-bles-une-route" href="#sec-affectation-de-c-bles-une-route" onclick="showChapter('ch10')">Affectation de câbles à une route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-gestion-des-segments-et-des-chemins" href="#sec-gestion-des-segments-et-des-chemins" onclick="showChapter('ch10')">Gestion des segments et des chemins</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-modifier-une-route" href="#sec-modifier-une-route" onclick="showChapter('ch10')">Modifier une route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-animation-suivi-du-signal" href="#sec-animation-suivi-du-signal" onclick="showChapter('ch10')">Animation — suivi du signal</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-tats-visuels-de-la-route" href="#sec-tats-visuels-de-la-route" onclick="showChapter('ch10')">États visuels de la route</a></li></ul>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" data-i18n="toc_sec_sec-ouverture-du-panneau-routes" href="#sec-ouverture-du-panneau-routes" onclick="showChapter('ch10')">Ouverture du panneau Routes</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-structure-de-la-route" href="#sec-structure-de-la-route" onclick="showChapter('ch10')">Structure de la route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-chemins" href="#sec-chemins" onclick="showChapter('ch10')">Chemins</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-affectation-de-c-bles-une-route" href="#sec-affectation-de-c-bles-une-route" onclick="showChapter('ch10')">Affectation de câbles à une route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-nom-d-une-route" href="#sec-nom-d-une-route" onclick="showChapter('ch10')">Nom d’une route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-gestion-des-segments-et-des-chemins" href="#sec-gestion-des-segments-et-des-chemins" onclick="showChapter('ch10')">Gestion des segments et des chemins</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-modifier-une-route" href="#sec-modifier-une-route" onclick="showChapter('ch10')">Modifier une route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-animation-suivi-du-signal" href="#sec-animation-suivi-du-signal" onclick="showChapter('ch10')">Animation — suivi du signal</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-tats-visuels-de-la-route" href="#sec-tats-visuels-de-la-route" onclick="showChapter('ch10')">États visuels de la route</a></li></ul>
 </div>
 <div class="toc-chapter" data-ch="ch11">
 <button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch11',this)">
@@ -831,7 +831,7 @@ Cliquez sur Placer sur le canevas.</li>
 </ul>
 <h3 class="section-heading" data-i18n="sec_sec-chemins" id="sec-chemins"><strong>Chemins</strong></h3>
 <ul>
-<li data-i18n="ch10_li3">Les chemins permettent de documenter les branches d'une route : une source qui se distribue vers plusieurs appareils, un chemin de secours, ou tout itinéraire secondaire propre à votre installation. Chaque chemin peut contenir ses propres sous-chemins, pour représenter des architectures à plusieurs niveaux. Dans l'animation, le signal parcourt le tronc et tous les chemins simultanément.</li>
+<li data-i18n="ch10_li3">Les chemins permettent de documenter les branches d'une route : une source qui se distribue vers plusieurs appareils, un chemin de secours, ou tout itinéraire secondaire propre à votre installation. Chaque chemin peut contenir ses propres sous-chemins, pour représenter des architectures à plusieurs niveaux. Dans l'animation, le signal parcourt le tronc et tous les chemins simultanément. Cliquez sur l’en-tête d’un chemin/sous-chemin pour le replier ou le déplier individuellement (comme une route), indépendamment de ses chemins frères et de la route elle-même.</li>
 </ul>
 <h3 class="section-heading" data-i18n="sec_sec-affectation-de-c-bles-une-route" id="sec-affectation-de-c-bles-une-route"><strong>Affectation de câbles à une route</strong></h3>
 <ul>
@@ -839,8 +839,16 @@ Cliquez sur Placer sur le canevas.</li>
 <li data-i18n="ch10_li5">Pour ajouter un câble existant à une route supplémentaire : sélectionnez le câble — ses routes apparaissent dans le panneau d'information. Cliquez sur <span class="wires-btn"> + Ajouter à une autre route </span> pour ouvrir le sélecteur de routes.</li>
 <li data-i18n="ch10_li6">Par glisser-déposer dans le panneau Routes : faites glisser n'importe quelle ligne de segment pour la déplacer vers le tronc ou vers un autre chemin.</li>
 </ul>
+<h3 class="section-heading" data-i18n="sec_sec-nom-d-une-route" id="sec-nom-d-une-route"><strong>Nom d’une route</strong></h3>
+<p data-i18n="ch10_p10">Le nom d’une route est généré automatiquement à partir des deux appareils à ses extrémités : celui où le signal commence, et celui où il se termine. Ce nom n’est jamais figé, donc il change tout seul dès que vous remplacez l’appareil de départ ou d’arrivée. Si deux routes ou plus obtiennent ainsi exactement le même nom, chacune reçoit en plus une lettre entre parenthèses — (a), (b), (c)… — pour rester identifiable, sans que le nom réel de la route soit modifié.</p>
 <h3 class="section-heading" data-i18n="sec_sec-gestion-des-segments-et-des-chemins" id="sec-gestion-des-segments-et-des-chemins"><strong>Gestion des segments et des chemins</strong></h3>
-<div class="table-wrap"><table class="help-table"><thead><tr><th data-i18n="ch10_th1"><strong>Action</strong></th><th data-i18n="ch10_th2"><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td data-i18n="ch10_td1"><span class="wires-btn">⇄</span> sur le segment</td><td data-i18n="ch10_td2">Inversez la direction du signal de ce segment. Le titre de la route est mis à jour automatiquement</td></tr><tr class="pair-b"><td data-i18n="ch10_td3"><span class="wires-btn wires-btn-danger">✕</span> sur le segment</td><td data-i18n="ch10_td4">Supprimer ce segment et son câble (confirmation demandée)</td></tr><tr class="pair-a"><td data-i18n="ch10_td5"><strong>Faites glisser la ligne du segment</strong></td><td data-i18n="ch10_td6">Déplacez-le à une autre position, dans le tronc ou un autre chemin</td></tr><tr class="pair-b"><td data-i18n="ch10_td7"><span class="wires-btn">+ Chemin</span></td><td data-i18n="ch10_td8">Ajouter un nouveau chemin de branche à l'intérieur de cette route</td></tr><tr class="pair-a"><td data-i18n="ch10_td9"><span class="wires-btn wires-btn-danger">✕</span> sur l'en-tête du chemin</td><td data-i18n="ch10_td10">Supprimez ce chemin et tous ses segments</td></tr><tr class="pair-b"><td></td><td></td></tr></tbody></table></div>
+<p data-i18n="ch10_p9">Vous pouvez modifier la route ou ses segments, chemins et sous-chemins pour que l’animation suive précisément le sens réel du signal.</p>
+<ul>
+<li data-i18n="ch10_li7">Une route entière glissée sur une autre route (ou sur un de ses chemins) devient un nouveau chemin de cette route, avec toute sa structure ; la route d'origine est supprimée (déplacée, pas copiée).</li>
+<li data-i18n="ch10_li8">Un chemin glissé sur le corps d'un autre chemin devient son sous-chemin. S'il est déposé sur la bordure supérieure de son en-tête, il se réordonne à la place comme chemin frère.</li>
+<li data-i18n="ch10_li9">Survolez 1 seconde une route ou un chemin repliés pendant un glisser-déposer pour les déplier temporairement et voir son contenu.</li>
+</ul>
+<div class="table-wrap"><table class="help-table"><thead><tr><th data-i18n="ch10_th1"><strong>Action</strong></th><th data-i18n="ch10_th2"><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td data-i18n="ch10_td27"><strong>Cliquez sur l'en-tête d'un chemin/sous-chemin</strong></td><td data-i18n="ch10_td28">Replie ou déplie ce chemin/sous-chemin individuellement</td></tr><tr class="pair-b"><td data-i18n="ch10_td1"><span class="wires-btn">⇄</span> sur le segment</td><td data-i18n="ch10_td2">Inversez la direction du signal de ce segment. Le titre de la route est mis à jour automatiquement</td></tr><tr class="pair-a"><td data-i18n="ch10_td3"><span class="wires-btn wires-btn-danger">✕</span> sur le segment</td><td data-i18n="ch10_td4">Supprimer ce segment et son câble (confirmation demandée)</td></tr><tr class="pair-b"><td data-i18n="ch10_td5"><strong>Faites glisser la ligne du segment</strong></td><td data-i18n="ch10_td6">Déplacez-le à une autre position, dans le tronc ou un autre chemin</td></tr><tr class="pair-a"><td data-i18n="ch10_td7"><span class="wires-btn">+ Chemin</span></td><td data-i18n="ch10_td8">Ajouter un nouveau chemin de branche à l'intérieur de cette route</td></tr><tr class="pair-b"><td data-i18n="ch10_td9"><span class="wires-btn wires-btn-danger">✕</span> sur l'en-tête du chemin</td><td data-i18n="ch10_td10">Supprimez ce chemin et tous ses segments</td></tr><tr class="pair-b"><td></td><td></td></tr></tbody></table></div>
 <p data-i18n="ch10_p4"><em>ℹ  Si</em><em> </em><em>les extrémités de </em><em>deux segments consécutifs ne sont pas connecté</em><em>e</em><em>s, un symbole </em><em>≠</em><em> apparaît. Cela peut se produire après avoir inversé la direction d'un câble (</em><em>⇄</em><em>). L'indicateur est uniquement informatif.</em></p>
 <h3 class="section-heading" data-i18n="sec_sec-modifier-une-route" id="sec-modifier-une-route"><strong>Modifier une route</strong></h3>
 <ul>
@@ -1301,7 +1309,7 @@ const HELP_HEADER_STRINGS = {
     "ch10_li2": "Paths – optional alternate or branch segments (nestable, unlimited depth). Each segment references a cable and a direction: forward (source→dest.) or reversed (dest.→source).",
     "sec_sec-chemins": "<strong>Paths</strong>",
     "toc_sec_sec-chemins": "Paths",
-    "ch10_li3": "Paths let you document the branches of a route: a source that distributes to multiple devices, a backup path, or any secondary route specific to your setup. Each path can contain its own sub-paths, to represent multi-level architectures. In the animation, the signal travels along the trunk and all paths simultaneously.",
+    "ch10_li3": "Paths let you document the branches of a route: a source that distributes to multiple devices, a backup path, or any secondary route specific to your setup. Each path can contain its own sub-paths, to represent multi-level architectures. In the animation, the signal travels along the trunk and all paths simultaneously. Click a path/sub-path’s header to fold or unfold it individually (like a route), independently of its sibling paths and of the route itself.",
     "sec_sec-affectation-de-c-bles-une-route": "<strong>Assigning Cables to a Route</strong>",
     "toc_sec_sec-affectation-de-c-bles-une-route": "Assigning Cables to a Route",
     "ch10_li4": "After creating a cable: a prompt appears automatically. Choose <span class=\"wires-btn\"> Create new route</span> or     <span class=\"wires-btn\">  Add to existing</span>. In the selector, hover over a route name to light up its cables on the canvas. Clicking <span class=\"wires-btn wires-btn-ghost\"> Cancel </span> removes the cable from the canvas without assigning it to any route.",
@@ -1353,6 +1361,15 @@ const HELP_HEADER_STRINGS = {
     "ch10_td24": "Starts the animation of all routes at once; a second double-click stops them all",
     "ch10_td25": "<strong>Double-click a segment/path/subpath</strong>",
     "ch10_td26": "Starts the animation only for this segment/path/subpath.",
+    "ch10_p9": "You can modify the route or its segments, paths, and sub-paths so the animation follows the signal’s actual direction precisely.",
+    "ch10_li7": "Dragging an entire route onto another route (or onto one of its paths) turns it into a new path within that route, keeping its entire structure; the original route is removed (moved, not copied).",
+    "ch10_li8": "Dragging a path onto the body of another path turns it into that path’s sub-path. Dropping it on the top edge of a header instead reorders it as a sibling path.",
+    "ch10_li9": "Hover over a collapsed route or path for 1 second during a drag to temporarily expand it and see its contents.",
+    "ch10_td27": "<strong>Click a path/sub-path’s header</strong>",
+    "ch10_td28": "Folds or unfolds this path/sub-path individually",
+    "sec_sec-nom-d-une-route": "<strong>Route Name</strong>",
+    "toc_sec_sec-nom-d-une-route": "Route Name",
+    "ch10_p10": "A route’s name is generated automatically from the two devices at its ends: the one where the signal starts, and the one where it ends. This name is never fixed, so it changes on its own as soon as you replace the starting or ending device. If two or more routes end up with exactly the same name this way, each one also gets a letter in parentheses — (a), (b), (c)… — to stay identifiable, without the route’s actual name being changed.",
 
     "toc_title_ch9": "Canvas Navigation",
     "title_ch9": "Canvas Navigation",
@@ -2432,7 +2449,7 @@ const HELP_HEADER_STRINGS = {
     "ch10_li1": "Tronc — la séquence principale des segments de câble",
     "ch10_li2": "Chemins – segments alternatifs ou de branchement facultatifs (emboîtables, profondeur illimitée). Chaque segment fait référence à un câble et une direction : sens (source→dest.) ou sens inv. ​​(dest.→source).",
     "sec_sec-chemins": "<strong>Chemins</strong>",
-    "ch10_li3": "Les chemins permettent de documenter les branches d'une route : une source qui se distribue vers plusieurs appareils, un chemin de secours, ou tout itinéraire secondaire propre à votre installation. Chaque chemin peut contenir ses propres sous-chemins, pour représenter des architectures à plusieurs niveaux. Dans l'animation, le signal parcourt le tronc et tous les chemins simultanément.",
+    "ch10_li3": "Les chemins permettent de documenter les branches d'une route : une source qui se distribue vers plusieurs appareils, un chemin de secours, ou tout itinéraire secondaire propre à votre installation. Chaque chemin peut contenir ses propres sous-chemins, pour représenter des architectures à plusieurs niveaux. Dans l'animation, le signal parcourt le tronc et tous les chemins simultanément. Cliquez sur l’en-tête d’un chemin/sous-chemin pour le replier ou le déplier individuellement (comme une route), indépendamment de ses chemins frères et de la route elle-même.",
     "sec_sec-affectation-de-c-bles-une-route": "<strong>Affectation de câbles à une route</strong>",
     "ch10_li4": "Après avoir créé un câble : une invite apparaît automatiquement. Choisissez <span class=\"wires-btn\"> Créer une nouvelle route </span> ou     <span class=\"wires-btn\">  Ajouter à une route existante </span>. Dans le sélecteur, survolez un nom de route pour illuminer ses câbles sur le canevas. Cliquer sur <span class=\"wires-btn wires-btn-ghost\"> Annuler </span> retire le câble du canevas sans l'affecter à aucune route.",
     "ch10_li5": "Pour ajouter un câble existant à une route supplémentaire : sélectionnez le câble — ses routes apparaissent dans le panneau d'information. Cliquez sur <span class=\"wires-btn\"> + Ajouter à une autre route </span> pour ouvrir le sélecteur de routes.",
@@ -2479,6 +2496,15 @@ const HELP_HEADER_STRINGS = {
     "ch10_td24": "Lance l’animation de toutes les routes en même temps ; un second double-clic les arrête toutes",
     "ch10_td25": "<strong>Double-cliquez sur un segment/chemin/sous-chemin</strong>",
     "ch10_td26": "Lance l’animation uniquement sur ce segment/chemin/sous-chemin.",
+    "ch10_p9": "Vous pouvez modifier la route ou ses segments, chemins et sous-chemins pour que l’animation suive précisément le sens réel du signal.",
+    "ch10_li7": "Une route entière glissée sur une autre route (ou sur un de ses chemins) devient un nouveau chemin de cette route, avec toute sa structure ; la route d'origine est supprimée (déplacée, pas copiée).",
+    "ch10_li8": "Un chemin glissé sur le corps d'un autre chemin devient son sous-chemin. S'il est déposé sur la bordure supérieure de son en-tête, il se réordonne à la place comme chemin frère.",
+    "ch10_li9": "Survolez 1 seconde une route ou un chemin repliés pendant un glisser-déposer pour les déplier temporairement et voir son contenu.",
+    "ch10_td27": "<strong>Cliquez sur l’en-tête d’un chemin/sous-chemin</strong>",
+    "ch10_td28": "Replie ou déplie ce chemin/sous-chemin individuellement",
+    "sec_sec-nom-d-une-route": "<strong>Nom d’une route</strong>",
+    "toc_sec_sec-nom-d-une-route": "Nom d’une route",
+    "ch10_p10": "Le nom d’une route est généré automatiquement à partir des deux appareils à ses extrémités : celui où le signal commence, et celui où il se termine. Ce nom n’est jamais figé, donc il change tout seul dès que vous remplacez l’appareil de départ ou d’arrivée. Si deux routes ou plus obtiennent ainsi exactement le même nom, chacune reçoit en plus une lettre entre parenthèses — (a), (b), (c)… — pour rester identifiable, sans que le nom réel de la route soit modifié.",
     "title_ch11": "Bibliothèque et catégories",
     "sec_sec-filtres-de-la-barre-lat-rale-gauche": "<strong>Filtres de la barre latérale gauche</strong>",
     "ch11_p1": "La barre latérale gauche comporte trois sections réductibles : Catégories, Câbles et Zones. Cliquez sur son nom pour la réduire ou la développer. Chaque section possède son propre bouton <span class=\"wires-btn\"> Tous  </span>qui réinitialise le filtre, laissant les autres intacts. La barre latérale s'ouvre lorsque vous survolez la bande gauche et se ferme automatiquement lorsque vous vous en éloignez. Appuyez sur B pour la garder ouverte en permanence. Appuyez à nouveau pour revenir au mode automatique.",
@@ -3146,7 +3172,7 @@ const HELP_HEADER_STRINGS = {
     "ch10_li2": "Caminos – segmentos alternativos o de ramificación opcionales (anidables, profundidad ilimitada). Cada segmento hace referencia a un cable y una dirección: sentido (origen→destino) o sentido inv. (destino→origen).",
     "sec_sec-chemins": "<strong>Caminos</strong>",
     "toc_sec_sec-chemins": "Caminos",
-    "ch10_li3": "Los caminos permiten documentar las ramificaciones de una ruta: una fuente que se distribuye hacia varios dispositivos, un camino de respaldo, o cualquier itinerario secundario propio de tu instalación. Cada camino puede contener sus propios subcaminos, para representar arquitecturas de varios niveles. En la animación, la señal recorre el tronco y todos los caminos simultáneamente.",
+    "ch10_li3": "Los caminos permiten documentar las ramificaciones de una ruta: una fuente que se distribuye hacia varios dispositivos, un camino de respaldo, o cualquier itinerario secundario de tu instalación. Cada camino puede contener sus subcaminos, para representar arquitecturas de varios niveles. En la animación, la señal recorre el tronco y todos los caminos simultáneamente. Haz clic en la cabecera de un camino/subcamino para replegarlo o desplegarlo individualmente (como una ruta), independientemente de sus caminos hermanos y de la ruta.",
     "sec_sec-affectation-de-c-bles-une-route": "<strong>Asignación de cables a una ruta</strong>",
     "toc_sec_sec-affectation-de-c-bles-une-route": "Asignación de cables a una ruta",
     "ch10_li4": "Después de crear un cable: aparece automáticamente un aviso. Elige <span class=\"wires-btn\"> Crear nueva ruta </span> o     <span class=\"wires-btn\">  Ruta existente </span>. En el selector, pasa el ratón sobre un nombre de ruta para iluminar sus cables en el canvas. Haz clic en <span class=\"wires-btn wires-btn-ghost\"> Cancelar </span> retira el cable del canvas sin asignarlo a ninguna ruta.",
@@ -3198,6 +3224,15 @@ const HELP_HEADER_STRINGS = {
     "ch10_td24": "Inicia la animación de todas las rutas a la vez; un segundo doble clic las detiene todas",
     "ch10_td25": "<strong>Haz doble clic en un segmento/camino/subcamino</strong>",
     "ch10_td26": "Inicia la animación solo para este segmento/camino/subcamino.",
+    "ch10_p9": "Puedes modificar la ruta o sus segmentos, caminos y subcaminos para que la animación siga con precisión el sentido real de la señal.",
+    "ch10_li7": "Una ruta completa arrastrada sobre otra ruta (o sobre uno de sus caminos) se convierte en un nuevo camino de esa ruta, con toda su estructura; la ruta de origen se elimina (se mueve, no se copia).",
+    "ch10_li8": "Un camino arrastrado sobre el cuerpo de otro camino se convierte en su subcamino. Si se suelta sobre el borde superior de su cabecera, se reordena como camino hermano en su lugar.",
+    "ch10_li9": "Pasa el cursor 1 segundo sobre una ruta o un camino replegados durante un arrastre para desplegarlos temporalmente y ver su contenido.",
+    "ch10_td27": "<strong>Haz clic en la cabecera de un camino/subcamino</strong>",
+    "ch10_td28": "Repliega o despliega este camino/subcamino individualmente",
+    "sec_sec-nom-d-une-route": "<strong>Nombre de una ruta</strong>",
+    "toc_sec_sec-nom-d-une-route": "Nombre de una ruta",
+    "ch10_p10": "El nombre de una ruta se genera automáticamente a partir de los dos dispositivos en sus extremos: aquel donde comienza la señal, y aquel donde termina. Este nombre nunca es fijo, así que cambia por sí solo en cuanto reemplazas el dispositivo de inicio o de llegada. Si dos o más rutas obtienen así exactamente el mismo nombre, cada una recibe además una letra entre paréntesis — (a), (b), (c)… — para seguir siendo identificable, sin que el nombre real de la ruta se modifique.",
 
     "toc_title_ch9": "Navegación en el canvas",
     "title_ch9": "Navegación en el canvas",
