@@ -151,6 +151,7 @@
     <button class="ip-badge" id="ip-badge" type="button"></button>
     <div id="ip-cat-dropdown"></div>
     <div class="ip-name" id="ip-name" contenteditable="true" spellcheck="false"></div>
+    <button class="ip-edit-node" id="ip-edit-node" title="">✎</button>
     <button class="ip-delete-node" id="ip-delete-node"><svg viewBox="0 0 12 14" width="12" height="12" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M4 0h4l1 1h3v2H0V1h3L4 0zM1 4h10l-.9 9.5A.5.5 0 0 1 9.6 14H2.4a.5.5 0 0 1-.5-.5L1 4zm3 2v5h1V6H4zm2 0v5h1V6H6zm2 0v5h1V6H8z"/></svg></button>
     <button class="ip-close" id="ip-close">✕</button>
   </div>
@@ -285,13 +286,17 @@
 <div class="modal-overlay" id="modal-add-node">
   <div class="modal-box">
     <div class="modal-header">
-      <span class="modal-title" data-i18n="add_device">ADD A DEVICE</span>
+      <span class="modal-title" id="an-modal-title" data-i18n="add_device">ADD A DEVICE</span>
       <button class="modal-close" data-close="modal-add-node">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-field">
         <label class="form-label" data-i18n="full_name">Full name</label>
-        <input type="text" class="form-input" id="an-name" data-i18n-placeholder="placeholder_full_name" placeholder="e.g. ATEM Mini Extreme ISO">
+        <div style="display:flex;gap:6px;align-items:stretch">
+          <input type="text" class="form-input" id="an-name" style="flex:1;min-width:0" data-i18n-placeholder="placeholder_full_name" placeholder="e.g. ATEM Mini Extreme ISO">
+          <select id="an-number" title="Number" style="flex:none;width:64px;background:var(--bg3);border:1px solid var(--accent);border-radius:4px;color:var(--accent);font-family:var(--body);font-size:12px;text-align:center;outline:none"></select>
+        </div>
+        <p id="an-number-hint" style="display:none;font-size:11px;color:var(--textdim);margin:4px 0 0"></p>
       </div>
       <div class="form-field">
         <label class="form-label" data-i18n="short_name">Short name (shown below the device)</label>
@@ -345,6 +350,15 @@
       <button class="ip-btn ip-btn-ghost" data-close="modal-add-node" data-i18n="cancel">Cancel</button>
       <button class="ip-btn" id="an-confirm" data-i18n="place">Place on canvas</button>
     </div>
+  </div>
+</div>
+
+<!-- IMAGE GROUP POPUP — averti au moment où l'image importée rejoint un
+     groupe existant ; se ferme au clic n'importe où dessus. -->
+<div id="img-group-popup" style="display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;cursor:pointer">
+  <div style="background:#12202a;border:1.5px solid var(--accent);border-radius:8px;padding:16px 20px;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.6);display:flex;gap:12px;align-items:flex-start">
+    <span style="font-size:20px;flex:none">🔗</span>
+    <span id="img-group-popup-text" style="font-size:13px;line-height:1.5;color:var(--text)"></span>
   </div>
 </div>
 

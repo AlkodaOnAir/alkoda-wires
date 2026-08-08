@@ -88,6 +88,15 @@ html, body {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .h-project-name.untitled #h-project-label { color: var(--textdim); font-style: italic; }
+/* Étoile « non enregistré » : purement indicative, elle ne réagit pas au survol et ne
+   capte pas les clics — c'est la zone du nom, dessous, qui déclenche le renommage. */
+.h-project-star {
+  font-family: var(--mono); font-size: 12px; color: var(--text);
+  margin-left: 1px; pointer-events: none; user-select: none;
+}
+/* Projet jamais enregistré : le nom passe en gris italique, l'étoile suit. */
+.h-project-name.untitled .h-project-star { color: var(--textdim); font-style: italic; }
+.h-project-star[hidden] { display: none; }
 .h-project-edit-icon { font-size: 11px; color: var(--textdim); opacity: 0; transition: opacity .15s; }
 .h-project-name:hover .h-project-edit-icon { opacity: 1; }
 .h-project-name.editing { border-color: var(--accent); background: var(--bg3); }
@@ -330,6 +339,24 @@ html, body {
 }
 
 /* Cables SVG */
+#cables-svg { z-index: 15; }
+/* Câble sélectionné : la couche des câbles passe au-dessus des étiquettes d'appareil
+   (z-index 20) et des étiquettes de texte (25), le temps de la sélection — sinon un
+   segment passant sous une étiquette est impossible à attraper pour le déplacer.
+   Rétabli au désélectionnement (voir selectCable/clearSelCable, cables.js). */
+#cables-svg.cable-on-top { z-index: 30; }
+/* Calque des points lumineux (voir #flow-svg dans index.html). Même z-index que les
+   câbles, et placé juste après eux dans le document : à z-index égal c'est l'ordre du
+   document qui départage, les points restent donc au-dessus des câbles exactement comme
+   lorsqu'ils vivaient dedans.
+   will-change lui donne sa propre couche graphique : c'est tout l'objet de l'opération. */
+#flow-svg { z-index: 15; will-change: transform; }
+/* Doit suivre les câbles quand un câble sélectionné passe au-dessus des étiquettes,
+   sinon les points lumineux resteraient dessous. */
+#cables-svg.cable-on-top ~ #flow-svg { z-index: 30; }
+/* Interrupteur sur off : le calque n'accueille plus rien, il ne doit pas coûter une
+   couche pour rien (classe posée par _flowSvg, routes.js). */
+#flow-svg.off { will-change: auto; }
 #cables-svg .cable-visual { transition: opacity .2s, stroke-width .2s; pointer-events: none; }
 #cables-svg .cable-hit { pointer-events: stroke; cursor: move; }
 #cables-svg .anchor-handle { transition: filter .15s; cursor: crosshair; }
@@ -352,6 +379,49 @@ html, body {
 .node.lit .node-box { border-color: rgba(255,200,0,.5); box-shadow: 0 0 0 1px rgba(255,200,0,.15), 0 6px 24px rgba(0,0,0,.7); }
 .node.dim .node-box { opacity: .12; transform: none; }
 .node.route-dim .node-box { opacity: .08; }
+/* Calque de lueur — copie de la boîte posée derrière l'appareil, invisible au repos :
+   seule son ombre portée dépasse et forme le halo (voir _glowNode dans routes.js).
+   Le z-index négatif est indispensable : un enfant positionné se peint APRÈS le contenu
+   dans le flux, la copie passerait donc devant l'appareil malgré l'ordre du DOM. */
+.node-glow {
+  position: absolute; left: 0; top: 0;
+  z-index: -1; opacity: 0; pointer-events: none;
+  border-radius: 5px; overflow: hidden; background: transparent;
+  transition: transform .2s ease;
+}
+/* La copie doit suivre la boîte à l'identique : au moindre décalage elle dépasse et
+   se voit. Ces règles reprennent donc une à une celles de .node-box ci-dessus. */
+.node:hover .node-glow { transform: translateY(-2px); }
+.node.dim .node-glow { transform: none; }
+.node:has(.port-dot-node.port-wireless:hover) .node-glow { transform: none; }
+.node.dim .node-glow > * { opacity: .12; }
+.node.route-dim .node-glow > * { opacity: .08; }
+.node.internet-disconnected .node-glow > * { filter: grayscale(1); opacity: .42; }
+/* Couche des points de connexion — sœur de .node-box (qui rogne son contenu), donc
+   elle doit reprendre elle-même le soulèvement au survol et les estompages. */
+.node-ports { transition: transform .2s ease; }
+.node:hover .node-ports { transform: translateY(-2px); }
+.node.dim .node-ports { opacity: .12; transform: none; }
+.node.route-dim .node-ports { opacity: .08; }
+.node.internet-disconnected .node-ports { filter: grayscale(1); opacity: .42; }
+
+/* Survol d'un symbole sans fil : l'appareil ne réagit pas, seul le symbole réagit.
+   Le symbole et l'appareil déclenchent deux actions différentes, il faut donc voir
+   lequel on vise. Seule l'IMAGE est remise à plat : la couche des points, elle, garde
+   le soulèvement — sinon le symbole redescendrait de 2 px avec elle en même temps qu'il
+   grossit, entraîné par un mouvement qui n'est pas le sien.
+   (Les poignées de câble, elles, vivent dans le SVG hors de .node : le survol d'un
+   appareil ne les atteint jamais, d'où leur comportement déjà indépendant.) */
+.node:has(.port-dot-node.port-wireless:hover) .node-box {
+  transform: none;
+}
+/* L'ombre portée du survol est décalée de 6 px vers le bas : à elle seule elle donne
+   l'impression que l'appareil se soulève, même sans déplacement réel. Elle tombe donc
+   aussi — sauf si l'appareil est sélectionné ou surligné par une route, où son ombre
+   porte une autre information qu'il ne faut pas effacer au passage de la souris. */
+.node:not(.sel):not(.sel-multi):not(.lit):has(.port-dot-node.port-wireless:hover) .node-box {
+  box-shadow: none;
+}
 .node.sel-multi .node-box {
   border-color: rgba(0,212,255,.9);
   box-shadow: 0 0 0 2px rgba(0,212,255,.45), 0 0 22px rgba(0,212,255,.35), 0 6px 24px rgba(0,0,0,.7);
@@ -533,8 +603,12 @@ html, body {
   position: absolute; white-space: nowrap; font-family: var(--mono); font-size: 48px;
   -webkit-text-stroke: 1px #000; paint-order: stroke fill;
   pointer-events: auto; cursor: text; letter-spacing: .5px;
-  transition: color .2s; outline: none; min-width: 4px;
+  transition: color .2s, opacity .2s ease; outline: none; min-width: 4px;
 }
+/* Estompage synchronisé avec .node.dim/.route-dim .node-box (l'étiquette est
+   dans node-labels-layer, hors de .node : elle a besoin de ses propres règles) */
+.node-lbl.dim { opacity: .12; }
+.node-lbl.route-dim { opacity: .08; }
 .node-lbl:focus { text-shadow: 0 0 12px rgba(0,212,255,.4); }
 .node-lbl-rh {
   display: none; position: absolute; top: -5px; left: -5px;
@@ -634,6 +708,13 @@ html, body {
   display: flex; align-items: center; justify-content: center; transition: all .15s;
 }
 .ip-delete-node:hover { background: rgba(255,60,60,.15); border-color: #ff5555; }
+.ip-edit-node {
+  position: absolute; top: 14px; right: 80px; width: 22px; height: 22px;
+  background: transparent; border: 1px solid transparent; border-radius: 3px;
+  cursor: pointer; color: var(--textdim); font-size: 13px; opacity: .6;
+  display: flex; align-items: center; justify-content: center; transition: all .15s;
+}
+.ip-edit-node:hover { background: rgba(0,212,255,.1); border-color: rgba(0,212,255,.4); color: var(--accent); opacity: 1; }
 
 .ip-body { flex: 1; overflow-y: auto; }
 .ip-body::-webkit-scrollbar { width: 3px; }
@@ -751,14 +832,18 @@ html, body {
    ROUTES PANEL
 ═══════════════════════════════════════════════════════════════ */
 #routes-panel {
-  position: fixed; top: 52px; right: 0; bottom: 0; width: 380px; z-index: 201;
+  position: fixed; top: 52px; right: 0; bottom: 0; width: 350px; z-index: 201;
   background: rgba(8, 11, 23, 0.8); border-left: 1px solid var(--border);
   display: flex; flex-direction: column;
   transform: translateX(100%); transition: transform .3s cubic-bezier(.16,1,.3,1);
 }
+/* Largeur (350/400/420px) posée en style inline par renderRoutesList()/routes.js
+   selon la profondeur de chemin affichée — voir le commentaire là-bas pour pourquoi
+   ce n'est PAS une classe (le MutationObserver sur #routes-panel n'écoute que
+   l'attribut class). */
 #routes-panel.open { transform: translateX(0); }
 .rp-header { padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-.rp-title { font-family: var(--display); font-size: 11px; font-weight: 700; letter-spacing: 3px; color: #fff; flex: 1; }
+.rp-title { font-family: var(--display); font-size: 11px; font-weight: 700; letter-spacing: 3px; color: #fff; flex: 1; cursor: pointer; user-select: none; }
 #btn-routes-close, #btn-routes-new {
   width: 22px; height: 22px; flex-shrink: 0;
   background: transparent; border: 1px solid var(--border2); border-radius: 3px;
@@ -780,7 +865,6 @@ html, body {
 .route-cables-list { padding: 0 16px 10px 28px; display: flex; flex-direction: column; gap: 4px; }
 .route-cable-row { display: flex; align-items: center; gap: 4px; }
 .route-cable-row.rcc-new { box-shadow: 0 0 0 1px rgba(255,217,61,.7); border-radius: 3px; background: rgba(255,217,61,.07); }
-}
 .route-cable-label { font-family: var(--mono); font-size: 11px; color: var(--textdim); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rcc-btn { font-size: 11px !important; padding: 1px 5px !important; opacity: .45; }
 .rcc-btn:hover { opacity: 1 !important; }
@@ -794,6 +878,11 @@ html, body {
 .cable-visual.route-edit-candidate:hover { opacity: 0.8 !important; }
 .cable-visual.route-hover-highlight { stroke-width: 5 !important; opacity: 1 !important; filter: url(#glow); }
 #cables-svg.cables-route-hovering .cable-visual:not(.route-hover-highlight) { opacity: 0.1 !important; }
+
+/* Zoom en cours : suspendre le halo #glow (coûteux à recomposer à chaque changement
+   d'échelle), purement visuel — l'attribut filter réel sous-jacent n'est jamais touché,
+   il redevient visible dès que cette classe est retirée (voir canvas.js, handler wheel). */
+#cables-svg.zoom-active .cable-visual { filter: none !important; }
 
 /* Prompt assignation route après création câble */
 #route-assign-prompt {
@@ -825,6 +914,7 @@ html, body {
 .modal-overlay.open { opacity: 1; pointer-events: none; }
 .modal-overlay.open .modal-box { pointer-events: all; }
 #modal-pick-image.open { z-index: 10010; }
+#export-big-preview.open { z-index: 10010; }
 .modal-box {
   background: var(--panel); border: 1px solid var(--border2); border-radius: 10px;
   width: 500px; max-width: 95vw; max-height: 90vh;
@@ -847,6 +937,85 @@ html, body {
 .form-select { width: 100%; appearance: none; background: var(--bg3) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a90b0'/%3E%3C/svg%3E") no-repeat right 10px center; border: 1px solid var(--border2); border-radius: 4px; padding: 7px 28px 7px 10px; font-family: var(--body); font-size: 13px; color: var(--text); outline: none; cursor: pointer; }
 .form-select:focus { border-color: rgba(0,212,255,.5); }
 .form-select option { background: var(--bg2); }
+
+/* ── Export menu (unified "Exporter" modal) ───────────────────── */
+input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
+
+.export-check-row { display: flex; align-items: center; gap: 9px; padding: 8px 2px; font-size: 13px; color: var(--text); cursor: pointer; }
+.export-radio-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text); cursor: pointer; }
+.export-scope-row { display: flex; gap: 16px; flex-wrap: wrap; padding-top: 2px; }
+
+.export-subpanel {
+  margin: 4px 0 8px 24px; padding: 10px 0 2px 12px; border-left: 2px solid var(--border2);
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.export-add-btn {
+  align-self: flex-start; background: none; border: 1px dashed var(--border2); border-radius: 6px;
+  color: var(--textdim); font-family: var(--body); font-size: 12px; padding: 7px 12px; cursor: pointer;
+}
+.export-add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Options à gauche, vignette A4 à droite — côte à côte pour économiser la
+   hauteur de la modale (voir .pl-preview-wrap ci-dessous). */
+.pl-format-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.export-preset-btn.pl-format-btn { padding: 6px 22px; }
+.pl-layout { display: flex; gap: 20px; align-items: flex-start; }
+.pl-options { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* Vignette A4 de la Pack List — iframe rendue à taille réelle puis réduite par
+   transform:scale (mêmes proportions que le vrai PDF, voir packlist.js).
+   Boutons Portrait/Paysage alignés sous elle, à gauche (align-items:flex-start). */
+.pl-preview-wrap { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; flex-shrink: 0; padding: 8px 0 4px; }
+.pl-page-count { font-family: var(--mono); font-size: 10px; letter-spacing: .5px; color: var(--textdim); }
+.pl-orient-row { display: flex; align-items: center; gap: 8px; }
+/* Sélecteur à deux classes pour l'emporter sur .export-preset-btn (défini plus
+   loin dans ce fichier) quel que soit l'ordre des règles. */
+.export-preset-btn.pl-orient-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 9px 16px; }
+.pl-orient-btn svg { display: block; }
+/* Conteneur TOUJOURS au format paysage (318×225), quelle que soit
+   l'orientation choisie — pour que les boutons Portrait/Paysage sous la
+   vignette ne bougent jamais. En portrait, le document entier est centré
+   dedans (contain-fit via flex + transform-origin center), ce qui laisse
+   des bords vides à gauche/droite : voulu.
+   overflow:hidden par défaut (1 page) : le cadre déborde volontairement un
+   peu (marge décorative rognée symétriquement, voir _plFitPreviewFrame) —
+   ce surplus doit rester invisible, pas devenir un ascenseur. Seul le cas
+   plusieurs pages (.multipage) passe en overflow-y:auto + aligné en haut,
+   pour dérouler dans l'ordre jusqu'à la fin réelle du contenu. */
+.pl-preview {
+  width: 318px; height: 225px; overflow: hidden; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  background: #e7edf0; border: 1px solid var(--border2); border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35); flex-shrink: 0; cursor: pointer;
+  transition: border-color .15s;
+}
+.pl-preview.multipage { overflow-y: auto; overflow-x: hidden; align-items: flex-start; }
+.pl-preview:hover { border-color: var(--accent); }
+.pl-preview::-webkit-scrollbar { width: 4px; }
+.pl-preview::-webkit-scrollbar-track { background: transparent; }
+.pl-preview::-webkit-scrollbar-thumb { background: rgba(0,0,0,.28); border-radius: 2px; }
+/* Taille et échelle du cadre calculées en JS après chargement (voir
+   _plFitPreviewFrame, exportmenu.js), sur la feuille .sheet RÉELLEMENT
+   mesurée — pas une hauteur supposée : un pack list avec beaucoup
+   d'appareils dépasse facilement le min-height d'une page A4, surtout en
+   paysage (moins de hauteur dispo qu'en portrait), et une hauteur figée
+   coupait alors le bas de la feuille. */
+#pl-preview-frame { border: none; pointer-events: none; flex-shrink: 0; }
+
+.export-check-dropdown { display: flex; flex-direction: column; gap: 6px; }
+.export-dd-btn {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; color: var(--text);
+  font-family: var(--mono); font-size: 11px; padding: 7px 10px; text-align: left; cursor: pointer; width: 100%;
+}
+.export-dd-btn:hover { border-color: var(--accent); }
+.export-check-dropdown.dd-disabled .export-dd-btn { opacity: .4; cursor: default; pointer-events: none; }
+.export-dd-panel {
+  display: none; flex-direction: column; max-height: 180px; overflow-y: auto;
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; padding: 4px 8px;
+}
+.export-dd-panel.open { display: flex; }
+.export-dd-panel .export-check-row { padding: 5px 2px; font-size: 12px; }
 
 .img-drop-zone {
   width: 100%; height: 120px; border-radius: 6px; border: 2px dashed var(--border2);
@@ -897,6 +1066,47 @@ html, body {
 }
 .node.ports-visible .port-dot-node:hover {
   transform: translate(-50%,-50%) scale(1.3);
+}
+
+/* Port sans fil (WiFi/Bluetooth/HF) : affiché en permanence, contrairement aux ports
+   physiques — pas de câble dessiné pour le représenter, c'est le seul indice visuel.
+   PAS de !important sur l'opacity : la spécificité (2 classes) suffit déjà à l'emporter
+   sur .port-dot-node par défaut, et !important bloquerait sinon toute animation JS
+   (clignotement pendant une route, voir routes.js::_blinkWirelessPorts) qui a besoin
+   de reprendre la main sur cette même propriété. */
+.port-dot-node.port-wireless {
+  opacity: 1;
+  pointer-events: auto;
+}
+.port-dot-node.port-wireless:hover {
+  transform: translate(-50%,-50%) scale(1.15);
+  /* Liseré fin : marque nettement la cible du clic, qui n'est pas l'appareil.
+     outline et pas box-shadow — nodes.js pose un box-shadow:none en style inline sur
+     ces points, qui l'emporterait sur toute règle d'ici. L'outline suit le
+     border-radius, le liseré reste donc bien circulaire. */
+  outline: 1.5px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Rattachement d'un câble orphelin (cables.js, _drawOrphanHandle) : les points de
+   port visibles deviennent aussi cliquables, pour relâcher exactement SUR le
+   même élément (30x30px) que celui qu'on voit — comme en mode Ajouter un câble,
+   sans recalcul de position séparé qui pourrait diverger du rendu réel. */
+#canvas-area.orphan-reattach-active .port-dot-node {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Rattachement d'une extrémité (poignée orpheline OU poignée d'extrémité d'un câble
+   sélectionné) : un port déjà pris, ou d'un type incompatible, n'est pas une cible —
+   estompé et inerte, comme .cab-used en mode Ajouter un câble. Sélecteur volontairement
+   spécifique (id + 3 classes) pour l'emporter sur .port-dot-node.port-wireless et sur
+   .orphan-reattach-active ci-dessus sans recourir à !important, qui bloquerait les
+   animations JS d'opacité (clignotement des ports sans fil, routes.js). */
+#canvas-area.reattach-active .port-dot-node.reattach-blocked {
+  opacity: .12;
+  pointer-events: none;
+  cursor: default;
 }
 
 /* ── Mode ajout de câble ────────────────────────────────────── */
@@ -1224,30 +1434,7 @@ html, body {
 .zone-color-btn:hover { transform: scale(1.2); }
 .zone-color-btn.active { border-color: #fff; box-shadow: 0 0 6px rgba(255,255,255,.4); }
 
-/* ── Export PDF panel (right side) ─────────────────────────── */
-#export-panel {
-  position: fixed; top: 52px; right: 0; bottom: 0; width: 360px; z-index: 200;
-  background: rgba(8,11,23,0.97); border-left: 1px solid var(--border);
-  display: flex; flex-direction: column; overflow: hidden;
-  transform: translateX(100%); transition: transform .3s cubic-bezier(.16,1,.3,1);
-}
-#export-panel.open { transform: translateX(0); }
-
-.ep-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0;
-}
-.ep-title {
-  font-family: var(--display); font-size: 13px; font-weight: 600;
-  letter-spacing: 1.5px; color: var(--accent); text-transform: uppercase;
-}
-.ep-close {
-  background: none; border: none; color: var(--textdim); cursor: pointer;
-  font-size: 16px; padding: 2px 6px; border-radius: 3px;
-  transition: color .15s; line-height: 1;
-}
-.ep-close:hover { color: var(--text); }
-
+/* ── Export PDF modal ──────────────────────────────────────── */
 .ep-body {
   flex: 1; overflow-y: auto; padding: 16px;
   display: flex; flex-direction: column; gap: 16px;
@@ -1291,6 +1478,90 @@ html, body {
 #sidebar-left.pinned > * { opacity: 1; pointer-events: auto; }
 
 .export-opt-section { display: flex; flex-direction: column; gap: 8px; }
+
+.ep-framed-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: var(--border); border-radius: 6px; overflow: hidden;
+}
+.ep-frame-cell { background: var(--bg2); padding: 12px; }
+
+/* ── Export modal tabs ─────────────────────────────────────── */
+.export-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.export-tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 6px; background: none; border: none; border-bottom: 2px solid transparent;
+  color: var(--textdim); font-family: var(--body); font-size: 11px; font-weight: 700; cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.export-tab:hover { color: var(--text); background: rgba(255,255,255,.03); }
+.export-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.export-pane { display: flex; flex-direction: column; gap: 16px; }
+.export-pane-desc { font-family: var(--body); font-size: 13px; color: var(--textdim); line-height: 1.6; }
+
+/* Aperçu HTML interactif — canevas/en-tête en vraies captures d'écran
+   (Electron capturePage, voir openExportModal) ; panneau gauche et panneau
+   Routes en clones DOM silencieux par-dessus (voir _ehClonePanel — jamais
+   l'élément live ouvert/capturé). Largeur des calques = largeur réelle du
+   panneau × même échelle que le canevas (proportions vraies, voir
+   _ehUpdatePreview) ; le bas peut être rogné, le haut reste toujours visible. */
+/* .export-pane ne grandit pas au-delà de son contenu par défaut (voir .ep-body,
+   flex-column) : rien pour margin:auto à centrer sans ça. Ciblé sur ce seul
+   onglet, pas sur .export-pane en général (ne pas changer les 3 autres). */
+#export-pane-html { flex: 1; }
+.eh-preview {
+  position: relative; width: 100%; margin-top: auto; margin-bottom: auto;
+  border: 1px solid rgba(0,212,255,.35); border-radius: 8px;
+  overflow: hidden; background: var(--bg2);
+}
+/* top posé dynamiquement par _ehUpdatePreview (hauteur réelle de l'en-tête, à
+   l'échelle) : le canevas commence sous l'en-tête, jamais recouvert par lui. */
+#eh-canvas-img { position: absolute; left: 0; right: 0; bottom: 0; top: 0; display: block; width: 100%; object-fit: contain; }
+/* Fond garanti au niveau du calque (même valeur que #sidebar-left/#routes-panel,
+   main.css) — pas seulement sur le clone lui-même (_ehClonePanel,
+   exportmenu.js) : sans ça, le canevas en fond passait trop au travers,
+   donnant un rendu chargé/confus plutôt que le panneau semi-transparent
+   habituel. */
+.eh-layer { position: absolute; top: 0; bottom: 0; overflow: hidden; background: rgba(8, 11, 23, 0.8); }
+.eh-layer-left  { left: 0; animation: ehSlideLeft 5s cubic-bezier(.65,0,.2,1) infinite; }
+.eh-layer-right { right: 0; animation: ehSlideRight 5s cubic-bezier(.65,0,.2,1) infinite; }
+/* Dernier dans le DOM = au-dessus par défaut (ordre d'empilement) : jamais
+   recouvert par les panneaux, qui commencent tous sous lui (top dynamique). */
+.eh-header-layer { position: absolute; top: 0; left: 0; right: 0; overflow: hidden; }
+.eh-header-layer img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* Boucle 5s : fond seul → gauche s'ouvre → droite s'ouvre (gauche reste ouvert)
+   → les deux se referment ensemble → fond seul. */
+@keyframes ehSlideLeft {
+  0%, 8%    { transform: translateX(-100%); }
+  18%, 68%  { transform: translateX(0); }
+  78%, 100% { transform: translateX(-100%); }
+}
+@keyframes ehSlideRight {
+  0%, 38%   { transform: translateX(100%); }
+  48%, 68%  { transform: translateX(0); }
+  78%, 100% { transform: translateX(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eh-layer-left, .eh-layer-right { animation: none; transform: translateX(0); }
+}
+
+/* Routes tab — arbre en lecture seule (mêmes classes .route-item/.route-cable-row
+   que le panneau Routes live, voir routes.js/#routes-panel) dans un cadre scrollable */
+.ero-hint { display: flex; align-items: center; gap: 6px; font-family: var(--body); font-size: 12px; color: var(--textdim); }
+.ero-hint em { font-style: italic; }
+.ero-hint-i {
+  width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--textdim);
+  font-family: var(--body); font-size: 10px; font-style: normal; line-height: 12px;
+  text-align: center; flex-shrink: 0;
+}
+.ero-tree { flex: 1; overflow-y: auto; margin-top: 2px; border: 1px solid var(--border); border-radius: 6px; }
+.ero-tree .route-item:last-child { border-bottom: none; }
+.ero-route-chk { flex-shrink: 0; margin-right: 2px; }
+/* Case décochée : la modale ne bloque plus le clic et n'assombrit plus le canevas —
+   seul l'onglet Routes avec une sélection partielle active ce mode (voir exportmenu.js) */
+#export-modal.ero-nodim { background: transparent; }
+#export-modal.ero-draggable .modal-header { cursor: move; }
 .export-opt-label {
   font-family: var(--mono);
   font-size: 11px;
@@ -1324,6 +1595,11 @@ html, body {
   font-size: 11px;
   cursor: pointer;
   transition: border-color .15s, color .15s;
+}
+.export-preset-btn.active {
+  background: rgba(0,212,255,.12);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 .export-preset-btn:hover {
   border-color: var(--accent);
@@ -1411,48 +1687,6 @@ html, body {
 }
 .export-info-row span { color: var(--text); }
 
-.export-modal-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: auto;
-}
-
-.export-action-cancel {
-  flex: 1;
-  padding: 9px;
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  border-radius: 5px;
-  color: var(--textdim);
-  font-family: var(--mono);
-  font-size: 12px;
-  cursor: pointer;
-  transition: border-color .15s;
-}
-.export-action-cancel:hover { border-color: var(--border2); color: var(--text); }
-
-.export-action-confirm {
-  flex: 2;
-  padding: 9px;
-  background: linear-gradient(135deg, rgba(0,212,255,.15), rgba(0,212,255,.05));
-  border: 1px solid rgba(0,212,255,.4);
-  border-radius: 5px;
-  color: var(--accent);
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  letter-spacing: .5px;
-  transition: background .15s, border-color .15s;
-}
-.export-action-confirm:hover {
-  background: linear-gradient(135deg, rgba(0,212,255,.25), rgba(0,212,255,.1));
-  border-color: var(--accent);
-}
-.export-action-confirm:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-}
 
 /* ── Scrollbars globaux ─────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
