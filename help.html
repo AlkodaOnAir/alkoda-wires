@@ -63,6 +63,11 @@ img{max-width:100%;display:block}
 .menu-toggle{display:none;width:40px;height:38px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.04);padding:9px;cursor:pointer}
 .menu-toggle span{display:block;height:2px;margin:4px 0;background:#fff;border-radius:2px}
 
+/* cookie consent footer (injected by assets/js/consent.js) — body is display:flex here for the
+   sidebar+content layout, so this needs position:fixed or it becomes a 3rd flex item and eats
+   the page's right-hand width instead of sitting as a normal bottom bar */
+.cookie-standalone-footer{position:fixed;left:var(--sw);right:0;bottom:0;z-index:60}
+
 /* sidebar */
 .sidebar{position:fixed;top:var(--top-nav-h);left:0;bottom:0;width:var(--sw);background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden;z-index:100}
 .sb-head{padding:14px 18px 14px;border-bottom:1px solid var(--line);flex-shrink:0}
@@ -212,6 +217,7 @@ kbd{display:inline-block;padding:1px 6px;background:rgba(0,180,220,.08);border:1
   .toc-close{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid var(--line2);border-radius:8px;background:rgba(255,255,255,.05);color:var(--muted);font-size:20px;line-height:1;cursor:pointer}
   .toc-close:hover{border-color:var(--accent);color:#fff}
   .content{margin-left:0;margin-top:calc(var(--top-nav-h) + 62px);display:block;min-height:auto}
+  .cookie-standalone-footer{left:0}
   .ch-panel{min-width:0;overflow:visible}
   .ch-section{padding:32px 18px 48px}
   h2.chapter-heading{font-size:25px}
@@ -357,7 +363,7 @@ kbd{display:inline-block;padding:1px 6px;background:rgba(0,180,220,.08);border:1
 <span class="toc-ch-label" data-i18n="toc_title_ch10">Routes de signal</span>
 <span class="toc-arrow">►</span>
 </button>
-<ul class="toc-secs" hidden=""><li><a class="toc-sec" data-i18n="toc_sec_sec-ouverture-du-panneau-routes" href="#sec-ouverture-du-panneau-routes" onclick="showChapter('ch10')">Ouverture du panneau Routes</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-structure-de-la-route" href="#sec-structure-de-la-route" onclick="showChapter('ch10')">Structure de la route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-chemins" href="#sec-chemins" onclick="showChapter('ch10')">Chemins</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-affectation-de-c-bles-une-route" href="#sec-affectation-de-c-bles-une-route" onclick="showChapter('ch10')">Affectation de câbles à une route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-gestion-des-segments-et-des-chemins" href="#sec-gestion-des-segments-et-des-chemins" onclick="showChapter('ch10')">Gestion des segments et des chemins</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-modifier-une-route" href="#sec-modifier-une-route" onclick="showChapter('ch10')">Modifier une route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-supprimer-un-segment" href="#sec-supprimer-un-segment" onclick="showChapter('ch10')">Supprimer un segment</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-supprimer-une-route" href="#sec-supprimer-une-route" onclick="showChapter('ch10')">Supprimer une route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-animation-suivi-du-signal" href="#sec-animation-suivi-du-signal" onclick="showChapter('ch10')">Animation — suivi du signal</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-tats-visuels-de-la-route" href="#sec-tats-visuels-de-la-route" onclick="showChapter('ch10')">États visuels de la route</a></li></ul>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" data-i18n="toc_sec_sec-ouverture-du-panneau-routes" href="#sec-ouverture-du-panneau-routes" onclick="showChapter('ch10')">Ouverture du panneau Routes</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-structure-de-la-route" href="#sec-structure-de-la-route" onclick="showChapter('ch10')">Structure de la route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-chemins" href="#sec-chemins" onclick="showChapter('ch10')">Chemins</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-affectation-de-c-bles-une-route" href="#sec-affectation-de-c-bles-une-route" onclick="showChapter('ch10')">Affectation de câbles à une route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-gestion-des-segments-et-des-chemins" href="#sec-gestion-des-segments-et-des-chemins" onclick="showChapter('ch10')">Gestion des segments et des chemins</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-modifier-une-route" href="#sec-modifier-une-route" onclick="showChapter('ch10')">Modifier une route</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-animation-suivi-du-signal" href="#sec-animation-suivi-du-signal" onclick="showChapter('ch10')">Animation — suivi du signal</a></li><li><a class="toc-sec" data-i18n="toc_sec_sec-tats-visuels-de-la-route" href="#sec-tats-visuels-de-la-route" onclick="showChapter('ch10')">États visuels de la route</a></li></ul>
 </div>
 <div class="toc-chapter" data-ch="ch11">
 <button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch11',this)">
@@ -837,13 +843,13 @@ Cliquez sur Placer sur le canevas.</li>
 <div class="table-wrap"><table class="help-table"><thead><tr><th data-i18n="ch10_th1"><strong>Action</strong></th><th data-i18n="ch10_th2"><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td data-i18n="ch10_td1"><span class="wires-btn">⇄</span> sur le segment</td><td data-i18n="ch10_td2">Inversez la direction du signal de ce segment. Le titre de la route est mis à jour automatiquement</td></tr><tr class="pair-b"><td data-i18n="ch10_td3"><span class="wires-btn wires-btn-danger">✕</span> sur le segment</td><td data-i18n="ch10_td4">Supprimer ce segment et son câble (confirmation demandée)</td></tr><tr class="pair-a"><td data-i18n="ch10_td5"><strong>Faites glisser la ligne du segment</strong></td><td data-i18n="ch10_td6">Déplacez-le à une autre position, dans le tronc ou un autre chemin</td></tr><tr class="pair-b"><td data-i18n="ch10_td7"><span class="wires-btn">+ Chemin</span></td><td data-i18n="ch10_td8">Ajouter un nouveau chemin de branche à l'intérieur de cette route</td></tr><tr class="pair-a"><td data-i18n="ch10_td9"><span class="wires-btn wires-btn-danger">✕</span> sur l'en-tête du chemin</td><td data-i18n="ch10_td10">Supprimez ce chemin et tous ses segments</td></tr><tr class="pair-b"><td></td><td></td></tr></tbody></table></div>
 <p data-i18n="ch10_p4"><em>ℹ  Si</em><em> </em><em>les extrémités de </em><em>deux segments consécutifs ne sont pas connecté</em><em>e</em><em>s, un symbole </em><em>≠</em><em> apparaît. Cela peut se produire après avoir inversé la direction d'un câble (</em><em>⇄</em><em>). L'indicateur est uniquement informatif.</em></p>
 <h3 class="section-heading" data-i18n="sec_sec-modifier-une-route" id="sec-modifier-une-route"><strong>Modifier une route</strong></h3>
-<p data-i18n="ch10_p5">Cliquez sur ✎ sur l'en-tête d’une route pour modifier sa couleur et son type de signal.</p>
-<h3 class="section-heading" data-i18n="sec_sec-supprimer-un-segment" id="sec-supprimer-un-segment"><strong>Supprimer un segment</strong></h3>
-<p data-i18n="ch10_p6">Cliquer ✕ sur un segment supprimera son câble — un câble ne peut exister sans route. Le câble concerné est mis en surbrillance sur le canevas. La boîte de dialogue de confirmation indique les deux appareils reliés par ce câble. Cliquez sur <span class="wires-btn wires-btn-danger"> Supprimer le câble </span> pour confirmer, ou sur <span class="wires-btn wires-btn-ghost"> Annuler </span> pour tout laisser inchangé.</p>
-<h3 class="section-heading" data-i18n="sec_sec-supprimer-une-route" id="sec-supprimer-une-route"><strong>Supprimer une route</strong></h3>
-<p data-i18n="ch10_p7">Cliquer sur ✕ sur l'en-tête d’une route supprime la route et tous ses câbles. Une boîte de dialogue de confirmation répertorie les câbles à supprimer. Cliquez sur <span class="wires-btn wires-btn-danger"> Supprimer route + câbles </span> pour confirmer, ou sur <span class="wires-btn wires-btn-ghost"> Annuler </span> pour tout laisser inchangé.</p>
+<ul>
+<li data-i18n="ch10_p5">Cliquez sur ✎ sur l'en-tête d’une route pour modifier sa couleur et son type de signal.</li>
+<li data-i18n="ch10_p6"><strong>Supprimer un segment.</strong> Cliquer ✕ sur un segment supprimera son câble — un câble ne peut exister sans route. Le câble concerné est mis en surbrillance sur le canevas. La boîte de dialogue de confirmation indique les deux appareils reliés par ce câble. Cliquez sur <span class="wires-btn wires-btn-danger"> Supprimer le câble </span> pour confirmer, ou sur <span class="wires-btn wires-btn-ghost"> Annuler </span> pour tout laisser inchangé.</li>
+<li data-i18n="ch10_p7"><strong>Supprimer une route.</strong> Cliquer sur ✕ sur l'en-tête d’une route supprime la route et tous ses câbles. Une boîte de dialogue de confirmation répertorie les câbles à supprimer. Cliquez sur <span class="wires-btn wires-btn-danger"> Supprimer route + câbles </span> pour confirmer, ou sur <span class="wires-btn wires-btn-ghost"> Annuler </span> pour tout laisser inchangé.</li>
+</ul>
 <h3 class="section-heading" data-i18n="sec_sec-animation-suivi-du-signal" id="sec-animation-suivi-du-signal"><strong>Animation — suivi du signal</strong></h3>
-<div class="table-wrap"><table class="help-table"><thead><tr><th data-i18n="ch10_th3"><strong>Action</strong></th><th data-i18n="ch10_th4"><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td data-i18n="ch10_td11"><strong>Double-cliquez sur le titre de la route</strong></td><td data-i18n="ch10_td12">Lancement de l’animation : un point lumineux se déplace le long des câbles</td></tr><tr class="pair-b"><td data-i18n="ch10_td13"><strong>Cliquez sur le nom de la route</strong></td><td data-i18n="ch10_td14">Arrêter l'animation</td></tr><tr class="pair-a"><td data-i18n="ch10_td15"><strong>Cliquez sur un canevas vide</strong></td><td data-i18n="ch10_td16">Arrêter l'animation</td></tr><tr class="pair-b"><td data-i18n="ch10_td17"><strong>Double-cliquez sur un câble sur le canevas</strong></td><td data-i18n="ch10_td18">Activer/désactiver l'animation pour toutes les routes contenant ce câble</td></tr></tbody></table></div>
+<div class="table-wrap"><table class="help-table"><thead><tr><th data-i18n="ch10_th3"><strong>Action</strong></th><th data-i18n="ch10_th4"><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td data-i18n="ch10_td23"><strong>Double-cliquez sur le titre du panneau</strong> <img alt="routesTitreGeneral" data-i18n-alt="img_routesTitreGeneral_alt" data-i18n-src="img_routesTitreGeneral_src" data-img-key="routesTitreGeneral" src="images/FR/Boutons/routes_titre_general-fr.png" style="height:30px;width:auto;display:inline-block;vertical-align:middle;border-radius:3px;margin-left:2px;margin-top:-5px;margin-bottom:-5px"/></td><td data-i18n="ch10_td24">Lance l’animation de toutes les routes en même temps ; un second double-clic les arrête toutes</td></tr><tr class="pair-b"><td data-i18n="ch10_td11"><strong>Double-cliquez sur le titre de la route</strong></td><td data-i18n="ch10_td12">Lancement de l’animation : un point lumineux se déplace le long des câbles</td></tr><tr class="pair-a"><td data-i18n="ch10_td13"><strong>Cliquez sur le nom de la route</strong></td><td data-i18n="ch10_td14">Arrêter l'animation</td></tr><tr class="pair-b"><td data-i18n="ch10_td15"><strong>Cliquez sur un canevas vide</strong></td><td data-i18n="ch10_td16">Arrêter l'animation</td></tr><tr class="pair-a"><td data-i18n="ch10_td17"><strong>Double-cliquez sur un câble sur le canevas</strong></td><td data-i18n="ch10_td18">Activer/désactiver l'animation pour toutes les routes contenant ce câble</td></tr></tbody></table></div>
 <p data-i18n="ch10_p8"><em> </em><em>ℹ</em><em> L'en-tête de la route devient jaune pendant l'exécution de l'animation. </em></p>
 <h3 class="section-heading" data-i18n="sec_sec-tats-visuels-de-la-route" id="sec-tats-visuels-de-la-route"><strong>États visuels de la route</strong></h3>
 <div class="table-wrap"><table class="help-table"><thead><tr><th data-i18n="ch10_th5"><strong>État</strong></th><th data-i18n="ch10_th6"><strong>Apparence</strong></th><th data-i18n="ch10_th7">Aperçu</th></tr></thead><tbody><tr class="pair-a"><td data-i18n="ch10_td19"><strong>Inactif</strong></td><td data-i18n="ch10_td20">Panneau : en-tête normal / Canevas : câbles normaux</td><td style="text-align:center;vertical-align:middle;padding:10px 14px"><img alt="route.inactive" data-i18n-alt="img_route.inactive_alt" data-i18n-src="img_route.inactive_src" data-img-key="route.inactive" src="images/FR/route.inactive-fr.png" style="border-radius:4px;display:block"/></td></tr><tr class="pair-b"><td data-i18n="ch10_td21"><strong>Actif (en cours d'exécution)</strong></td><td data-i18n="ch10_td22">Panneau : en-tête jaune + bordure gauche dorée / Canevas : câbles lumineux, autres grisés</td><td style="text-align:center;vertical-align:middle;padding:10px 14px"><img alt="route.active" data-i18n-alt="img_route.active_alt" data-i18n-src="img_route.active_src" data-img-key="route.active" src="images/FR/route.active-fr.png" style="border-radius:4px;display:block"/></td></tr></tbody></table></div></div><div class="ch-imgs">
@@ -1319,12 +1325,8 @@ const HELP_HEADER_STRINGS = {
     "sec_sec-modifier-une-route": "<strong>Editing a Route</strong>",
     "toc_sec_sec-modifier-une-route": "Editing a Route",
     "ch10_p5": "Click ✎ on a route's header to edit its color and signal type.",
-    "sec_sec-supprimer-un-segment": "<strong>Deleting a Segment</strong>",
-    "toc_sec_sec-supprimer-un-segment": "Deleting a Segment",
-    "ch10_p6": "Clicking ✕ on a segment deletes its cable — a cable cannot exist without a route. The affected cable is highlighted on the canvas. The confirmation dialog box shows the two devices connected by this cable. Click <span class=\"wires-btn wires-btn-danger\"> Delete cable </span> to confirm, or <span class=\"wires-btn wires-btn-ghost\"> Cancel </span> to leave everything unchanged.",
-    "sec_sec-supprimer-une-route": "<strong>Deleting a Route</strong>",
-    "toc_sec_sec-supprimer-une-route": "Deleting a Route",
-    "ch10_p7": "Clicking ✕ on a route's header deletes the route and all its cables. A confirmation dialog lists the cables to be deleted. Click <span class=\"wires-btn wires-btn-danger\"> Delete route + cables </span> to confirm, or <span class=\"wires-btn wires-btn-ghost\"> Cancel </span> to leave everything unchanged.",
+    "ch10_p6": "<strong>Deleting a Segment.</strong> Clicking ✕ on a segment deletes its cable — a cable cannot exist without a route. The affected cable is highlighted on the canvas. The confirmation dialog box shows the two devices connected by this cable. Click <span class=\"wires-btn wires-btn-danger\"> Delete cable </span> to confirm, or <span class=\"wires-btn wires-btn-ghost\"> Cancel </span> to leave everything unchanged.",
+    "ch10_p7": "<strong>Deleting a Route.</strong> Clicking ✕ on a route's header deletes the route and all its cables. A confirmation dialog lists the cables to be deleted. Click <span class=\"wires-btn wires-btn-danger\"> Delete route + cables </span> to confirm, or <span class=\"wires-btn wires-btn-ghost\"> Cancel </span> to leave everything unchanged.",
     "sec_sec-animation-suivi-du-signal": "<strong>Animation — Signal Tracking</strong>",
     "toc_sec_sec-animation-suivi-du-signal": "Animation — Signal Tracking",
     "ch10_th3": "<strong>Action</strong>",
@@ -1347,6 +1349,8 @@ const HELP_HEADER_STRINGS = {
     "ch10_td20": "Panel: normal header / Canvas: normal cables",
     "ch10_td21": "<strong>Active (running)</strong>",
     "ch10_td22": "Panel: yellow header + golden left border / Canvas: glowing cables, others grayed out",
+    "ch10_td23": "<strong>Double-click the panel title</strong> <img alt=\"routesTitreGeneral\" data-i18n-alt=\"img_routesTitreGeneral_alt\" data-i18n-src=\"img_routesTitreGeneral_src\" data-img-key=\"routesTitreGeneral\" src=\"images/EN/Boutons/routes_titre_general-en.png\" style=\"height:30px;width:auto;display:inline-block;vertical-align:middle;border-radius:3px;margin-left:2px;margin-top:-5px;margin-bottom:-5px\"/>",
+    "ch10_td24": "Starts the animation of all routes at once; a second double-click stops them all",
 
     "toc_title_ch9": "Canvas Navigation",
     "title_ch9": "Canvas Navigation",
@@ -1935,6 +1939,8 @@ const HELP_HEADER_STRINGS = {
     "img_panneauDroit2_alt": "panneauDroit2",
     "img_route.inactive_src": "images/EN/route.inactive-en.png",
     "img_route.inactive_alt": "route.inactive",
+    "img_routesTitreGeneral_src": "images/EN/Boutons/routes_titre_general-en.png",
+    "img_routesTitreGeneral_alt": "routesTitreGeneral",
     "img_route.active_src": "images/EN/route.active-en.png",
     "img_route.active_alt": "route.active",
     "img_routes_src": "images/EN/routes-en.png",
@@ -2445,10 +2451,8 @@ const HELP_HEADER_STRINGS = {
     "ch10_p4": "<em>ℹ  Si</em><em> </em><em>les extrémités de </em><em>deux segments consécutifs ne sont pas connecté</em><em>e</em><em>s, un symbole </em><em>≠</em><em> apparaît. Cela peut se produire après avoir inversé la direction d'un câble (</em><em>⇄</em><em>). L'indicateur est uniquement informatif.</em>",
     "sec_sec-modifier-une-route": "<strong>Modifier une route</strong>",
     "ch10_p5": "Cliquez sur ✎ sur l'en-tête d’une route pour modifier sa couleur et son type de signal.",
-    "sec_sec-supprimer-un-segment": "<strong>Supprimer un segment</strong>",
-    "ch10_p6": "Cliquer ✕ sur un segment supprimera son câble — un câble ne peut exister sans route. Le câble concerné est mis en surbrillance sur le canevas. La boîte de dialogue de confirmation indique les deux appareils reliés par ce câble. Cliquez sur <span class=\"wires-btn wires-btn-danger\"> Supprimer le câble </span> pour confirmer, ou sur <span class=\"wires-btn wires-btn-ghost\"> Annuler </span> pour tout laisser inchangé.",
-    "sec_sec-supprimer-une-route": "<strong>Supprimer une route</strong>",
-    "ch10_p7": "Cliquer sur ✕ sur l'en-tête d’une route supprime la route et tous ses câbles. Une boîte de dialogue de confirmation répertorie les câbles à supprimer. Cliquez sur <span class=\"wires-btn wires-btn-danger\"> Supprimer route + câbles </span> pour confirmer, ou sur <span class=\"wires-btn wires-btn-ghost\"> Annuler </span> pour tout laisser inchangé.",
+    "ch10_p6": "<strong>Supprimer un segment.</strong> Cliquer ✕ sur un segment supprimera son câble — un câble ne peut exister sans route. Le câble concerné est mis en surbrillance sur le canevas. La boîte de dialogue de confirmation indique les deux appareils reliés par ce câble. Cliquez sur <span class=\"wires-btn wires-btn-danger\"> Supprimer le câble </span> pour confirmer, ou sur <span class=\"wires-btn wires-btn-ghost\"> Annuler </span> pour tout laisser inchangé.",
+    "ch10_p7": "<strong>Supprimer une route.</strong> Cliquer sur ✕ sur l'en-tête d’une route supprime la route et tous ses câbles. Une boîte de dialogue de confirmation répertorie les câbles à supprimer. Cliquez sur <span class=\"wires-btn wires-btn-danger\"> Supprimer route + câbles </span> pour confirmer, ou sur <span class=\"wires-btn wires-btn-ghost\"> Annuler </span> pour tout laisser inchangé.",
     "sec_sec-animation-suivi-du-signal": "<strong>Animation — suivi du signal</strong>",
     "ch10_th3": "<strong>Action</strong>",
     "ch10_th4": "<strong>Effet</strong>",
@@ -2469,6 +2473,8 @@ const HELP_HEADER_STRINGS = {
     "ch10_td20": "Panneau : en-tête normal / Canevas : câbles normaux",
     "ch10_td21": "<strong>Actif (en cours d'exécution)</strong>",
     "ch10_td22": "Panneau : en-tête jaune + bordure gauche dorée / Canevas : câbles lumineux, autres grisés",
+    "ch10_td23": "<strong>Double-cliquez sur le titre du panneau</strong> <img alt=\"routesTitreGeneral\" data-i18n-alt=\"img_routesTitreGeneral_alt\" data-i18n-src=\"img_routesTitreGeneral_src\" data-img-key=\"routesTitreGeneral\" src=\"images/FR/Boutons/routes_titre_general-fr.png\" style=\"height:30px;width:auto;display:inline-block;vertical-align:middle;border-radius:3px;margin-left:2px;margin-top:-5px;margin-bottom:-5px\"/>",
+    "ch10_td24": "Lance l’animation de toutes les routes en même temps ; un second double-clic les arrête toutes",
     "title_ch11": "Bibliothèque et catégories",
     "sec_sec-filtres-de-la-barre-lat-rale-gauche": "<strong>Filtres de la barre latérale gauche</strong>",
     "ch11_p1": "La barre latérale gauche comporte trois sections réductibles : Catégories, Câbles et Zones. Cliquez sur son nom pour la réduire ou la développer. Chaque section possède son propre bouton <span class=\"wires-btn\"> Tous  </span>qui réinitialise le filtre, laissant les autres intacts. La barre latérale s'ouvre lorsque vous survolez la bande gauche et se ferme automatiquement lorsque vous vous en éloignez. Appuyez sur B pour la garder ouverte en permanence. Appuyez à nouveau pour revenir au mode automatique.",
@@ -2783,8 +2789,6 @@ const HELP_HEADER_STRINGS = {
     "toc_sec_sec-affectation-de-c-bles-une-route": "Affectation de câbles à une route",
     "toc_sec_sec-gestion-des-segments-et-des-chemins": "Gestion des segments et des chemins",
     "toc_sec_sec-modifier-une-route": "Modifier une route",
-    "toc_sec_sec-supprimer-un-segment": "Supprimer un segment",
-    "toc_sec_sec-supprimer-une-route": "Supprimer une route",
     "toc_sec_sec-animation-suivi-du-signal": "Animation — suivi du signal",
     "toc_sec_sec-tats-visuels-de-la-route": "États visuels de la route",
     "toc_title_ch11": "Bibliothèque et catégories",
@@ -2849,6 +2853,8 @@ const HELP_HEADER_STRINGS = {
     "img_panneauDroit2_alt": "panneauDroit2",
     "img_route.inactive_src": "images/FR/route.inactive-fr.png",
     "img_route.inactive_alt": "route.inactive",
+    "img_routesTitreGeneral_src": "images/FR/Boutons/routes_titre_general-fr.png",
+    "img_routesTitreGeneral_alt": "routesTitreGeneral",
     "img_route.active_src": "images/FR/route.active-fr.png",
     "img_route.active_alt": "route.active",
     "img_routes_src": "images/FR/routes-fr.png",
@@ -3160,12 +3166,8 @@ const HELP_HEADER_STRINGS = {
     "sec_sec-modifier-une-route": "<strong>Modificar una ruta</strong>",
     "toc_sec_sec-modifier-une-route": "Modificar una ruta",
     "ch10_p5": "Haz clic en ✎ en la cabecera de una ruta para modificar su color y su tipo de señal.",
-    "sec_sec-supprimer-un-segment": "<strong>Eliminar un segmento</strong>",
-    "toc_sec_sec-supprimer-un-segment": "Eliminar un segmento",
-    "ch10_p6": "Al hacer clic en ✕ en un segmento se eliminará su cable — un cable no puede existir sin una ruta. El cable correspondiente se resalta en el canvas. El cuadro de diálogo de confirmación indica los dos dispositivos conectados por este cable. Haz clic en <span class=\"wires-btn wires-btn-danger\"> Eliminar cable </span> para confirmar, o en <span class=\"wires-btn wires-btn-ghost\"> Cancelar </span> para dejarlo todo sin cambios.",
-    "sec_sec-supprimer-une-route": "<strong>Eliminar una ruta</strong>",
-    "toc_sec_sec-supprimer-une-route": "Eliminar una ruta",
-    "ch10_p7": "Al hacer clic en ✕ en la cabecera de una ruta se elimina la ruta y todos sus cables. Un cuadro de diálogo de confirmación enumera los cables que se eliminarán. Haz clic en <span class=\"wires-btn wires-btn-danger\"> Eliminar ruta + cables </span> para confirmar, o en <span class=\"wires-btn wires-btn-ghost\"> Cancelar </span> para dejarlo todo sin cambios.",
+    "ch10_p6": "<strong>Eliminar un segmento.</strong> Al hacer clic en ✕ en un segmento se eliminará su cable — un cable no puede existir sin una ruta. El cable correspondiente se resalta en el canvas. El cuadro de diálogo de confirmación indica los dos dispositivos conectados por este cable. Haz clic en <span class=\"wires-btn wires-btn-danger\"> Eliminar cable </span> para confirmar, o en <span class=\"wires-btn wires-btn-ghost\"> Cancelar </span> para dejarlo todo sin cambios.",
+    "ch10_p7": "<strong>Eliminar una ruta.</strong> Al hacer clic en ✕ en la cabecera de una ruta se elimina la ruta y todos sus cables. Un cuadro de diálogo de confirmación enumera los cables que se eliminarán. Haz clic en <span class=\"wires-btn wires-btn-danger\"> Eliminar ruta + cables </span> para confirmar, o en <span class=\"wires-btn wires-btn-ghost\"> Cancelar </span> para dejarlo todo sin cambios.",
     "sec_sec-animation-suivi-du-signal": "<strong>Animación — seguimiento de la señal</strong>",
     "toc_sec_sec-animation-suivi-du-signal": "Animación — seguimiento de la señal",
     "ch10_th3": "<strong>Acción</strong>",
@@ -3188,6 +3190,8 @@ const HELP_HEADER_STRINGS = {
     "ch10_td20": "Panel: cabecera normal / Canvas: cables normales",
     "ch10_td21": "<strong>Activo (en ejecución)</strong>",
     "ch10_td22": "Panel: cabecera amarilla + borde izquierdo dorado / Canvas: cables luminosos, el resto atenuados",
+    "ch10_td23": "<strong>Haz doble clic en el título del panel</strong> <img alt=\"routesTitreGeneral\" data-i18n-alt=\"img_routesTitreGeneral_alt\" data-i18n-src=\"img_routesTitreGeneral_src\" data-img-key=\"routesTitreGeneral\" src=\"images/ES/Boutons/routes_titre_general-es.png\" style=\"height:30px;width:auto;display:inline-block;vertical-align:middle;border-radius:3px;margin-left:2px;margin-top:-5px;margin-bottom:-5px\"/>",
+    "ch10_td24": "Inicia la animación de todas las rutas a la vez; un segundo doble clic las detiene todas",
 
     "toc_title_ch9": "Navegación en el canvas",
     "title_ch9": "Navegación en el canvas",
@@ -3778,6 +3782,8 @@ const HELP_HEADER_STRINGS = {
     "img_panneauDroit2_alt": "panneauDroit2",
     "img_route.inactive_src": "images/ES/route.inactive-es.png",
     "img_route.inactive_alt": "route.inactive",
+    "img_routesTitreGeneral_src": "images/ES/Boutons/routes_titre_general-es.png",
+    "img_routesTitreGeneral_alt": "routesTitreGeneral",
     "img_route.active_src": "images/ES/route.active-es.png",
     "img_route.active_alt": "route.active",
     "img_routes_src": "images/ES/routes-es.png",
