@@ -97,6 +97,7 @@ img{max-width:100%;display:block}
 .toc-secs{list-style:none;padding:2px 0 6px;background:rgba(0,0,0,.18)}
 .toc-sec{display:block;padding:5px 16px 5px 30px;color:var(--muted);font-size:12px;text-decoration:none;cursor:pointer;transition:color .15s;border-left:2px solid transparent;margin-left:16px;line-height:1.4}
 .toc-sec:hover{color:#fff;border-left-color:var(--accent)}
+.toc-sec.toc-sec-current{background:rgba(0,210,255,.07);border-left-color:var(--accent)}
 
 /* content area = results panel + chapter panel */
 .content{margin-left:var(--sw);margin-top:var(--top-nav-h);flex:1;min-width:0;display:flex;min-height:calc(100vh - var(--top-nav-h))}
@@ -604,6 +605,7 @@ Cliquez sur Placer sur le canevas.</li>
 <li data-i18n="ch4_li19">La fenêtre Configuration de l'image se ferme et revient à la boîte de dialogue Ajouter un appareil.</li>
 <li data-i18n="ch4_li20">L'aperçu de l’appareil affiche l'image nettoyée avec des points de port superposés.</li>
 </ul>
+<p data-i18n="ch4_p22">Si une image est déjà utilisée pour un autre appareil identique, un champ Numéro apparaît. Facultatif, il permet d’attribuer un numéro pour différencier les appareils.</p>
 <h3 class="section-heading" data-i18n="sec_sec-modification-d-un-n-ud" id="sec-modification-d-un-n-ud"><strong>Modification d'un nœud</strong></h3>
 <div class="table-wrap"><table class="help-table"><thead><tr><th data-i18n="ch4_th7"><strong>Action</strong></th><th data-i18n="ch4_th8"><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td data-i18n="ch4_td31"><strong>Cliquez sur l'étiquette (canevas)</strong></td><td data-i18n="ch4_td32">Renommer - tapez et appuyez sur <kbd>Entrée</kbd></td></tr><tr class="pair-b"><td data-i18n="ch4_td33"><strong>Double-cliquez sur le nœud</strong></td><td data-i18n="ch4_td34">Ouvrez la configuration de l'image pour modifier l'image et les ports</td></tr><tr class="pair-a"><td data-i18n="ch4_td35"><strong>Faites glisser le nœud</strong></td><td data-i18n="ch4_td36">Déplace le nœud : les câbles suivent en direct</td></tr><tr class="pair-b"><td data-i18n="ch4_td37"><strong>Faites glisser le coin supérieur gauche</strong></td><td data-i18n="ch4_td38">Redimensionner proportionnellement</td></tr><tr class="pair-a"><td data-i18n="ch4_td39"><strong><kbd>⇧</kbd> + clic sur le nœud</strong></td><td data-i18n="ch4_td40">Mettre au premier plan — déplace cet appareil devant tout appareil qui se chevauche.</td></tr></tbody></table></div>
 <h3 class="section-heading" data-i18n="sec_sec-changer-la-cat-gorie-d-un-n-ud" id="sec-changer-la-cat-gorie-d-un-n-ud"><strong>Changer la catégorie d'un nœud</strong></h3>
@@ -1704,6 +1706,7 @@ const HELP_HEADER_STRINGS = {
     "ch4_li18": "Click <span class=\"wires-btn\"> ✓ Apply </span> to confirm. The crop is applied and the ports are saved.",
     "ch4_li19": "The Image Configuration window closes and returns to the Add a Device dialog box.",
     "ch4_li20": "The device preview shows the cleaned-up image with port points overlaid.",
+    "ch4_p22": "If an image is already used by another identical device, a Number field appears. Optional, it lets you assign a number to tell the devices apart.",
     "sec_sec-modification-d-un-n-ud": "<strong>Editing a Device</strong>",
     "toc_sec_sec-modification-d-un-n-ud": "Editing a Device",
     "ch4_th7": "<strong>Action</strong>",
@@ -2167,6 +2170,7 @@ const HELP_HEADER_STRINGS = {
     "ch4_li18": "Cliquez sur <span class=\"wires-btn\"> ✓ Appliquer </span> pour confirmer. Le recadrage est appliqué et les ports sont enregistrés.",
     "ch4_li19": "La fenêtre Configuration de l'image se ferme et revient à la boîte de dialogue Ajouter un appareil.",
     "ch4_li20": "L'aperçu de l’appareil affiche l'image nettoyée avec des points de port superposés.",
+    "ch4_p22": "Si une image est déjà utilisée pour un autre appareil identique, un champ Numéro apparaît. Facultatif, il permet d’attribuer un numéro pour différencier les appareils.",
     "sec_sec-modification-d-un-n-ud": "<strong>Modification d'un nœud</strong>",
     "ch4_th7": "<strong>Action</strong>",
     "ch4_th8": "<strong>Effet</strong>",
@@ -3573,6 +3577,7 @@ const HELP_HEADER_STRINGS = {
     "ch4_li18": "Haz clic en <span class=\"wires-btn\"> ✓ Aplicar </span> para confirmar. El recorte se aplica y los puertos se guardan.",
     "ch4_li19": "La ventana Configuración de la imagen se cierra y vuelve al cuadro de diálogo Añadir un dispositivo.",
     "ch4_li20": "La vista previa del dispositivo muestra la imagen limpia con los puntos de puerto superpuestos.",
+    "ch4_p22": "Si una imagen ya la usa otro aparato idéntico, aparece un campo Número. Opcional, te permite asignar un número para diferenciar los aparatos.",
     "sec_sec-modification-d-un-n-ud": "<strong>Editar un dispositivo</strong>",
     "toc_sec_sec-modification-d-un-n-ud": "Editar un dispositivo",
     "ch4_th7": "<strong>Acción</strong>",
@@ -4028,6 +4033,94 @@ function handleChClick(id, btn) {
     ul.hidden = isOpen;
   }
 }
+
+// Sous-menus : au clic, showChapter() (déjà déclenché par le onclick du lien) remet le
+// scroll à zéro — on termine le geste en faisant défiler jusqu'à la section visée juste
+// après. Au scroll, surligne discrètement dans le menu la section actuellement lue.
+// NOTE : .ch-panel a overflow-y:auto mais n'est jamais réellement contraint en hauteur
+// (.content/.ch-panel grandissent avec le contenu, min-height pas height) — c'est donc
+// la FENÊTRE qui défile, pas le panneau ; tout ce bloc travaille sur window/viewport,
+// décalé de la hauteur de la nav fixe (--top-nav-h, 72px desktop / 64px mobile).
+(function () {
+  const navClearance       = 90;  // juste sous la nav fixe (72px) + petite marge
+  const scrollTargetOffset = 130; // atterrissage au clic sur un sous-menu : un peu plus d'air
+
+  const secLinks = new Map();
+  document.querySelectorAll('.toc-sec').forEach(link => {
+    const id = link.getAttribute('href')?.slice(1);
+    if (id) secLinks.set(id, link);
+  });
+
+  secLinks.forEach((link, id) => {
+    link.addEventListener('click', (e) => {
+      const target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault(); // sinon le saut d'ancre natif de href="#..." écrase notre décalage juste après
+      // setTimeout, pas requestAnimationFrame : le calcul (rect.top + scrollY) donne la
+      // position ABSOLUE de la cible quel que soit le scroll courant, donc l'ordre face
+      // au reset de showChapter() n'affecte pas le résultat — seul un timer garantit de
+      // s'exécuter même si ce dernier ne peint rien (onglet en arrière-plan, etc.).
+      setTimeout(() => {
+        const top = target.getBoundingClientRect().top + window.scrollY - scrollTargetOffset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }, 60);
+    });
+  });
+
+  const headings = Array.from(document.querySelectorAll('h3.section-heading[id]'));
+
+  // Un seul "gagnant" par surface (tentative précédente) perdait encore des sections
+  // courtes qui n'emportaient jamais la comparaison face à un voisin plus grand — plus
+  // une régression : abandonné. À la place, deux conditions indépendantes, cumulables :
+  // (1) le titre est "en haut" (dernier titre, ordre du document, déjà passé sous la
+  // marge de la nav) — la lecture normale au fil du scroll ; (2) une section (courte)
+  // dont toute la portée (de son titre au suivant) tient d'un coup dans l'écran s'allume
+  // aussi, MÊME SI (1) désigne un autre titre — plusieurs peuvent donc s'allumer à la fois.
+  let prevAtTopId = null;
+  function updateCurrentSec() {
+    const bandTop   = navClearance;
+    const viewportH = window.innerHeight;
+    const activeIds = new Set();
+
+    let atTopId = null;
+    for (const h of headings) {
+      if (h.offsetParent === null) continue;
+      if (h.getBoundingClientRect().top <= bandTop) atTopId = h.id;
+    }
+    if (atTopId) activeIds.add(atTopId);
+
+    for (let i = 0; i < headings.length; i++) {
+      const h = headings[i];
+      if (h.offsetParent === null) continue;
+      const hTop = h.getBoundingClientRect().top;
+      // Par défaut (dernier titre du chapitre, pas de suivant) : borné par la vraie fin du
+      // contenu, pas Infinity — sinon "Infinity <= viewportH" n'est jamais vrai et le
+      // dernier titre d'un chapitre ne peut jamais être détecté "entièrement affiché".
+      let hEnd = document.documentElement.scrollHeight - window.scrollY;
+      for (let j = i + 1; j < headings.length; j++) {
+        if (headings[j].offsetParent !== null) { hEnd = headings[j].getBoundingClientRect().top; break; }
+      }
+      if (hTop >= -2 && hEnd <= viewportH + 2) activeIds.add(h.id); // +2 : tolérance d'arrondi sous-pixel
+    }
+
+    secLinks.forEach((link, id) => link.classList.toggle('toc-sec-current', activeIds.has(id)));
+
+    // Garde le titre "en haut" visible dans le menu lui-même (défilement propre à la
+    // sidebar, voir .toc-nav overflow-y:auto) — seulement au changement, jamais en continu.
+    if (atTopId !== prevAtTopId) {
+      prevAtTopId = atTopId;
+      secLinks.get(atTopId)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { updateCurrentSec(); ticking = false; });
+  }, { passive: true });
+  updateCurrentSec();
+})();
 
 // ── i18n ────────────────────────────────────────────────────────────────────
 const I18N = {
