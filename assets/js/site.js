@@ -768,6 +768,7 @@ function setLang(lang) {
 
   const toggle = document.getElementById("lang-toggle");
   if (toggle) toggle.setAttribute("aria-label", `Language: ${LANG_NAMES[currentLang]}`);
+  updateDemoFullscreenButtons();
 }
 
 function closeLangDrop() {
@@ -964,6 +965,51 @@ function initDemoLoaders() {
   });
 }
 
+function updateDemoFullscreenButtons() {
+  const labels = {
+    en: { open: "Open demo in full screen", close: "Exit full screen" },
+    fr: { open: "Ouvrir la démo en plein écran", close: "Quitter le plein écran" },
+    es: { open: "Abrir la demo en pantalla completa", close: "Salir de pantalla completa" }
+  };
+  const languageLabels = labels[currentLang] || labels.en;
+
+  document.querySelectorAll("[data-demo-fullscreen]").forEach((button) => {
+    const wrapper = button.closest("[data-demo-loader]");
+    const isFullscreen = document.fullscreenElement === wrapper;
+    const label = isFullscreen ? languageLabels.close : languageLabels.open;
+    button.setAttribute("aria-label", label);
+    button.setAttribute("title", label);
+    button.setAttribute("aria-pressed", String(isFullscreen));
+  });
+}
+
+function initDemoFullscreen() {
+  document.querySelectorAll("[data-demo-fullscreen]").forEach((button) => {
+    if (button.dataset.fullscreenBound === "1") return;
+    const wrapper = button.closest("[data-demo-loader]");
+    if (!wrapper || !document.fullscreenEnabled || !wrapper.requestFullscreen) {
+      button.hidden = true;
+      return;
+    }
+
+    button.dataset.fullscreenBound = "1";
+    button.addEventListener("click", async () => {
+      try {
+        if (document.fullscreenElement === wrapper) await document.exitFullscreen();
+        else await wrapper.requestFullscreen();
+      } catch (error) {
+        console.warn("Wires demo full screen unavailable", error);
+      }
+    });
+  });
+
+  if (document.documentElement.dataset.demoFullscreenBound !== "1") {
+    document.documentElement.dataset.demoFullscreenBound = "1";
+    document.addEventListener("fullscreenchange", updateDemoFullscreenButtons);
+  }
+  updateDemoFullscreenButtons();
+}
+
 function initManagedFeatureVideos() {
   const videos = [...document.querySelectorAll(".feature-story video, .video-examples-section .video-link video")];
   if (managedVideoObserver) {
@@ -1013,6 +1059,7 @@ function refreshPageContent() {
   setActiveNavigation();
   setLang(currentLang);
   initDemoLoaders();
+  initDemoFullscreen();
   initManagedFeatureVideos();
 }
 
