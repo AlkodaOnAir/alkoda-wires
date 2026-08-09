@@ -4113,11 +4113,19 @@ function handleChClick(id, btn) {
     }
   }
 
-  let ticking = false;
+  // try/finally : si updateCurrentSec() plante sur un cas non prévu, le verrou "ticking"
+  // doit quand même se libérer, sinon plus AUCUNE mise à jour ne se redéclenche pour le
+  // reste de la page (surlignage figé sur son dernier calcul valide).
+  // settleTimer : filet de sécurité — un dernier recalcul forcé 150ms après l'arrêt du
+  // scroll, pour rattraper toute étape manquée pendant un défilement rapide.
+  let ticking = false, settleTimer = null;
   window.addEventListener('scroll', () => {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(() => { updateCurrentSec(); ticking = false; });
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(() => { try { updateCurrentSec(); } finally { ticking = false; } });
+    }
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(updateCurrentSec, 150);
   }, { passive: true });
   updateCurrentSec();
 })();
