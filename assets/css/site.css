@@ -967,7 +967,8 @@ h3{color:#fff}
 .contact-link:hover{border-color:var(--accent);color:var(--accent)}
 .contact-icon{width:21px;height:21px;flex:0 0 auto}
 .contact-card{
-  min-width:230px;
+  width:290px;
+  max-width:100%;
   min-height:92px;
   flex-direction:column;
   gap:6px;
