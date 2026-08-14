@@ -1004,6 +1004,19 @@ h3{color:#fff}
   background:var(--accent);
   box-shadow:0 0 10px rgba(0,210,255,.65);
 }
+.release-group .release-parent>span{color:var(--text);font-weight:800}
+.release-group .release-sublist{
+  gap:10px;
+  margin-top:12px;
+  padding-left:18px;
+}
+.release-group .release-sublist li::before{
+  width:5px;
+  height:5px;
+  background:transparent;
+  border:1px solid var(--accent);
+  box-shadow:none;
+}
 .release-group-fixes li::before{background:#71839b;box-shadow:none}
 .release-actions{padding:0 34px 34px;text-align:center}
 .downloads-list-heading{max-width:1240px;margin:0 auto 24px;color:var(--text);font-size:18px;font-weight:700;line-height:1.4;text-align:left}
