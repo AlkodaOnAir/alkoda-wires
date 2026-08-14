@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wires Release Notes | Version 1.1.0</title>
+  <meta name="description" content="Discover what is new and improved in Wires version 1.1.0.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://alkoda-wires.com/release-notes.html">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&display=swap">
+  <link rel="stylesheet" href="assets/css/site.css?v=20260811-1">
+  <script src="assets/js/seo.js?v=20260716-1"></script>
+  <script src="assets/js/consent.js?v=20260716-2" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Wires home"><img src="Logos/Logo-horizontal-transparent.png" alt="Wires"></a>
+    <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="fonctions.html" data-i18n="nav_features">Features</a>
+      <a href="try-it.html" data-i18n="nav_try">Try Wires</a>
+      <a href="help.html" data-i18n="nav_help">Help</a>
+      <a href="index.html#contact" data-i18n="nav_contact">Contact</a>
+      <a href="licence.html" data-i18n="nav_license">License</a>
+      <a class="nav-cta js-download" href="downloads.html" data-i18n="nav_download">Download Wires</a>
+      <div id="lang-selector" class="lang-selector">
+        <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Change language" aria-expanded="false"><span id="lang-flag"></span><span id="lang-name"></span><span class="lang-arrow">v</span></button>
+        <div id="lang-drop" class="lang-drop" role="menu">
+          <button id="lang-opt-en" class="lang-opt" type="button" data-lang="en" role="menuitem"><span id="drop-flag-en"></span><span>English</span></button>
+          <button id="lang-opt-fr" class="lang-opt" type="button" data-lang="fr" role="menuitem"><span id="drop-flag-fr"></span><span>Français</span></button>
+          <button id="lang-opt-es" class="lang-opt" type="button" data-lang="es" role="menuitem"><span id="drop-flag-es"></span><span>Español</span></button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero compact release-notes-hero">
+      <p class="eyebrow" data-i18n="release_kicker">RELEASE NOTES</p>
+      <h1 data-i18n="release_h1">What’s new in Wires</h1>
+      <p data-i18n="release_intro">Discover the new features and main fixes included in each version.</p>
+    </section>
+
+    <section class="release-notes-wrap">
+      <article class="release-entry">
+        <header class="release-entry-header">
+          <div>
+            <p class="release-version-label" data-i18n="release_version_label">LATEST VERSION</p>
+            <h2>Wires 1.1.0</h2>
+          </div>
+          <span class="release-status" data-i18n="release_status_soon">Coming soon</span>
+        </header>
+
+        <div class="release-columns">
+          <section class="release-group release-group-new">
+            <h3 data-i18n="release_new_title">What’s New</h3>
+            <ul>
+              <li data-i18n="release_new_01">Wireless connections (WiFi, Bluetooth, HF) — document links with no physical cable</li>
+              <li data-i18n="release_new_02">A route can now have multiple signal types at once (e.g. Video + Audio)</li>
+              <li data-i18n="release_new_03">Right-click to copy/paste a route segment</li>
+              <li data-i18n="release_new_04">Automatic numbering for identical devices (same image = same model)</li>
+              <li data-i18n="release_new_05">Edit a device already placed on the canvas, no need to recreate it</li>
+              <li data-i18n="release_new_06">Drag and drop a route or path to reorganize it in one move</li>
+              <li data-i18n="release_new_07">Animate every route at once, or a single segment, with a double-click</li>
+              <li data-i18n="release_new_08">Pause animation playback with the space bar</li>
+              <li data-i18n="release_new_09">Optional cable length, included in the Pack List export</li>
+              <li data-i18n="release_new_10">HTML export: live preview of your project before exporting</li>
+              <li data-i18n="release_new_11">Pack List export: real generation, grouped by category or zone, with assignable people in charge</li>
+              <li data-i18n="release_new_12">Routes PDF export completely redesigned, with a route map</li>
+              <li data-i18n="release_new_13">Portrait/Landscape orientation for PDF exports</li>
+              <li data-i18n="release_new_14">Relink a moved or renamed project instead of a dead-end error message</li>
+            </ul>
+          </section>
+
+          <section class="release-group release-group-fixes">
+            <h3 data-i18n="release_fixes_title">Fixes</h3>
+            <ul>
+              <li data-i18n="release_fix_01">Deleting a device now actually deletes its cables too</li>
+              <li data-i18n="release_fix_02">Cables now route around neighboring devices more cleanly while dragging</li>
+              <li data-i18n="release_fix_03">Smoother route animation, no more stuttering</li>
+              <li data-i18n="release_fix_04">The minimap no longer shows full color for content outside the visible area</li>
+              <li data-i18n="release_fix_05">Several fixes in the export window (closing too early, icons, etc.)</li>
+            </ul>
+          </section>
+        </div>
+
+        <div class="release-actions">
+          <a class="btn btn-primary" href="downloads.html" data-i18n="release_download">Go to downloads</a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div><img src="Logos/Logo-horizontal-transparent.png" alt="Wires"><p data-i18n="footer_text">Wires is published by Alkoda.</p></div>
+    <nav aria-label="Footer navigation">
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="fonctions.html" data-i18n="nav_features">Features</a>
+      <a href="try-it.html" data-i18n="nav_try">Try Wires</a>
+      <a href="help.html" data-i18n="nav_help">Help</a>
+      <a href="index.html#contact" data-i18n="nav_contact">Contact</a>
+      <a href="licence.html" data-i18n="nav_license">License</a>
+      <a href="release-notes.html" data-i18n="footer_release_notes">Release notes</a>
+      <a href="terms-of-service-wires.html" data-i18n="footer_terms">Terms</a>
+      <a href="refund-policy-wires.html" data-i18n="footer_refunds">Refunds</a>
+      <a href="privacy-cookies.html" data-i18n="footer_privacy">Privacy &amp; cookies</a>
+    </nav>
+  </footer>
+  <script src="assets/js/site.js?v=20260811-1"></script>
+</body>
+</html>
