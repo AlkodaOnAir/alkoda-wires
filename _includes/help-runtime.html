@@ -1,0 +1,484 @@
+<script>
+const HELP_HEADER_FLAGS = {
+  en: '<svg width="22" height="15" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg" style="border-radius:2px;vertical-align:middle;display:inline-block"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="4"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/></svg>',
+  fr: '<svg width="22" height="15" viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg" style="border-radius:2px;vertical-align:middle;display:inline-block"><rect width="1" height="2" fill="#002395"/><rect x="1" width="1" height="2" fill="#fff"/><rect x="2" width="1" height="2" fill="#ED2939"/></svg>',
+  es: '<svg width="22" height="15" viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg" style="border-radius:2px;vertical-align:middle;display:inline-block"><rect width="3" height="2" fill="#AA151B"/><rect y=".5" width="3" height="1" fill="#F1BF00"/></svg>'
+};
+const HELP_HEADER_LANG_SHORT = { en: "EN", fr: "FR", es: "ES" };
+const HELP_HEADER_LANG_NAMES = { en: "English", fr: "Français", es: "Español" };
+
+function refreshHelpHeaderLanguage(lang = document.documentElement.lang) {
+  if (!HELP_HEADER_FLAGS[lang]) lang = "fr";
+  const flag = document.getElementById("lang-flag");
+  const name = document.getElementById("lang-name");
+  if (flag) flag.innerHTML = HELP_HEADER_FLAGS[lang];
+  if (name) name.textContent = HELP_HEADER_LANG_SHORT[lang];
+  Object.keys(HELP_HEADER_FLAGS).forEach((code) => {
+    const dropFlag = document.getElementById(`drop-flag-${code}`);
+    const option = document.getElementById(`lang-opt-${code}`);
+    if (dropFlag) dropFlag.innerHTML = HELP_HEADER_FLAGS[code];
+    if (option) {
+      option.classList.toggle("active", code === lang);
+      option.style.display = code === lang ? "none" : "flex";
+    }
+  });
+  const toggle = document.getElementById("lang-toggle");
+  if (toggle) toggle.setAttribute("aria-label", `Language: ${HELP_HEADER_LANG_NAMES[lang]}`);
+}
+
+function closeHelpHeaderLangDrop() {
+  const drop = document.getElementById("lang-drop");
+  const toggle = document.getElementById("lang-toggle");
+  if (drop) drop.classList.remove("open");
+  if (toggle) toggle.setAttribute("aria-expanded", "false");
+}
+
+const helpHeaderMenuButton = document.querySelector(".menu-toggle");
+const helpHeaderNav = document.querySelector(".site-nav");
+helpHeaderMenuButton?.addEventListener("click", () => {
+  const open = helpHeaderNav.classList.toggle("open");
+  helpHeaderMenuButton.setAttribute("aria-expanded", String(open));
+});
+helpHeaderNav?.querySelectorAll("a").forEach((link) => {
+  link.addEventListener("click", () => {
+    helpHeaderNav.classList.remove("open");
+    helpHeaderMenuButton?.setAttribute("aria-expanded", "false");
+  });
+});
+document.getElementById("lang-toggle")?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  const drop = document.getElementById("lang-drop");
+  const open = drop?.classList.toggle("open");
+  document.getElementById("lang-toggle")?.setAttribute("aria-expanded", String(Boolean(open)));
+});
+document.addEventListener("click", (event) => {
+  if (!event.target.closest("#lang-selector")) closeHelpHeaderLangDrop();
+});
+refreshHelpHeaderLanguage();
+const helpTocToggle = document.querySelector(".help-toc-toggle");
+const helpTocClose = document.querySelector(".toc-close");
+const helpTocScrim = document.querySelector(".help-toc-scrim");
+
+function isHelpMobile() {
+  return window.matchMedia("(max-width: 760px)").matches;
+}
+
+function openHelpToc() {
+  document.body.classList.add("help-toc-open");
+  helpTocToggle?.setAttribute("aria-expanded", "true");
+}
+
+function closeHelpToc() {
+  document.body.classList.remove("help-toc-open");
+  helpTocToggle?.setAttribute("aria-expanded", "false");
+}
+
+helpTocToggle?.addEventListener("click", () => {
+  if (document.body.classList.contains("help-toc-open")) closeHelpToc();
+  else openHelpToc();
+});
+helpTocClose?.addEventListener("click", closeHelpToc);
+helpTocScrim?.addEventListener("click", closeHelpToc);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeHelpToc();
+});
+document.querySelectorAll(".toc-ch-link,.toc-sec").forEach((link) => {
+  link.addEventListener("click", () => {
+    if (isHelpMobile()) setTimeout(closeHelpToc, 80);
+  });
+});
+window.addEventListener("resize", () => {
+  if (!isHelpMobile()) closeHelpToc();
+});
+
+const allChIds = ['intro-propos-de-wires', 'intro-versions-free-et-pro', 'ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8', 'ch9', 'ch10', 'ch11', 'ch12', 'ch13', 'ch14', 'ch15'];
+document.addEventListener('DOMContentLoaded', () => {
+  const saved       = localStorage.getItem('wires-help-chapter');
+  const savedScroll = parseInt(sessionStorage.getItem('wires-help-scroll') || '0', 10);
+  const cp = document.getElementById('ch-panel');
+  if (saved && allChIds.includes(saved)) {
+    showChapter(saved, true);
+    if (savedScroll && cp) {
+      requestAnimationFrame(() => requestAnimationFrame(() => { cp.scrollTop = savedScroll; }));
+    }
+  } else {
+    if (cp) cp.scrollTop = 0;
+  }
+  if (cp) cp.addEventListener('scroll', () => {
+    sessionStorage.setItem('wires-help-scroll', String(cp.scrollTop));
+  }, { passive: true });
+});
+
+function showChapter(id, keepScroll = false) {
+  localStorage.setItem('wires-help-chapter', id);
+  if (!keepScroll) sessionStorage.removeItem('wires-help-scroll');
+  document.querySelectorAll('.ch-section').forEach(s => s.hidden = true);
+  const sec = document.getElementById(id);
+  if (sec) { sec.hidden = false; if (!keepScroll) { const cp = document.getElementById('ch-panel'); requestAnimationFrame(() => { if(cp) cp.scrollTo({top:0,behavior:'instant'}); window.scrollTo({top:0,behavior:'instant'}); }); } }
+  document.querySelectorAll('.toc-chapter').forEach(el => {
+    const isTarget = el.dataset.ch === id;
+    el.classList.toggle('active', isTarget);
+    if (!isTarget) {
+      const b = el.querySelector('.toc-ch-btn');
+      const u = el.querySelector('.toc-secs');
+      if (b) b.setAttribute('aria-expanded', 'false');
+      if (u) u.hidden = true;
+    }
+  });
+  const activeEl = document.querySelector(`.toc-chapter[data-ch="${id}"]`);
+  if (activeEl) {
+    const btn = activeEl.querySelector('.toc-ch-btn');
+    const ul  = activeEl.querySelector('.toc-secs');
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+    if (ul)  ul.hidden = false;
+  }
+}
+
+function handleChClick(id, btn) {
+  const isActive = document.querySelector(`.toc-chapter[data-ch="${id}"]`)?.classList.contains('active');
+  if (!isActive) {
+    showChapter(id);
+  } else {
+    const ul = btn.nextElementSibling;
+    if (!ul) return;
+    const isOpen = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!isOpen));
+    ul.hidden = isOpen;
+  }
+}
+
+// Sous-menus : au clic, showChapter() (déjà déclenché par le onclick du lien) remet le
+// scroll à zéro — on termine le geste en faisant défiler jusqu'à la section visée juste
+// après. Au scroll, surligne discrètement dans le menu la section actuellement lue.
+// NOTE : .ch-panel a overflow-y:auto mais n'est jamais réellement contraint en hauteur
+// (.content/.ch-panel grandissent avec le contenu, min-height pas height) — c'est donc
+// la FENÊTRE qui défile, pas le panneau ; tout ce bloc travaille sur window/viewport,
+// décalé de la hauteur de la nav fixe (--top-nav-h, 72px desktop / 64px mobile).
+(function () {
+  const navClearance       = 90;  // juste sous la nav fixe (72px) + petite marge
+  const scrollTargetOffset = 130; // atterrissage au clic sur un sous-menu : un peu plus d'air
+
+  const secLinks = new Map();
+  document.querySelectorAll('.toc-sec').forEach(link => {
+    const id = link.getAttribute('href')?.slice(1);
+    if (id) secLinks.set(id, link);
+  });
+
+  secLinks.forEach((link, id) => {
+    link.addEventListener('click', (e) => {
+      const target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault(); // sinon le saut d'ancre natif de href="#..." écrase notre décalage juste après
+      // setTimeout, pas requestAnimationFrame : le calcul (rect.top + scrollY) donne la
+      // position ABSOLUE de la cible quel que soit le scroll courant, donc l'ordre face
+      // au reset de showChapter() n'affecte pas le résultat — seul un timer garantit de
+      // s'exécuter même si ce dernier ne peint rien (onglet en arrière-plan, etc.).
+      setTimeout(() => {
+        const top = target.getBoundingClientRect().top + window.scrollY - scrollTargetOffset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }, 60);
+    });
+  });
+
+  const headings = Array.from(document.querySelectorAll('h3.section-heading[id]'));
+
+  // Un seul "gagnant" par surface (tentative précédente) perdait encore des sections
+  // courtes qui n'emportaient jamais la comparaison face à un voisin plus grand — plus
+  // une régression : abandonné. À la place, deux conditions indépendantes, cumulables :
+  // (1) le titre est "en haut" (dernier titre, ordre du document, déjà passé sous la
+  // marge de la nav) — la lecture normale au fil du scroll ; (2) une section (courte)
+  // dont toute la portée (de son titre au suivant) tient d'un coup dans l'écran s'allume
+  // aussi, MÊME SI (1) désigne un autre titre — plusieurs peuvent donc s'allumer à la fois.
+  let prevAtTopId = null;
+  function updateCurrentSec() {
+    const bandTop   = navClearance;
+    const viewportH = window.innerHeight;
+    const activeIds = new Set();
+
+    let atTopId = null;
+    for (const h of headings) {
+      if (h.offsetParent === null) continue;
+      if (h.getBoundingClientRect().top <= bandTop) atTopId = h.id;
+    }
+    if (atTopId) activeIds.add(atTopId);
+
+    for (let i = 0; i < headings.length; i++) {
+      const h = headings[i];
+      if (h.offsetParent === null) continue;
+      const hTop = h.getBoundingClientRect().top;
+      // Par défaut (dernier titre du chapitre, pas de suivant) : borné par la vraie fin du
+      // contenu, pas Infinity — sinon "Infinity <= viewportH" n'est jamais vrai et le
+      // dernier titre d'un chapitre ne peut jamais être détecté "entièrement affiché".
+      let hEnd = document.documentElement.scrollHeight - window.scrollY;
+      for (let j = i + 1; j < headings.length; j++) {
+        if (headings[j].offsetParent !== null) { hEnd = headings[j].getBoundingClientRect().top; break; }
+      }
+      if (hTop >= -2 && hEnd <= viewportH + 2) activeIds.add(h.id); // +2 : tolérance d'arrondi sous-pixel
+    }
+
+    secLinks.forEach((link, id) => link.classList.toggle('toc-sec-current', activeIds.has(id)));
+
+    // Garde le titre "en haut" visible dans le menu lui-même (défilement propre à la
+    // sidebar, voir .toc-nav overflow-y:auto) — seulement au changement, jamais en continu.
+    if (atTopId !== prevAtTopId) {
+      prevAtTopId = atTopId;
+      secLinks.get(atTopId)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }
+
+  // try/finally : si updateCurrentSec() plante sur un cas non prévu, le verrou "ticking"
+  // doit quand même se libérer, sinon plus AUCUNE mise à jour ne se redéclenche pour le
+  // reste de la page (surlignage figé sur son dernier calcul valide).
+  // settleTimer : filet de sécurité — un dernier recalcul forcé 150ms après l'arrêt du
+  // scroll, pour rattraper toute étape manquée pendant un défilement rapide.
+  let ticking = false, settleTimer = null;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(() => { try { updateCurrentSec(); } finally { ticking = false; } });
+    }
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(updateCurrentSec, 150);
+  }, { passive: true });
+  updateCurrentSec();
+})();
+
+// ── search ──────────────────────────────────────────────────────────────────
+const srch      = document.getElementById('srch');
+const srchClear = document.getElementById('srch-clear');
+srchClear.addEventListener('click', () => { clearSearch(); srch.value = ''; srch.focus(); });
+const rpPanel   = document.getElementById('results-panel');
+const rpList    = document.getElementById('rp-list');
+const rpCount   = document.getElementById('rp-count');
+const chPanel   = document.getElementById('ch-panel');
+let srchResults = [];
+let srchCursor  = -1;
+let prevHl      = null;
+
+function highlight(el) {
+  if (prevHl) prevHl.classList.remove('srch-hl');
+  el.classList.add('srch-hl');
+  prevHl = el;
+}
+
+function excerptFor(el, q) {
+  const full = el.textContent;
+  const idx  = full.toLowerCase().indexOf(q);
+  if (idx === -1) return html_escape(full.slice(0,80));
+  const start = Math.max(0, idx - 30);
+  const end   = Math.min(full.length, idx + q.length + 50);
+  const pre   = html_escape(full.slice(start, idx));
+  const hit   = html_escape(full.slice(idx, idx + q.length));
+  const post  = html_escape(full.slice(idx + q.length, end));
+  return (start > 0 ? '…' : '') + pre + '<mark>' + hit + '</mark>' + post + (end < full.length ? '…' : '');
+}
+
+function html_escape(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function runSearch(q) {
+  srchResults = [];
+  document.querySelectorAll('.ch-section').forEach(sec => {
+    const chEl  = sec.querySelector('h2');
+    const chTitle = chEl ? chEl.textContent.trim() : sec.id;
+    sec.querySelectorAll('h2,h3,p,li,td').forEach(el => {
+      if (el.textContent.toLowerCase().includes(q)) {
+        srchResults.push({ sec, el, chTitle });
+      }
+    });
+  });
+  rpList.innerHTML = '';
+  srchResults.forEach((r, i) => {
+    const item = document.createElement('div');
+    item.className = 'rp-item';
+    item.innerHTML = `<div class="rp-ch">${html_escape(r.chTitle)}</div><div class="rp-excerpt">${excerptFor(r.el, q)}</div>`;
+    item.addEventListener('click', () => selectResult(i, q));
+    rpList.appendChild(item);
+  });
+  const n = srchResults.length;
+  rpCount.textContent = n === 0 ? 'Aucun résultat' : n + ' résultat' + (n > 1 ? 's' : '');
+  rpPanel.classList.toggle('active', true);
+  if (n > 0) selectResult(0, q);
+  else if (prevHl) { prevHl.classList.remove('srch-hl'); prevHl = null; }
+}
+
+function selectResult(i, q) {
+  srchCursor = i;
+  const r = srchResults[i];
+  rpList.querySelectorAll('.rp-item').forEach((el, j) => el.classList.toggle('selected', j === i));
+  rpList.children[i]?.scrollIntoView({block:'nearest'});
+  showChapter(r.sec.id);
+  setTimeout(() => {
+    highlight(r.el);
+    r.el.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 30);
+}
+
+function clearSearch() {
+  srchResults = [];
+  srchCursor  = -1;
+  rpPanel.classList.remove('active');
+  rpList.innerHTML = '';
+  if (prevHl) { prevHl.classList.remove('srch-hl'); prevHl = null; }
+}
+
+srch.addEventListener('input', () => {
+  const q = srch.value.trim().toLowerCase();
+  srchClear.classList.toggle('visible', srch.value.length > 0);
+  srch.classList.toggle('has-value', srch.value.length > 0);
+  if (!q) { clearSearch(); return; }
+  if (q.length >= 2) runSearch(q);
+});
+
+srch.addEventListener('keydown', e => {
+  const q = srch.value.trim().toLowerCase();
+  if (e.key === 'Escape') { clearSearch(); srch.value = ''; srchClear.classList.remove('visible'); srch.classList.remove('has-value'); srch.blur(); return; }
+  if (e.key === 'Enter' && srchResults.length > 0) {
+    const next = (srchCursor + 1) % srchResults.length;
+    selectResult(next, q);
+  }
+});
+
+const firstCh = allChIds[0];
+if (firstCh) {
+  document.querySelectorAll('.toc-chapter').forEach(el => {
+    if (el.dataset.ch === firstCh) el.classList.add('active');
+  });
+  const firstEl = document.querySelector(`.toc-chapter[data-ch="${firstCh}"] .toc-ch-btn`);
+  if (firstEl) {
+    firstEl.setAttribute('aria-expanded','true');
+    const ul = firstEl.nextElementSibling;
+    if (ul) ul.hidden = false;
+  }
+}
+
+// --- Click-to-zoom on chapter images: grow to natural size, centered, 0.5s;
+// click the image or anywhere outside it to restore ---
+let zoomedImg = null;
+
+document.addEventListener('click', (e) => {
+  if (zoomedImg) { unzoomImage(zoomedImg); return; }
+  const img = e.target.closest('.ch-img, .ch-top-img');
+  if (!img) return;
+  zoomImage(img);
+});
+
+// Returns a transform that makes an element laid out as box `to` (content size toW x toH)
+// visually appear as box `from` (content size fromW x fromH) instead: translate so the
+// centers coincide, then scale by a single uniform factor (content-box based, so a 1px
+// border never skews the ratio) — this never distorts the image.
+function flipTransform(from, fromW, fromH, to, toW, toH) {
+  const dx = (from.left + from.width / 2) - (to.left + to.width / 2);
+  const dy = (from.top + from.height / 2) - (to.top + to.height / 2);
+  const s = Math.min(fromW / toW, fromH / toH);
+  return `translate(${dx}px, ${dy}px) scale(${s})`;
+}
+
+function zoomImage(img) {
+  const rect = img.getBoundingClientRect();
+  const contentW = img.clientWidth;   // border-excluded, so the scale ratio matches the
+  const contentH = img.clientHeight;  // picture's own proportions, not the box's border-box
+  const placeholder = document.createElement('div');
+  placeholder.className = 'ch-img-placeholder';
+  placeholder.style.width = rect.width + 'px';
+  placeholder.style.height = rect.height + 'px';
+  img.parentNode.insertBefore(placeholder, img);
+  img._zoomPlaceholder = placeholder;
+  img._origRect = rect;
+  img._origContentW = contentW;
+  img._origContentH = contentH;
+
+  const cp = document.getElementById('ch-panel');
+  img._scrollLock = { body: document.body.style.overflow, cp: cp ? cp.style.overflow : '' };
+  document.body.style.overflow = 'hidden';
+  if (cp) cp.style.overflow = 'hidden';
+
+  const naturalW = img.naturalWidth || contentW;
+  const naturalH = img.naturalHeight || contentH;
+  const maxW = window.innerWidth * 0.9;
+  const maxH = window.innerHeight * 0.9;
+  const scale = Math.min(1, maxW / naturalW, maxH / naturalH);
+  const targetContentW = naturalW * scale;
+  const targetContentH = naturalH * scale;
+  const targetRect = {
+    left: (window.innerWidth - targetContentW) / 2,
+    top: (window.innerHeight - targetContentH) / 2,
+    width: targetContentW,
+    height: targetContentH,
+  };
+  img._targetRect = targetRect;
+
+  // Lay the image out at its FINAL geometry right away, then instantly counter-transform
+  // it (translate+uniform scale) so it still visually sits exactly where it started.
+  img.style.position = 'fixed';
+  img.style.left = targetRect.left + 'px';
+  img.style.top = targetRect.top + 'px';
+  img.style.width = targetRect.width + 'px';
+  img.style.height = targetRect.height + 'px';
+  img.style.maxWidth = 'none';   // .ch-top-img caps at max-height:450px — must be lifted or the
+  img.style.maxHeight = 'none';  // target size gets clamped on one axis only, distorting the image
+  img.style.margin = '0';
+  img.style.zIndex = '500';
+  img.style.cursor = 'zoom-out';
+  img.style.transformOrigin = 'center center';
+  img.style.transition = 'none';
+  img.style.transform = flipTransform(rect, contentW, contentH, targetRect, targetContentW, targetContentH);
+
+  void img.offsetWidth; // force reflow so the browser registers the inverted transform first
+
+  img.style.transition = 'transform .5s ease';
+  requestAnimationFrame(() => { img.style.transform = 'none'; });
+
+  zoomedImg = img;
+}
+
+function unzoomImage(img) {
+  img.style.cursor = 'zoom-in';
+  // Currently transform:none (visually at _targetRect). Animate toward a transform that
+  // makes it visually match _origRect again, while its real box stays laid out at _targetRect.
+  requestAnimationFrame(() => {
+    img.style.transform = flipTransform(img._origRect, img._origContentW, img._origContentH, img._targetRect, img._targetRect.width, img._targetRect.height);
+  });
+
+  const cleanup = () => {
+    img.style.position = '';
+    img.style.left = '';
+    img.style.top = '';
+    img.style.width = '';
+    img.style.height = '';
+    img.style.maxWidth = '';
+    img.style.maxHeight = '';
+    img.style.margin = '';
+    img.style.zIndex = '';
+    img.style.transition = '';
+    img.style.transform = '';
+    img.style.transformOrigin = '';
+    if (img._zoomPlaceholder) { img._zoomPlaceholder.remove(); img._zoomPlaceholder = null; }
+    if (img._scrollLock) {
+      document.body.style.overflow = img._scrollLock.body;
+      const cp = document.getElementById('ch-panel');
+      if (cp) cp.style.overflow = img._scrollLock.cp;
+      img._scrollLock = null;
+    }
+  };
+  img.addEventListener('transitionend', cleanup, { once: true });
+
+  zoomedImg = null;
+}
+
+window.WiresHelpRuntime = {
+  beforeLanguageSwap() {
+    clearSearch();
+    srch.value = '';
+    srchClear.classList.remove('visible');
+    srch.classList.remove('has-value');
+    closeHelpToc();
+    closeHelpHeaderLangDrop();
+  },
+  afterLanguageSwap(lang) {
+    refreshHelpHeaderLanguage(lang);
+  }
+};
+</script>
+

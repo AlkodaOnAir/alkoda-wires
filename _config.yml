@@ -1,0 +1,10 @@
+url: "https://alkoda-wires.com"
+baseurl: ""
+encoding: utf-8
+markdown: kramdown
+plugins: []
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - tryit.zip

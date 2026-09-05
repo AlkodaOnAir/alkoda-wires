@@ -1,0 +1,1083 @@
+---
+lang: fr
+asset_prefix: "../"
+home_href: "index.html"
+features_href: "fonctions.html"
+try_href: "try-it.html"
+help_href: "help.html"
+license_href: "licence.html"
+downloads_href: "downloads.html"
+release_href: "release-notes.html"
+terms_href: "terms-of-service-wires.html"
+refunds_href: "refund-policy-wires.html"
+privacy_href: "privacy-cookies.html"
+lang_en_href: "../help.html"
+lang_fr_href: "help.html"
+lang_es_href: "../es/help.html"
+---
+<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Documentation Wires | Documentation d'installation audiovisuelle</title>
+<meta name="description" content="Consultez la documentation Wires pour créer des plans avec un logiciel de schéma de câblage audiovisuel et un logiciel de flux de signal AV.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://alkoda-wires.com/fr/help.html"><link rel="alternate" hreflang="x-default" href="https://alkoda-wires.com/help.html"><link rel="alternate" hreflang="es" href="https://alkoda-wires.com/es/help.html"><link rel="alternate" hreflang="fr" href="https://alkoda-wires.com/fr/help.html"><link rel="alternate" hreflang="en" href="https://alkoda-wires.com/help.html">
+<meta property="og:title" content="Documentation Wires | Documentation d'installation audiovisuelle">
+<meta property="og:description" content="Guide complet du logiciel de schéma de câblage audiovisuel Wires, de la création du projet aux exports.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://alkoda-wires.com/help.html">
+<meta property="og:site_name" content="Wires">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:image" content="https://alkoda-wires.com/images/FR/wires-fr.png">
+<meta property="og:image:alt" content="Documentation du logiciel de flux de signal AV Wires">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Documentation Wires | Documentation d'installation audiovisuelle">
+<meta name="twitter:description" content="Guide complet du logiciel de schéma de câblage audiovisuel Wires, de la création du projet aux exports.">
+<meta name="twitter:image" content="https://alkoda-wires.com/images/FR/wires-fr.png">
+<meta name="twitter:image:alt" content="Documentation du logiciel de flux de signal AV Wires">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Share+Tech+Mono&amp;display=swap">
+<script src="../assets/js/consent.js?v=20260716-2" defer=""></script>
+<style>
+:root{
+  --bg:#07101d;--bg2:#0b1526;--bg3:#101b2f;
+  --line:#22314f;--line2:#31466f;
+  --text:#e8eefb;--muted:#9db0d0;--dim:#657999;
+  --accent:#00d2ff;--sw:280px;
+  --top-nav-h:72px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.7;display:flex;min-height:100vh}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+
+/* top site navigation */
+.site-header{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--top-nav-h);padding:0 max(22px,calc((100vw - 1180px) / 2));display:flex;align-items:center;justify-content:space-between;gap:24px;background:rgba(4,8,14,.84);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.09)}
+.brand img{height:36px;width:auto}
+.site-nav{display:flex;align-items:center;gap:22px;font-size:14px;font-weight:700;color:var(--muted)}
+.site-nav a{white-space:nowrap}
+.site-nav a:hover{color:#fff}
+.site-nav a.active{color:#fff}
+.nav-cta{padding:10px 16px;border-radius:999px;background:var(--accent);color:#03101c;box-shadow:0 12px 28px rgba(0,210,255,.22);transition:background .18s ease}
+.site-nav .nav-cta:hover{color:var(--muted);background:#39ddff}
+.lang-selector{position:relative;flex-shrink:0}
+.lang-toggle{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.05);color:var(--text);font:800 13px Inter,system-ui,sans-serif;cursor:pointer;transition:.2s}
+.lang-toggle svg,.lang-opt svg{border-radius:2px;vertical-align:middle;display:block}
+.lang-toggle:hover{border-color:var(--accent)}
+.lang-arrow{font-size:10px;color:var(--dim)}
+.lang-drop{display:none;position:absolute;top:calc(100% + 8px);right:0;z-index:220;min-width:142px;padding:5px;border:1px solid var(--line);border-radius:10px;background:#0b1423;box-shadow:0 16px 42px rgba(0,0,0,.45)}
+.lang-drop.open{display:block}
+.lang-opt{display:flex;align-items:center;gap:9px;width:100%;padding:9px 11px;border:0;border-radius:7px;background:transparent;color:var(--text);font:700 13px Inter,system-ui,sans-serif;text-align:left;cursor:pointer}
+.lang-opt:hover,.lang-opt.active{background:rgba(255,255,255,.08);color:#fff}
+.menu-toggle{display:none;width:40px;height:38px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.04);padding:9px;cursor:pointer}
+.menu-toggle span{display:block;height:2px;margin:4px 0;background:#fff;border-radius:2px}
+
+/* cookie consent footer (injected by assets/js/consent.js) — body is display:flex here for the
+   sidebar+content layout, so this needs position:fixed or it becomes a 3rd flex item and eats
+   the page's right-hand width instead of sitting as a normal bottom bar */
+.cookie-standalone-footer{position:fixed;left:var(--sw);right:0;bottom:0;z-index:60}
+
+/* sidebar */
+.sidebar{position:fixed;top:var(--top-nav-h);left:0;bottom:0;width:var(--sw);background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden;z-index:100}
+.sb-head{padding:14px 18px 14px;border-bottom:1px solid var(--line);flex-shrink:0}
+.search-wrap{position:relative}
+.search-input{width:100%;padding:8px 12px 8px 34px;background:var(--bg3);border:1px solid var(--line);border-radius:8px;color:var(--text);font:13px Inter,sans-serif;outline:none;transition:border-color .2s}
+.search-input:focus{border-color:var(--accent)}
+.search-input::placeholder{color:var(--dim)}
+.search-input.has-value{padding-right:30px}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:13px;pointer-events:none}
+.search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:18px;height:18px;background:var(--line2);border:none;border-radius:50%;color:var(--muted);font-size:12px;line-height:1;cursor:pointer;display:none;align-items:center;justify-content:center;transition:.15s}
+.search-clear:hover{background:var(--accent);color:#03101d}
+.search-clear.visible{display:flex}
+.toc-nav{flex:1;overflow-y:auto;padding:6px 0 20px}
+.toc-nav::-webkit-scrollbar{width:4px}
+.toc-nav::-webkit-scrollbar-thumb{background:var(--line2);border-radius:2px}
+.toc-chapter{border-bottom:1px solid rgba(255,255,255,.04)}
+.toc-ch-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:transparent;border:none;color:var(--text);font:600 13px Inter,sans-serif;text-align:left;cursor:pointer;transition:background .15s;gap:8px}
+.toc-ch-btn:hover{background:rgba(255,255,255,.05);color:#fff}
+.toc-ch-btn[aria-expanded="true"] .toc-arrow{transform:rotate(90deg)}
+.toc-ch-link{display:block;padding:9px 16px;color:var(--text);font:600 13px Inter,sans-serif;text-decoration:none;cursor:pointer;transition:background .15s}
+.toc-ch-link:hover{background:rgba(255,255,255,.05);color:var(--accent)}
+.toc-chapter.active>.toc-ch-btn,
+.toc-chapter.active>.toc-ch-link{color:var(--accent);background:rgba(0,210,255,.06)}
+.toc-ch-label{flex:1;min-width:0}
+.toc-num{font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--accent);letter-spacing:.1em;margin-right:5px}
+.toc-arrow{font-size:9px;color:var(--dim);transition:transform .2s;flex-shrink:0}
+.toc-secs{list-style:none;padding:2px 0 6px;background:rgba(0,0,0,.18)}
+.toc-sec{display:block;padding:5px 16px 5px 30px;color:var(--muted);font-size:12px;text-decoration:none;cursor:pointer;transition:color .15s;border-left:2px solid transparent;margin-left:16px;line-height:1.4}
+.toc-sec:hover{color:#fff;border-left-color:var(--accent)}
+.toc-sec.toc-sec-current{background:rgba(0,210,255,.07);border-left-color:var(--accent)}
+
+/* content area = results panel + chapter panel */
+.content{margin-left:var(--sw);margin-top:var(--top-nav-h);flex:1;min-width:0;display:flex;min-height:calc(100vh - var(--top-nav-h))}
+
+/* results panel (hidden by default) */
+.results-panel{width:260px;flex-shrink:0;border-right:1px solid var(--line);background:var(--bg2);display:none;flex-direction:column;overflow:hidden}
+.results-panel.active{display:flex}
+.rp-head{padding:14px 16px 10px;border-bottom:1px solid var(--line);flex-shrink:0}
+.rp-count{font-family:"Share Tech Mono",monospace;font-size:11px;color:var(--accent);letter-spacing:.1em}
+.rp-list{flex:1;overflow-y:auto;padding:6px 0}
+.rp-list::-webkit-scrollbar{width:4px}
+.rp-list::-webkit-scrollbar-thumb{background:var(--line2);border-radius:2px}
+.rp-item{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s}
+.rp-item:hover{background:rgba(255,255,255,.05)}
+.rp-item.selected{background:rgba(0,210,255,.08);border-left:2px solid var(--accent)}
+.rp-ch{font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--accent);letter-spacing:.08em;margin-bottom:4px;text-transform:uppercase}
+.rp-excerpt{font-size:12px;color:var(--muted);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.rp-excerpt mark{background:rgba(0,210,255,.25);color:#fff;border-radius:2px;padding:0 2px}
+
+/* chapter panel */
+.ch-panel{flex:1;min-width:50vw;overflow-y:auto}
+
+/* chapter sections */
+.ch-section{padding:52px 56px 60px}
+.ch-section[hidden]{display:none}
+h2.chapter-heading{font-size:30px;font-weight:800;color:#fff;letter-spacing:-.02em;margin:0 0 22px;display:flex;flex-direction:column;gap:4px}
+.ch-num{font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--accent);letter-spacing:.2em;text-transform:uppercase;font-weight:400}
+h3.section-heading{font-size:18px;font-weight:700;color:#fff;margin:30px 0 10px}
+p{color:var(--muted);margin:0 0 12px;font-size:14px}
+strong{color:#e8eefb}
+ul{list-style:none;margin:0 0 16px;padding:0}
+ul li{color:var(--muted);font-size:14px;padding:3px 0 3px 18px;position:relative;line-height:1.5}
+ul li::before{content:"—";position:absolute;left:0;color:var(--accent);font-family:"Share Tech Mono",monospace;font-size:12px}
+
+/* tables */
+.table-wrap{border:1px solid rgba(255,255,255,.18);border-radius:6px;overflow:hidden;margin:18px 0 26px}
+.help-table{width:100%;border-collapse:collapse;font-size:13px;margin:0}
+.help-table th{background:#1f3564;color:#fff;font-weight:600;padding:9px 14px;text-align:left;font-size:12px}
+.help-table td{padding:8px 14px;border-bottom:1px solid var(--line);color:var(--muted);vertical-align:top}
+.help-table tr.pair-a td{background:rgba(17,29,50,.55)}
+.help-table tr.pair-b td{background:transparent}
+.help-table .pair-action{vertical-align:middle;text-align:left}
+.help-table tr:hover td{color:var(--text)}
+
+/* prev/next nav */
+.ch-nav{display:flex;justify-content:space-between;margin-top:40px;padding-top:24px;border-top:1px solid var(--line)}
+.ch-nav-btn{padding:9px 18px;background:transparent;border:1px solid var(--line2);border-radius:8px;color:var(--muted);font:600 13px Inter,sans-serif;cursor:pointer;transition:.2s}
+.ch-nav-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* chapters with images — two-column layout */
+.ch-section.has-imgs{max-width:none}
+.ch-layout{display:flex;gap:28px;align-items:flex-start}
+.ch-body{flex:1;min-width:0}
+.ch-imgs{flex-shrink:0;width:200px;display:flex;flex-direction:column;gap:12px;position:sticky;top:52px;padding-top:4px}
+.ch-fig{margin:0}
+.ch-img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;transition:border-color .2s;cursor:zoom-in}
+.ch-img:hover{border-color:var(--accent)}
+.ch-img-placeholder{flex-shrink:0}
+.ch-before-imgs{display:flex;justify-content:center;margin-bottom:28px}
+.ch-before-img{max-width:100%;max-height:420px;border-radius:8px;display:block}
+.pro-cta{margin-top:20px}
+.ch-ref{color:var(--accent);text-decoration:none}
+.ch-ref:hover{text-decoration:underline}
+.os-badge{display:inline-flex;align-items:center;vertical-align:middle;margin-right:3px;opacity:.85}
+.os-badge-win{color:#6ab0e8}
+.os-badge-mac{color:#d0d8e8}.center-badge{display:inline-flex;align-items:center;vertical-align:middle;margin:0 2px}
+kbd{display:inline-block;padding:1px 6px;background:rgba(0,180,220,.08);border:1px solid rgba(0,180,220,.25);border-radius:4px;font-family:"Share Tech Mono",monospace;font-size:.82em;color:#b8ccec;box-shadow:inset 0 -1px 0 rgba(0,0,0,.3);vertical-align:middle;white-space:nowrap;line-height:1.5}
+.ch-icon-inline{display:inline-block;height:18px;width:18px;vertical-align:middle;margin:0 3px}
+.wires-btn{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;background:var(--accent);border:none;border-radius:4px;color:#000;font-family:"Share Tech Mono",monospace;font-size:11px;font-weight:700;letter-spacing:2px;white-space:nowrap;vertical-align:middle;line-height:1.5;user-select:none;transition:filter .15s}
+.wires-btn:hover{filter:brightness(1.15)}
+.wires-btn-danger{background:rgba(255,60,60,.15);border:1px solid rgba(255,60,60,.3);color:#ff5555}
+.wires-btn-danger:hover{filter:none;background:rgba(255,60,60,.25)}
+.wires-btn-ghost{background:none;border:1px solid rgba(255,255,255,.2);color:var(--dim)}
+.wires-btn-ghost:hover{filter:none;border-color:#fff;color:#fff}
+.wires-chk{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;background:var(--accent);border-radius:3px;color:#fff;font-size:10px;font-weight:700;line-height:1;vertical-align:middle;margin:0 3px;user-select:none}
+.wires-btn-img{height:26px;width:auto;display:inline-block;vertical-align:middle;margin:0 3px;border-radius:4px}
+.wires-banner{display:inline-flex;align-items:center;gap:14px;background:#0d1526ee;border:1px solid #00d4ff44;border-radius:8px;padding:8px 18px;font-family:"Share Tech Mono",monospace;font-size:13px;color:#b8ccec;box-shadow:0 4px 20px rgba(0,0,0,.6);vertical-align:middle;white-space:nowrap}
+.wires-banner strong{color:var(--accent);font-weight:700}
+.wires-inout-popup{display:inline-flex;flex-direction:column;background:#0a0f1e;border:1px solid #1e2d45;border-radius:6px;overflow:hidden;width:72px;box-shadow:0 4px 16px rgba(0,0,0,.6);vertical-align:middle;font-family:"Share Tech Mono",monospace;font-size:13px;font-weight:500;letter-spacing:1px}
+.wires-inout-in{padding:8px 0;text-align:center;color:#00d4ff;border-bottom:1px solid #1e2d45}
+.wires-inout-out{padding:8px 0;text-align:center;color:#b8ccec}
+.pro-btn{display:inline-block;padding:20px 48px;background:linear-gradient(135deg,#7c3aed,#4338ca);color:#fff;font-weight:700;font-size:22px;border-radius:12px;text-decoration:none;letter-spacing:.01em;transition:opacity .2s,transform .1s}
+.pro-btn:hover{opacity:.88;transform:translateY(-1px)}
+.ch-top-imgs{margin-bottom:24px}
+.ch-top-fig{margin:0}
+.ch-top-img{max-width:100%;max-height:450px;border-radius:8px;border:1px solid var(--line);display:block;transition:border-color .2s;cursor:zoom-in}
+.ch-top-img:hover{border-color:var(--accent)}
+.sec-layout{display:flex;gap:24px;align-items:flex-start}
+.sec-body{flex:1;min-width:0}
+.sec-imgs{flex-shrink:0;width:200px;display:flex;flex-direction:column;gap:12px}
+.surround-layout{display:flex;gap:16px;align-items:flex-start}
+.surround-side{flex-shrink:0;width:140px}
+.surround-body{flex:1;min-width:0}
+.sec-layout.ch4-intro-layout{align-items:center}
+.sec-imgs.ch4-intro-imgs{width:400px}
+
+.help-mobile-tools,.help-toc-scrim{display:none}
+.help-toc-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;border:1px solid var(--line2);border-radius:10px;background:rgba(8,18,32,.92);color:var(--text);font:800 13px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 12px 28px rgba(0,0,0,.28)}
+.help-toc-toggle span:last-child{color:var(--accent);font-family:"Share Tech Mono",monospace}
+.help-drawer-title,.toc-close{display:none}
+
+/* search result highlight */
+.srch-hl{background:rgba(0,210,255,.18);border-radius:3px;outline:2px solid var(--accent)}
+@media(max-width:760px){
+  :root{--top-nav-h:64px}
+  body{display:block;overflow-x:hidden}
+  .site-header{height:var(--top-nav-h);padding:0 18px}
+  .brand img{height:30px}
+  .menu-toggle{display:block}
+  .site-nav{position:fixed;top:var(--top-nav-h);left:0;right:0;display:none;flex-direction:column;align-items:stretch;gap:0;padding:10px 18px 18px;background:#03080f;border-bottom:1px solid var(--line)}
+  .site-nav.open{display:flex}
+  .site-nav a{padding:12px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .nav-cta{text-align:center;margin-top:8px}
+  .lang-selector{margin-top:10px;align-self:flex-start}
+  .lang-drop{left:0;right:auto}
+  .help-mobile-tools{display:block;position:fixed;top:var(--top-nav-h);left:0;right:0;z-index:150;padding:10px 18px;background:rgba(4,8,14,.88);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
+  .help-toc-scrim{position:fixed;inset:var(--top-nav-h) 0 0;z-index:290;background:rgba(0,0,0,.55);backdrop-filter:blur(3px)}
+  body.help-toc-open .help-toc-scrim{display:block}
+  .sidebar{width:min(92vw,360px);transform:translateX(-105%);transition:transform .22s ease;z-index:310;box-shadow:18px 0 50px rgba(0,0,0,.45)}
+  body.help-toc-open .sidebar{transform:translateX(0)}
+  .sb-head{padding:12px 14px 14px}
+  .help-drawer-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;color:#fff;font:800 13px Inter,system-ui,sans-serif}
+  .toc-close{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid var(--line2);border-radius:8px;background:rgba(255,255,255,.05);color:var(--muted);font-size:20px;line-height:1;cursor:pointer}
+  .toc-close:hover{border-color:var(--accent);color:#fff}
+  .content{margin-left:0;margin-top:calc(var(--top-nav-h) + 62px);display:block;min-height:auto}
+  .cookie-standalone-footer{left:0}
+  .ch-panel{min-width:0;overflow:visible}
+  .ch-section{padding:32px 18px 48px}
+  h2.chapter-heading{font-size:25px}
+  .results-panel{display:none}
+  .results-panel.active{position:fixed;top:calc(var(--top-nav-h) + 74px);left:18px;right:18px;z-index:330;width:auto;max-height:45vh;border:1px solid var(--line2);border-radius:12px;box-shadow:0 18px 45px rgba(0,0,0,.5)}
+  .ch-layout,.sec-layout,.surround-layout{display:block}
+  .ch-imgs,.sec-imgs,.surround-side{position:static;width:auto;margin:18px 0}
+  .ch-nav{gap:12px}
+  .ch-nav-btn{flex:1;padding:9px 12px}
+  .table-wrap{overflow-x:auto}
+  .help-table{min-width:560px}
+}
+</style>
+</head>
+<body>
+
+{% include header-help.html %}
+
+<div class="help-mobile-tools">
+  <button class="help-toc-toggle" type="button" aria-expanded="false" aria-controls="toc">
+    <span>Sommaire de l'aide</span>
+    <span aria-hidden="true">+</span>
+  </button>
+</div>
+<div class="help-toc-scrim" aria-hidden="true"></div>
+
+<aside class="sidebar">
+  <div class="sb-head">
+    <div class="help-drawer-title">
+      <span>Sommaire de l'aide</span>
+      <button class="toc-close" type="button" aria-label="Fermer">×</button>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" type="text" id="srch" placeholder="Rechercher dans l'aide…" autocomplete="off">
+      <button class="search-clear" id="srch-clear" aria-label="Effacer">✕</button>
+    </div>
+  </div>
+  <nav class="toc-nav" id="toc">
+    <div class="toc-chapter" data-ch="intro-propos-de-wires">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('intro-propos-de-wires',this)">
+<span class="toc-ch-label">À propos de Wires</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-qui-s-adresse-t-il" onclick="showChapter('intro-propos-de-wires')">À qui s’adresse-t-il ?</a></li><li><a class="toc-sec" href="#sec-fonctionnalit-s-cl-s" onclick="showChapter('intro-propos-de-wires')">Fonctionnalités clés</a></li><li><a class="toc-sec" href="#sec-points-forts" onclick="showChapter('intro-propos-de-wires')">Points forts</a></li><li><a class="toc-sec" href="#sec-visualisation-de-l-image-de-l-appareil" onclick="showChapter('intro-propos-de-wires')">Visualisation de l'image de l’appareil</a></li><li><a class="toc-sec" href="#sec-animation-des-signaux" onclick="showChapter('intro-propos-de-wires')">Animation des signaux</a></li><li><a class="toc-sec" href="#sec-exportation-html-interactive" onclick="showChapter('intro-propos-de-wires')">Exportation HTML interactive</a></li><li><a class="toc-sec" href="#sec-cas-d-utilisation" onclick="showChapter('intro-propos-de-wires')">Cas d'utilisation</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="intro-versions-free-et-pro">
+<a class="toc-ch-link" onclick="showChapter('intro-versions-free-et-pro')">Versions Free et PRO</a>
+</div>
+<div class="toc-chapter" data-ch="ch1">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch1',this)">
+<span class="toc-ch-label">Guide de démarrage rapide</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-tape-1-cr-er-ou-ouvrir-un-projet" onclick="showChapter('ch1')">Étape 1 — Créer ou ouvrir un projet</a></li><li><a class="toc-sec" href="#sec-tape-2-ajoutez-votre-premier-appareil" onclick="showChapter('ch1')">Étape 2 — Ajoutez votre premier appareil</a></li><li><a class="toc-sec" href="#sec-tape-3-cr-er-son-c-ble-pour-connecter-deux-appare" onclick="showChapter('ch1')">Étape 3 — Créer son câble pour connecter deux appareils</a></li><li><a class="toc-sec" href="#sec-tape-4-cr-er-une-route-de-signal" onclick="showChapter('ch1')">Étape 4 — Créer une route de signal</a></li><li><a class="toc-sec" href="#sec-tape-5-organiser-la-vue" onclick="showChapter('ch1')">Étape 5 — Organiser la vue</a></li><li><a class="toc-sec" href="#sec-tape-6-nommer-et-enregistrer" onclick="showChapter('ch1')">Étape 6 — Nommer et enregistrer</a></li><li><a class="toc-sec" href="#sec-tape-7-changer-la-langue-de-l-interface" onclick="showChapter('ch1')">Étape 7 — Changer la langue de l'interface</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch2">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch2',this)">
+<span class="toc-ch-label">Vue d’ensemble de l’interface</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-barre-d-en-t-te" onclick="showChapter('ch2')">Barre d'en-tête</a></li><li><a class="toc-sec" href="#sec-barre-lat-rale-gauche" onclick="showChapter('ch2')">Barre latérale gauche</a></li><li><a class="toc-sec" href="#sec-panneau-d-information-de-droite" onclick="showChapter('ch2')">Panneau d'information de droite&nbsp;:</a></li><li><a class="toc-sec" href="#sec-c-bles-ou-appareil" onclick="showChapter('ch2')">Câbles ou Appareil</a></li><li><a class="toc-sec" href="#sec-routes-de-signal" onclick="showChapter('ch2')">Routes de signal</a></li><li><a class="toc-sec" href="#sec-mini-carte-ch2" onclick="showChapter('ch2')">Mini-carte</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch3">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch3',this)">
+<span class="toc-ch-label">Projets</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-cr-er-un-nouveau-projet" onclick="showChapter('ch3')">Créer un nouveau projet</a></li><li><a class="toc-sec" href="#sec-ouvrir-un-projet" onclick="showChapter('ch3')">Ouvrir un projet</a></li><li><a class="toc-sec" href="#sec-sauvegarde-automatique-r-cup-ration-apr-s-incident" onclick="showChapter('ch3')">Sauvegarde automatique (récupération après incident)</a></li><li><a class="toc-sec" href="#sec-importer-un-projet" onclick="showChapter('ch3')">Importer un projet</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch4">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch4',this)">
+<span class="toc-ch-label">Appareils</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-ajouter-un-appareil" onclick="showChapter('ch4')">Ajouter un appareil</a></li><li><a class="toc-sec" href="#sec-rechercher-l-image-d-un-appareil" onclick="showChapter('ch4')">Rechercher l'image d'un appareil</a></li><li><a class="toc-sec" href="#sec-fen-tre-configuration-de-l-image-tape-par-tape" onclick="showChapter('ch4')">Fenêtre Configuration de l'image &amp; points de connexion — étape par étape</a></li><li><a class="toc-sec" href="#sec-tape-1-supprimez-l-arri-re-plan" onclick="showChapter('ch4')">Étape 1 — Supprimez l'arrière-plan</a></li><li><a class="toc-sec" href="#sec-tape-2-recadrez-l-image" onclick="showChapter('ch4')">Étape 2 — Recadrez l'image</a></li><li><a class="toc-sec" href="#sec-tape-3-ajoutez-des-points-de-connexion-ports" onclick="showChapter('ch4')">Étape 3 — Ajoutez des points de connexion (ports)</a></li><li><a class="toc-sec" href="#sec-tape-4-configurez-chaque-port-de-la-liste" onclick="showChapter('ch4')">Étape 4 — Configurez chaque port de la liste</a></li><li><a class="toc-sec" href="#sec-tape-5-alignez-les-ports-facultatif" onclick="showChapter('ch4')">Étape 5 — Alignez les ports (facultatif)</a></li><li><a class="toc-sec" href="#sec-tape-6-appliquez" onclick="showChapter('ch4')">Étape 6 — Appliquez</a></li><li><a class="toc-sec" href="#sec-fen-tre-ajouter-un-appareil" onclick="showChapter('ch4')">Fenêtre «&nbsp;Ajouter un appareil&nbsp;»</a></li><li><a class="toc-sec" href="#sec-modification-d-un-n-ud" onclick="showChapter('ch4')">Modification d'un appareil</a></li><li><a class="toc-sec" href="#sec-changer-la-cat-gorie-d-un-n-ud" onclick="showChapter('ch4')">Changer la catégorie d'un appareil</a></li><li><a class="toc-sec" href="#sec-s-lection-de-plusieurs-n-uds" onclick="showChapter('ch4')">Sélection de plusieurs appareils</a></li><li><a class="toc-sec" href="#sec-copier-couper-coller" onclick="showChapter('ch4')">Copier, couper, coller</a></li><li><a class="toc-sec" href="#sec-supprimer-un-n-ud" onclick="showChapter('ch4')">Supprimer un appareil</a></li><li><a class="toc-sec" href="#sec-ic-ne-internet" onclick="showChapter('ch4')">Icône Internet</a></li><li><a class="toc-sec" href="#sec-apparence-et-placement" onclick="showChapter('ch4')">Apparence et placement</a></li><li><a class="toc-sec" href="#sec-suppression" onclick="showChapter('ch4')">Suppression</a></li><li><a class="toc-sec" href="#sec-restauration" onclick="showChapter('ch4')">Restauration</a></li><li><a class="toc-sec" href="#sec-liaison" onclick="showChapter('ch4')">Liaison</a></li><li><a class="toc-sec" href="#sec-exclusions" onclick="showChapter('ch4')">Exclusions</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch5">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch5',this)">
+<span class="toc-ch-label">Modifier l’image d’un appareil</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-ouverture-de-la-configuration-d-image-pour-un-appa" onclick="showChapter('ch5')">Ouverture de la configuration d'image pour un appareil existant</a></li><li><a class="toc-sec" href="#sec-remplacer-l-image" onclick="showChapter('ch5')">Remplacer l'image</a></li><li><a class="toc-sec" href="#sec-utiliser-un-diteur-d-images-externe-optionnel" onclick="showChapter('ch5')">Utiliser un éditeur d'images externe (optionnel)</a></li><li><a class="toc-sec" href="#sec-tape-1-configurer-l-diteur" onclick="showChapter('ch5')">Étape 1 — Configurer l'éditeur</a></li><li><a class="toc-sec" href="#sec-tape-2-exporter-vers-l-diteur" onclick="showChapter('ch5')">Étape 2 — Exporter vers l'éditeur</a></li><li><a class="toc-sec" href="#sec-tape-3-modifier-et-enregistrer" onclick="showChapter('ch5')">Étape 3 — Modifier et enregistrer</a></li><li><a class="toc-sec" href="#sec-tape-4-r-importer" onclick="showChapter('ch5')">Étape 4 — Ré-importer</a></li><li><a class="toc-sec" href="#sec-avertissement-concernant-la-taille-du-canevas" onclick="showChapter('ch5')">Avertissement concernant la taille du canevas</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch6">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch6',this)">
+<span class="toc-ch-label">Câbles (Connexions)</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-cr-ation-d-un-c-ble" onclick="showChapter('ch6')">Création d'un câble</a></li><li><a class="toc-sec" href="#sec-s-lection-d-un-c-ble" onclick="showChapter('ch6')">Sélection d'un câble</a></li><li><a class="toc-sec" href="#sec-modification-d-un-chemin-de-c-ble" onclick="showChapter('ch6')">Modification d'un chemin de câble</a></li><li><a class="toc-sec" href="#sec-types-et-couleurs-de-c-bles" onclick="showChapter('ch6')">Types et couleurs de câbles</a></li><li><a class="toc-sec" href="#sec-supprimer-un-c-ble" onclick="showChapter('ch6')">Supprimer un câble</a></li><li><a class="toc-sec" href="#sec-tats-visuels-du-c-ble" onclick="showChapter('ch6')">États visuels du câble</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch7">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch7',this)">
+<span class="toc-ch-label">Texte</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-placer-un-texte" onclick="showChapter('ch7')">Placer un texte</a></li><li><a class="toc-sec" href="#sec-d-placer-un-texte" onclick="showChapter('ch7')">Déplacer un texte</a></li><li><a class="toc-sec" href="#sec-modification-du-texte" onclick="showChapter('ch7')">Modification du texte</a></li><li><a class="toc-sec" href="#sec-formatage" onclick="showChapter('ch7')">Formatage</a></li><li><a class="toc-sec" href="#sec-redimensionner-la-zone-de-texte" onclick="showChapter('ch7')">Redimensionner la zone de texte</a></li><li><a class="toc-sec" href="#sec-supprimer-un-texte" onclick="showChapter('ch7')">Supprimer un texte</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch8">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch8',this)">
+<span class="toc-ch-label">Zones</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-cr-er-une-zone" onclick="showChapter('ch8')">Créer une zone</a></li><li><a class="toc-sec" href="#sec-s-lection-d-une-zone" onclick="showChapter('ch8')">Sélection d'une zone</a></li><li><a class="toc-sec" href="#sec-d-placer-une-zone" onclick="showChapter('ch8')">Déplacer une zone</a></li><li><a class="toc-sec" href="#sec-redimensionner-une-zone" onclick="showChapter('ch8')">Redimensionner une zone</a></li><li><a class="toc-sec" href="#sec-nom-de-la-zone" onclick="showChapter('ch8')">Nom de la zone</a></li><li><a class="toc-sec" href="#sec-panneau-d-information-de-droite-propri-t-s-de-la-z" onclick="showChapter('ch8')">Panneau d’information de droite — Propriétés de la zone</a></li><li><a class="toc-sec" href="#sec-supprimer-une-zone-au-clavier" onclick="showChapter('ch8')">Supprimer une zone au clavier</a></li><li><a class="toc-sec" href="#sec-masquer-une-zone" onclick="showChapter('ch8')">Masquer une zone</a></li><li><a class="toc-sec" href="#sec-restaurer-une-zone-cach-e" onclick="showChapter('ch8')">Restaurer une zone cachée</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch9">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch9',this)">
+<span class="toc-ch-label">Navigation dans le canevas</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-zoom" onclick="showChapter('ch9')">Zoom</a></li><li><a class="toc-sec" href="#sec-panoramique-d-place-la-vue" onclick="showChapter('ch9')">Panoramique : déplace la vue</a></li><li><a class="toc-sec" href="#sec-s-lection-rectangulaire" onclick="showChapter('ch9')">Sélection rectangulaire</a></li><li><a class="toc-sec" href="#sec-ajuster-la-vue" onclick="showChapter('ch9')">Ajuster la vue</a></li><li><a class="toc-sec" href="#sec-mini-carte" onclick="showChapter('ch9')">Mini-carte</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch10">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch10',this)">
+<span class="toc-ch-label">Routes de signal</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-ouverture-du-panneau-routes" onclick="showChapter('ch10')">Ouverture du panneau Routes</a></li><li><a class="toc-sec" href="#sec-structure-de-la-route" onclick="showChapter('ch10')">Structure de la route</a></li><li><a class="toc-sec" href="#sec-chemins" onclick="showChapter('ch10')">Chemins</a></li><li><a class="toc-sec" href="#sec-affectation-de-c-bles-une-route" onclick="showChapter('ch10')">Affectation de câbles à une route</a></li><li><a class="toc-sec" href="#sec-nom-d-une-route" onclick="showChapter('ch10')">Nom d’une route</a></li><li><a class="toc-sec" href="#sec-gestion-des-segments-et-des-chemins" onclick="showChapter('ch10')">Gestion des segments et des chemins</a></li><li><a class="toc-sec" href="#sec-masquer-une-route" onclick="showChapter('ch10')">Masquer une route</a></li><li><a class="toc-sec" href="#sec-modifier-une-route" onclick="showChapter('ch10')">Modifier une route</a></li><li><a class="toc-sec" href="#sec-animation-suivi-du-signal" onclick="showChapter('ch10')">Animation — suivi du signal</a></li><li><a class="toc-sec" href="#sec-tats-visuels-de-la-route" onclick="showChapter('ch10')">États visuels de la route</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch11">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch11',this)">
+<span class="toc-ch-label">Bibliothèque et catégories</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-filtres-de-la-barre-lat-rale-gauche" onclick="showChapter('ch11')">Filtres de la barre latérale gauche</a></li><li><a class="toc-sec" href="#sec-rubrique-cat-gories" onclick="showChapter('ch11')">Rubrique Catégories</a></li><li><a class="toc-sec" href="#sec-rubrique-c-bles" onclick="showChapter('ch11')">Rubrique Câbles</a></li><li><a class="toc-sec" href="#sec-rubrique-zones" onclick="showChapter('ch11')">Rubrique Zones</a></li><li><a class="toc-sec" href="#sec-combinaison-de-filtres-et-d-autres-comportements" onclick="showChapter('ch11')">Combinaison de filtres et d'autres comportements</a></li><li><a class="toc-sec" href="#sec-cat-gories-par-d-faut" onclick="showChapter('ch11')">Catégories par défaut</a></li><li><a class="toc-sec" href="#sec-c-bles-par-d-faut" onclick="showChapter('ch11')">Câbles par défaut</a></li><li><a class="toc-sec" href="#sec-biblioth-que-d-appareils" onclick="showChapter('ch11')">Bibliothèque d'appareils</a></li><li><a class="toc-sec" href="#sec-renommer-une-cat-gorie-personnalis-e" onclick="showChapter('ch11')">Renommer une catégorie personnalisée</a></li><li><a class="toc-sec" href="#sec-supprimer-une-cat-gorie-personnalis-e" onclick="showChapter('ch11')">Supprimer une catégorie personnalisée</a></li><li><a class="toc-sec" href="#sec-ajouter-un-type-de-c-ble-personnalis" onclick="showChapter('ch11')">Ajouter un type de câble personnalisé</a></li><li><a class="toc-sec" href="#sec-renommer-un-type-de-c-ble-personnalis" onclick="showChapter('ch11')">Renommer un type de câble personnalisé</a></li><li><a class="toc-sec" href="#sec-supprimer-un-type-de-c-ble-personnalis" onclick="showChapter('ch11')">Supprimer un type de câble personnalisé</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch12">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch12',this)">
+<span class="toc-ch-label">Édition des couleurs</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-ouvrir-la-page" onclick="showChapter('ch12')">Ouvrir la page</a></li><li><a class="toc-sec" href="#sec-trois-colonnes" onclick="showChapter('ch12')">Trois colonnes</a></li><li><a class="toc-sec" href="#sec-colonne-cat-gories" onclick="showChapter('ch12')">Colonne Catégories</a></li><li><a class="toc-sec" href="#sec-s-lecteur-de-couleur" onclick="showChapter('ch12')">Sélecteur de couleur&nbsp;:</a></li><li><a class="toc-sec" href="#sec-colonne-c-bles" onclick="showChapter('ch12')">Colonne Câbles</a></li><li><a class="toc-sec" href="#sec-style-de-trait" onclick="showChapter('ch12')">Style de trait</a></li><li><a class="toc-sec" href="#sec-colonne-zones" onclick="showChapter('ch12')">Colonne Zones</a></li><li><a class="toc-sec" href="#sec-fermer-la-page" onclick="showChapter('ch12')">Fermer la page</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch13">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch13',this)">
+<span class="toc-ch-label">Sous-projets</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-importer-un-sous-projet" onclick="showChapter('ch13')">Importer un sous-projet</a></li><li><a class="toc-sec" href="#sec-ce-qui-est-import" onclick="showChapter('ch13')">Ce qui est importé</a></li><li><a class="toc-sec" href="#sec-zone-de-sous-projet" onclick="showChapter('ch13')">Zone de sous-projet</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch14">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch14',this)">
+<span class="toc-ch-label">Raccourcis clavier</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#sec-g-n-ral" onclick="showChapter('ch14')">Général</a></li><li><a class="toc-sec" href="#sec-s-lection-et-dition" onclick="showChapter('ch14')">Sélection et édition</a></li><li><a class="toc-sec" href="#sec-navigation-dans-le-canevas" onclick="showChapter('ch14')">Navigation dans le canevas</a></li></ul>
+</div>
+<div class="toc-chapter" data-ch="ch15">
+<button aria-expanded="false" class="toc-ch-btn" onclick="handleChClick('ch15',this)">
+<span class="toc-ch-label">Exporter</span>
+<span class="toc-arrow">►</span>
+</button>
+<ul class="toc-secs" hidden=""><li><a class="toc-sec" href="#ch15-html" onclick="showChapter('ch15')">Canevas HTML Interactif</a></li><li><a class="toc-sec" href="#sec-fonctions-interactives-dans-la-visionneuse" onclick="showChapter('ch15')">Fonctions interactives dans la visionneuse</a></li><li><a class="toc-sec" href="#sec-cas-d-utilisation-partager-int-grer-pr-senter" onclick="showChapter('ch15')">Cas d'utilisation - partager, intégrer, présenter</a></li><li><a class="toc-sec" href="#ch15-pdf" onclick="showChapter('ch15')">Canevas PDF</a></li><li><a class="toc-sec" href="#ch15-packlist" onclick="showChapter('ch15')">Liste de Paquetage</a></li><li><a class="toc-sec" href="#ch15-routes" onclick="showChapter('ch15')">Routes</a></li></ul>
+</div>
+</nav>
+</aside>
+
+<main class="content">
+  <div class="results-panel" id="results-panel">
+    <div class="rp-head"><span class="rp-count" id="rp-count"></span></div>
+    <div class="rp-list" id="rp-list"></div>
+  </div>
+  <div class="ch-panel" id="ch-panel">
+<section class="ch-section" id="intro-propos-de-wires">
+<div class="ch-before-imgs">
+<img alt="wires" class="ch-before-img" data-img-key="wires" src="../images/FR/wires-fr.png">
+</div>
+<h2 class="chapter-heading">À propos de Wires</h2>
+<p>Version 1.3.0 — 16 août 2026</p>
+<p>Wires est un outil de documentation et de planification pour le routage des signaux audio/vidéo/lumière. Il vous permet de modéliser l'architecture technique d'une installation en plaçant des appareils sur un canevas, en les connectant avec des câbles et en organisant ces connexions en routes de signal logiques et visuels.</p>
+<h3 class="section-heading" id="sec-qui-s-adresse-t-il"><strong>À qui s’adresse-t-il ?</strong></h3>
+<p>Wires est conçu pour les techniciens audiovisuels, les streamers, les intégrateurs système, les entrepreneurs en son et éclairage, les responsables techniques d’église ou d'événements, et tout professionnel ou amateur impliqué dans la conception, la documentation ou l'exploitation d'architectures de signaux complexes.</p>
+<h3 class="section-heading" id="sec-fonctionnalit-s-cl-s"><strong>Fonctionnalités clés</strong></h3>
+<ul>
+<li><strong>Appareils personnalisés : </strong>importez une image de votre appareil ou choisissez une forme géométrique, puis ajoutez autant de ports (points de connexion) que nécessaire pour la rendre interactive.</li>
+<li><strong>Canevas : </strong>plan où vous pouvez positionnez vos appareils librement.</li>
+<li><strong>Câbles : </strong>nommez les appareils et connectez-les ensemble, puis catégorisez chaque connexion.</li>
+<li><strong>Routes de signal&nbsp;: </strong>regroupez les câbles en routes logiques pour documenter le trajet complet d'un signal, de la source à la destination.</li>
+<li><strong>Zones : </strong>définissez des zones sur le canevas pour structurer le plan par scène, rack ou zone technique.</li>
+<li><strong>Textes : </strong>annotez le plan avec du texte libre pour ajouter des informations contextuelles.</li>
+<li><strong>Exports : </strong>générez une exportation HTML interactive, un PDF ou une liste de paquetage prête à l'emploi.</li>
+<li><strong>Interface multilingue : </strong>disponible en anglais, français et espagnol.</li>
+</ul>
+<h3 class="section-heading" id="sec-points-forts"><strong>Points forts</strong></h3>
+<h3 class="section-heading" id="sec-visualisation-de-l-image-de-l-appareil"><strong>Visualisation de l'image de l’appareil</strong></h3>
+<p>Chaque appareil peut être représenté par une image ou une forme géométrique colorée qu’il représente. Importez vos propres visuels ou sélectionnez une forme pour rendre le plan immédiatement lisible par toute l’équipe, même sans connaissance préalable du projet.</p>
+<h3 class="section-heading" id="sec-animation-des-signaux"><strong>Animation des signaux</strong></h3>
+<p>Lancez une animation sur n’importe quelle route : un point lumineux se déplace le long des câbles de la source à la destination. Cette visualisation permet de vérifier d'un seul coup d'œil le trajet complet du signal, sa direction et l'absence de toute rupture de chaîne.</p>
+<h3 class="section-heading" id="sec-exportation-html-interactive"><strong>Exportation HTML interactive</strong></h3>
+<p>Le plan peut être exporté sous forme de fichier HTML autonome qui reproduit fidèlement le canevas, les images des appareils et la liste des routes. Il peut également être publié sur une page web afin de présenter et d’expliquer clairement votre configuration. </p>
+<h3 class="section-heading" id="sec-cas-d-utilisation"><strong>Cas d'utilisation</strong></h3>
+<ul>
+<li>Documentez le routage audio d'un concert : consoles, stageboxes, amplificateurs et moniteurs, en suivant chaque bus de la scène au public.</li>
+<li>Cartographiez l'infrastructure vidéo d'un studio de broadcast : caméras, mélangeurs, routeurs, encodeurs et moniteurs - avec une exportation HTML à partager avec l'équipe de production ou le client.</li>
+<li>Concevez la configuration audiovisuelle d’une église : sonorisation, écrans, caméras, régie vidéo, diffusion en direct et retours de scène.</li>
+<li>Organisez la configuration audiovisuelle d’un créateur de contenu pour YouTube, Instagram ou le streaming en direct : caméras, microphones, éclairage, ordinateur, interface audio, écrans et équipements réseau.</li>
+<li>Concevez l'architecture d'une salle de conférence : sources HDMI, matrices, écrans et systèmes de vidéoconférence - en utilisant l'animation pour vérifier que chaque signal atteint sa bonne destination.</li>
+</ul>
+<div class="ch-nav"><span></span><button class="ch-nav-btn" onclick="showChapter('intro-versions-free-et-pro')">Suivant →</button></div>
+</section>
+<section class="ch-section has-imgs" hidden="" id="intro-versions-free-et-pro">
+<h2 class="chapter-heading">Versions Free et PRO</h2>
+<div class="ch-layout"><div class="ch-body"><p>La version gratuite est limitée à 10 appareils </p>
+<p>Un export PDF en 75 dpi.</p>
+<p>Les sous-projets sont réservés à Wires PRO.</p>
+<p>Toutes les autres fonctionnalités sont disponibles dans les deux versions.</p></div><div class="ch-imgs" style="width:442px;margin-top:-58px">
+<figure class="ch-fig"><img alt="activer2" class="ch-img" data-img-key="activer2" src="../images/FR/activer2-fr.png"></figure>
+</div></div>
+<div class="pro-cta"><a class="pro-btn" href="#">Obtenir Wires PRO</a></div>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('intro-propos-de-wires')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch1')">Suivant →</button></div>
+</section>
+<section class="ch-section" hidden="" id="ch1">
+<h2 class="chapter-heading">Guide de démarrage rapide</h2>
+<h3 class="section-heading" id="sec-tape-1-cr-er-ou-ouvrir-un-projet"><strong>Étape 1 — Créer ou ouvrir un projet</strong></h3>
+<p>Lorsque Wires se lance, un écran de démarrage répertorie vos projets récents. </p>
+<p>Cliquez sur <span class="wires-btn"> + Nouveau projet </span> pour le créer.</p>
+<h3 class="section-heading" id="sec-tape-2-ajoutez-votre-premier-appareil"><strong>Étape 2 — Ajoutez votre premier appareil</strong></h3>
+<p>Cliquez sur le bouton <span class="wires-btn"> + </span> dans l'en-tête → <span class="wires-btn"> ⬡ Nouvel appareil </span>. </p>
+<p>Le choix de l'image s'ouvre :</p>
+<ul>
+<li>Trois façons de faire : la rechercher en ligne avec <img alt="searchBtn" class="wires-btn-img" src="../images/FR/Boutons/search_image-fr.png">, l'importer depuis votre ordinateur (PNG, JPG, WEBP, AVIF, GIF ou BMP), ou choisir une forme géométrique.
+La fenêtre&nbsp;Configuration image et points de connexion&nbsp;s'ouvre — configurez-la (<strong><a class="ch-ref" href="#" onclick="showChapter('ch4');return false;">voir Appareils</a></strong>).
+Cliquez sur <span class="wires-btn"> ✓ Appliquer </span>.
+La fenêtre Ajouter un appareil s'ouvre, avec l'image déjà en place : entrez le nom, ajustez le nom court et la catégorie si besoin.
+Cliquez sur <span class="wires-btn"> Placer sur le canevas </span>.</li>
+</ul>
+<h3 class="section-heading" id="sec-tape-3-cr-er-son-c-ble-pour-connecter-deux-appare"><strong>Étape 3 — Créer son câble pour connecter deux appareils</strong></h3>
+<p>Cliquez sur le bouton <span class="wires-btn"> + </span> dans l'en-tête → <span class="wires-btn"> ⤢ Nouveau câble </span>. Une bannière en haut apparait et vous guide. Les points de connexion présents sur les appareils apparaissent. Cliquez sur un point de connexion sur l’appareil SOURCE, puis cliquez sur un point de connexion sur l’appareil DESTINATION (même type de câble requis). Le câble est tiré automatiquement. Exceptions : USB et audio analogiques acceptent des connecteurs mixtes.</p>
+<h3 class="section-heading" id="sec-tape-4-cr-er-une-route-de-signal"><strong>Étape 4 — Créer une route de signal</strong></h3>
+<p>Une route de signal trace le chemin d'un signal à travers une chaîne de câbles et l'anime sur le canevas. Lorsque vous créez un câble, une fenêtre apparaît : </p>
+<ul>
+<li>choisissez&nbsp;<span class="wires-btn"> Créer une nouvelle route </span>&nbsp; ou&nbsp;<span class="wires-btn"> Ajouter à une route existante </span>&nbsp;— <strong><a class="ch-ref" href="#" onclick="showChapter('ch10');return false;">voir Routes de signal</a></strong> pour le détail complet.</li>
+</ul>
+<p><em>ℹ</em><em> Un câble sans route est automatiquement supprimé si vous annulez la fenêtre.</em></p>
+<h3 class="section-heading" id="sec-tape-5-organiser-la-vue"><strong>Étape 5 — Organiser la vue</strong></h3>
+<p>Faites défiler la molette pour zoomer. Cliquez avec le bouton gauche et faites glisser la souris sur une partie vide du canevas pour déplacer la vue.</p>
+<p>Pour dessiner un cadre de sélection et sélectionner plusieurs appareils, faites <kbd>Alt</kbd> + clic et glisser.</p>
+<p>Appuyez sur <kbd>F</kbd> pour afficher tous les appareils du canevas.</p>
+<h3 class="section-heading" id="sec-tape-6-nommer-et-enregistrer"><strong>Étape 6 — Nommer et enregistrer</strong></h3>
+<p>Cliquez sur le nom du projet dans l'en-tête supérieur pour le renommer. À la fermeture du programme, une boîte de dialogue&nbsp;<strong>MODIFICATIONS NON SAUVEGARDÉES</strong>&nbsp;apparaîtra. Cliquez sur&nbsp;<span class="wires-btn"> Enregistrer sous… </span>&nbsp;pour choisir l'emplacement et le nom du fichier.</p>
+<h3 class="section-heading" id="sec-tape-7-changer-la-langue-de-l-interface"><strong>Étape 7 — Changer la langue de l'interface</strong></h3>
+<p>Wires est disponible en trois langues : anglais, français et espagnol. Cliquez sur le drapeau du haut pour changer de langue à tout moment. L'interface se met à jour immédiatement. D'autres langues seront ajoutées dans les versions futures.</p>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('intro-versions-free-et-pro')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch2')">Suivant →</button></div>
+</section>
+<section class="ch-section has-imgs" hidden="" id="ch2">
+<h2 class="chapter-heading">Vue d’ensemble de l’interface</h2>
+<div class="ch-top-imgs">
+<figure class="ch-top-fig"><img alt="header" class="ch-top-img" data-img-key="header" src="../images/FR/header-fr.png"></figure>
+</div><div class="ch-layout"><div class="ch-body"><h3 class="section-heading" id="sec-barre-d-en-t-te"><strong>Barre d'en-tête</strong></h3>
+<p>L'en-tête contient le nom du projet, les commandes de navigation et une icône de drapeau sur le côté droit. Cliquez dessus pour changer la langue de l'interface entre l'anglais, le français et l'espagnol. </p>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Élément</strong></th><th><strong>Fonction</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Logo / WIRES</strong></td><td>Lien vers le site www.alkoda-wires.com</td></tr><tr class="pair-b"><td><strong>Nom du projet</strong></td><td>Cliquez pour renommer le projet</td></tr><tr class="pair-a"><td><strong>Drapeau</strong></td><td>Cliquez pour changer de langue</td></tr><tr class="pair-b"><td><strong>Rechercher du matériel...</strong></td><td>Rechercher des appareils sur le canevas</td></tr><tr class="pair-a"><td><strong>Bouton ROUTES</strong><span class="wires-btn"> </span></td><td>Ouvrir le panneau Routes de signal</td></tr><tr class="pair-b"><td><strong>Bouton +</strong><span class="wires-btn"> </span></td><td>Liste déroulante : <span class="wires-btn"> ⬡ Nouvel appareil </span>, <span class="wires-btn"> ⤢ Nouveau câble </span> ou        <span class="wires-btn">  T Nouveau texte </span>, <span class="wires-btn"> ▭ Nouvelle zone </span>.</td></tr><tr class="pair-a"><td><strong>Boutons ↩ Annuler / ↪ Rétablir</strong></td><td>Parcourez l'historique des modifications (10 niveaux)</td></tr><tr class="pair-b"><td><strong>N APPAREILS / N CONNEXIONS</strong></td><td>Nombre actuel d’appareils et de câbles sur le canevas</td></tr></tbody></table></div>
+<h3 class="section-heading" id="sec-barre-lat-rale-gauche"><strong>Barre latérale gauche</strong></h3>
+<ul>
+<li>Trois sections de filtre, chacune avec deux modes (isoler / masquer, basculés par l'interrupteur <span style="position:relative;display:inline-block;width:28px;height:16px;border-radius:8px;background:#00d4ff;vertical-align:middle"><span style="position:absolute;top:2px;left:14px;width:12px;height:12px;border-radius:50%;background:#fff"></span></span> de sa ligne <span class="wires-btn"> Tous </span>) :</li>
+<li>Catégories — isole ou masque les appareils d'un type ; en mode isoler, leurs connexions vers les autres catégories apparaissent en fantôme.</li>
+<li>Câbles — isole ou masque les appareils reliés par le type de câble sélectionné.</li>
+<li>Zones — isole ou masque les appareils situés dans la zone sélectionnée.</li>
+<li>Les trois filtres s'appliquent simultanément — <strong><a class="ch-ref" href="#" onclick="showChapter('ch11');return false;">voir Bibliothèque et catégories</a></strong> pour le détail complet.</li>
+<li>La barre latérale se rétracte automatiquement — survolez pour l'ouvrir,&nbsp;B&nbsp;pour l'épingler.</li>
+</ul>
+<h3 class="section-heading" id="sec-panneau-d-information-de-droite"><strong>Panneau d'information de droite&nbsp;:</strong></h3>
+<h3 class="section-heading" id="sec-c-bles-ou-appareil"><strong>Câbles ou Appareil</strong></h3><div class="surround-layout"><div class="surround-side"><figure class="ch-fig"><img alt="panneauDroit1" class="ch-img" data-img-key="panneauDroit1" src="../images/FR/panneauDroit1-fr.png"></figure></div><div class="surround-body">
+<p>S'ouvre automatiquement lorsque vous cliquez sur un nœud ou un câble. Affiche les détails, les connexions et les actions pour l'élément sélectionné. Fermez avec le bouton ✕, <kbd>Échap</kbd> ou en cliquant sur un canevas vide. </p>
+</div><div class="surround-side"><figure class="ch-fig"><img alt="panneauDroit2" class="ch-img" data-img-key="panneauDroit2" src="../images/FR/panneauDroit2-fr.png"></figure></div></div><h3 class="section-heading" id="sec-routes-de-signal"><strong>Routes de signal</strong></h3><div class="sec-layout"><div class="sec-body">
+<p>Ouvert via le bouton&nbsp;<span class="wires-btn"> ⬡ ROUTES </span>&nbsp;dans l'en-tête. Affiche toutes les routes de signal créées dans le projet : leur nom, les segments de câbles qui les composent et leur sens de circulation. Depuis ce panneau, vous pouvez lancer ou arrêter l'animation de flux sur une route, réordonner les segments, inverser le sens d'un segment et créer des chemins alternatifs (splits). Le panneau peut rester ouvert pendant que vous travaillez. Un premier clic sur le canevas vide ferme le panneau sans arrêter les animations en cours ; un deuxième clic les arrête.</p>
+</div><div class="sec-imgs">
+<figure class="ch-fig"><img alt="routes" class="ch-img" data-img-key="routes" src="../images/FR/routes-fr.png"></figure>
+</div></div><h3 class="section-heading" id="sec-mini-carte-ch2"><strong>Mini-carte</strong></h3>
+<div class="ch-top-imgs">
+<figure class="ch-top-fig"><img alt="minimap" class="ch-top-img" data-img-key="minimap" src="../images/FR/minimap.png"></figure>
+</div>
+<p>Coin inférieur gauche. Affiche une vue simplifiée du canevas. Cliquez ou faites glisser n'importe où dans la mini-carte pour naviguer.</p></div><div class="ch-imgs" style="padding-top:390px">
+<figure class="ch-fig"><img alt="gauche" class="ch-img" data-img-key="gauche" src="../images/FR/gauche-fr.png"></figure>
+</div></div>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch1')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch3')">Suivant →</button></div>
+</section>
+<section class="ch-section" hidden="" id="ch3">
+<h2 class="chapter-heading">Projets</h2>
+<h3 class="section-heading" id="sec-cr-er-un-nouveau-projet"><strong>Créer un nouveau projet</strong></h3>
+<ul>
+<li><kbd>Ctrl</kbd> + <kbd>N</kbd> ou <kbd>⌘</kbd> + <kbd>N</kbd> (via le menu Fichier)</li>
+<li>Écran de démarrage → bouton <span class="wires-btn"> + Nouveau projet </span>.</li>
+<li>S'il existe un travail non enregistré, une boîte de dialogue demande quoi faire en premier.</li>
+</ul>
+<h3 class="section-heading" id="sec-ouvrir-un-projet"><strong>Ouvrir un projet</strong></h3>
+<ul>
+<li><kbd>Ctrl</kbd> + <kbd>O</kbd> ou <kbd>⌘</kbd> + <kbd>O</kbd> ou Fichier → Ouvrir</li>
+<li>L'écran de démarrage répertorie les 10 projets les plus récents (cliquez pour ouvrir)</li>
+</ul>
+<h3 class="section-heading" id="sec-sauvegarde-automatique-r-cup-ration-apr-s-incident"><strong>Sauvegarde automatique (récupération après incident)</strong></h3>
+<p>Wires enregistre automatiquement un fichier de session 3 secondes après la dernière modification. </p>
+<p>Si l'application plante ou est fermée de force, le prochain lancement affiche une entrée "● dernière session " dans l'écran de démarrage.</p>
+<p><em>ℹ Il s'agit uniquement d'une récupération après incident : elle ne remplace pas la sauvegarde manuelle.</em></p>
+<h3 class="section-heading" id="sec-importer-un-projet"><strong>Importer un projet</strong></h3>
+<p><em>ℹ Cette fonctionnalité est réservée à la version Wires PRO.</em></p>
+<ul>
+<li>Permet d'intégrer un fichier .wires existant dans le canevas actuel sous forme de bloc indépendant (zone de sous-projet). Fonctionnalité PRO — <strong><a class="ch-ref" href="#" onclick="showChapter('ch13');return false;">voir Sous-projets</a></strong>.</li>
+</ul>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch2')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch4')">Suivant →</button></div>
+</section>
+<section class="ch-section" hidden="" id="ch4">
+<h2 class="chapter-heading">Appareils</h2>
+<h3 class="section-heading" id="sec-ajouter-un-appareil"><strong>Ajouter un appareil</strong></h3>
+<div class="sec-layout ch4-intro-layout"><div class="sec-body">
+<p>Cliquez sur le bouton <span class="wires-btn"> + </span> dans l'en-tête puis <span class="wires-btn"> ⬡ Nouvel appareil </span>.</p>
+<ul>
+<li>Une fenêtre s'ouvre pour choisir l'image. Trois façons de faire : la rechercher en ligne, l'importer depuis votre ordinateur (PNG, JPG, WEBP, AVIF, GIF ou BMP), ou choisir une forme géométrique (rectangle, cercle, triangle, carré).</li>
+</ul></div><div class="sec-imgs ch4-intro-imgs">
+<figure class="ch-fig"><img alt="ajoutAppareil00" class="ch-img" data-img-key="ajoutAppareil00" src="../images/FR/ajoutAppareil00-fr.png"></figure>
+</div></div>
+<h3 class="section-heading" id="sec-rechercher-l-image-d-un-appareil"><strong>Rechercher l'image d'un appareil</strong></h3>
+<div class="sec-layout"><div class="sec-body">
+<ul>
+<li>Cliquez sur <img alt="searchBtn" class="wires-btn-img" src="../images/FR/Boutons/search_image-fr.png"> pour ouvrir la recherche.</li>
+<li>Saisissez le Modèle : la liste Propositions se remplit à mesure que vous tapez. Elle contient les modèles dont le nom correspond, et tous les produits des marques dont le nom correspond — taper « dec » remonte le LinkDeck de Kiloview comme tous les appareils de Decimator Design.</li>
+<li>La Marque est facultative ; la renseigner limite les propositions à ce seul fabricant.</li>
+<li>Cliquez sur un modèle : ses Images proposées s'affichent à droite, avec leurs dimensions et leur format.</li>
+<li>Cliquez sur une image pour la sélectionner. <span class="wires-btn wires-btn-ghost"> ⛶ </span> Agrandir l'aperçu permet de la voir en grand avant de décider.</li>
+<li>Cliquez sur <span class="wires-btn"> Choisir cette image </span> pour poursuivre avec elle.</li>
+<li>Si aucune proposition ne convient, ou si aucune image n'est disponible pour le produit, <span class="wires-btn"> Chercher </span> ouvre une fenêtre de navigation. Cliquer une image l'ajoute aux images du produit, où vous la sélectionnez comme les autres. La case à cocher <span class="wires-chk">✓</span> Fond neutre oriente cette recherche vers les images sur fond uni.</li>
+<li>La fenêtre Configuration de l'image s'ouvre automatiquement — configurez-la (voir ci-dessous).</li>
+<li>Cliquez sur <span class="wires-btn"> ✓ Appliquer </span>.</li><li>La boîte de dialogue Ajouter un appareil s'ouvre, avec l'image et ses ports déjà en place. Si l'image vient de la recherche, le nom et le nom court sont déjà remplis ; ils restent modifiables. Sinon, remplissez le nom et le nom court. Désignez-lui une catégorie.</li>
+<li>Cliquez sur <span class="wires-btn"> Placer sur le canevas </span> pour placer l'appareil.</li>
+</ul></div><div class="sec-imgs" style="width:400px">
+<figure class="ch-fig"><img alt="searchVide" class="ch-img" src="../images/FR/search_image-fenetre.vide-fr.png"></figure>
+<figure class="ch-fig"><img alt="searchPleine" class="ch-img" src="../images/FR/search_image-fenetre.pleine-fr.png"></figure>
+</div></div>
+<p><em>ℹ</em><em> La version gratuite est limitée à 10 appareils. Wires PRO supprime cette limite.</em></p>
+<h3 class="section-heading" id="sec-fen-tre-configuration-de-l-image-tape-par-tape"><strong>Fenêtre Configuration de l'image &amp; points de connexion — étape par étape</strong></h3>
+<div class="ch-top-imgs">
+<figure class="ch-top-fig"><img alt="configImage" class="ch-top-img" data-img-key="configImage" src="../images/FR/configImage-fr.png"></figure>
+</div>
+<p><em>Pour modifier une image d’un appareil existant, consultez le <strong><a class="ch-ref" href="#" onclick="showChapter('ch5');return false;">Modifier l’image d’un appareil</a></strong>.</em></p>
+<p>Cette fenêtre comporte trois zones : Gauche Haut = image originale | Gauche Bas = résultat supprimé en arrière-plan avec poignées de recadrage | Droite = éditeur de port.</p>
+<p><em>ℹ Avec une forme géométrique, les étapes 1 et 2 ci-dessous ne s’appliquent pas. Passez directement à l’étape 3.</em></p>
+<h3 class="section-heading" id="sec-tape-1-supprimez-l-arri-re-plan"><strong>Étape 1 — Supprimez l'arrière-plan</strong></h3>
+<ul>
+<li>Ajustez la suppression du fond avec le curseur Tolérance.</li>
+
+<li>Si le résultat n'est pas satisfaisant, utilisez l'éditeur externe : saisissez le chemin de votre éditeur d'images, cliquez sur Ouvrir, éditez le fichier, puis réimportez-le.</li>
+</ul>
+<h3 class="section-heading" id="sec-tape-2-recadrez-l-image"><strong>Étape 2 — Recadrez l'image</strong></h3>
+<ul>
+<li>Un rectangle de recadrage apparaît automatiquement autour de l'appareil.</li>
+<li>Faites glisser les poignées pour ajuster la zone de recadrage.</li>
+<li>Faites glisser le centre du rectangle pour déplacer toute la zone de recadrage.</li>
+<li>Le bouton <span class="wires-btn wires-btn-ghost"> ⛶ </span> ouvre l’aperçu en grand pour vous permettre des réglages au pixel près.</li>
+</ul>
+<h3 class="section-heading" id="sec-tape-3-ajoutez-des-points-de-connexion-ports"><strong>Étape 3 — Ajoutez des points de connexion (ports)</strong></h3>
+<div class="ch-top-imgs">
+<figure class="ch-top-fig"><img alt="configPorts" class="ch-top-img" data-img-key="configPorts" src="../images/FR/configPorts-fr.png"></figure>
+</div>
+<p>La zone de droite affiche l'image recadrée de l'appareil. C'est ici que vous placez les points de connexion qui représentent les connecteurs physiques.</p>
+<p><em>ℹ Avec une forme géométrique, il est impossible de placer un point de connexion hors de la forme.</em></p>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Action</strong></th><th><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Cliquez sur <span class="wires-btn" style="background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);color:#e6ecf5"> ⛶ </span></strong></td><td>Ouvre la zone en plein écran, avec la liste des ports juste à côté et les boutons Aligner/grille regroupés dessous.</td></tr><tr class="pair-b"><td><strong>Cliquez sur la zone d'image vide</strong></td><td>Ajoutez un point de connexion à cette position exacte. Type par défaut : HDMI.</td></tr><tr class="pair-a"><td><strong>Faites glisser sur une zone d'image vide</strong></td><td>Dessinez un rectangle de sélection pour sélectionner plusieurs points existants à la fois.</td></tr><tr class="pair-b"><td><strong><kbd>⇧</kbd> + glisser</strong></td><td>Ajoutez à la sélection existante sans l'effacer.</td></tr><tr class="pair-a"><td><strong>Double-cliquez sur un point de connexion</strong></td><td>Mettez en surbrillance sa ligne dans la liste des ports ci-dessous et ouvrez la liste déroulante des types.</td></tr><tr class="pair-b"><td><strong>Cliquez et glisser un point de connexion</strong></td><td>Repositionnez le point (maintenez &gt;0,2 s avant de bouger).</td></tr><tr class="pair-a"><td><strong><kbd>⇧</kbd> + clic sur un point de connexion</strong></td><td>Activez/désactivez la sélection </td></tr></tbody></table></div>
+<h3 class="section-heading" id="sec-tape-4-configurez-chaque-port-de-la-liste"><strong>Étape 4 — Configurez chaque port de la liste</strong></h3>
+<p>Sous l'image, chaque port apparaît sous forme de ligne dans la liste :</p>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Élément</strong></th><th><strong>Fonction</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Carré coloré</strong></td><td>Affiche la couleur du type de câble en un coup d'œil.</td></tr><tr class="pair-b"><td><strong>Numéro #N</strong></td><td>Indice de port (1, 2, 3…), ou numéro personnalisé.</td></tr><tr class="pair-a"><td><strong>Champ N°</strong></td><td>Numéro du port, modifiable.</td></tr><tr class="pair-b"><td><strong>Type de liste déroulante</strong></td><td>Cliquez pour choisir le type de connecteur : Dante, DC, DisplayPort, HDMI, Jack 3.5, Jack 6.35, MADI, Optique, RCA/Cinch, RJ45, SDI, SDI-F, Speakon, Thunderbolt, USB-A, USB-C, USB-DC, XLR — ou&nbsp;Personnalisé…&nbsp;pour créer un type de câble sur-mesure.</td></tr><tr class="pair-a"><td><strong>Bouton ⇌</strong></td><td>Basculer vers la double direction : le port accepte les connexions IN et OUT. Lorsqu'il est actif, le bouton devient cyan.</td></tr><tr class="pair-b"><td><strong>Bouton </strong><span class="wires-btn" style="background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);color:#e6ecf5"> ✕ </span></td><td>Supprimez ce port.</td></tr></tbody></table></div>
+<p><em>ℹ Deux ports partageant le même numéro s'allument en rouge et clignotent (ligne de la liste et contour du point sur l'image).</em></p>
+<h3 class="section-heading" id="sec-tape-5-alignez-les-ports-facultatif"><strong>Étape 5 — Alignez les ports (facultatif)</strong></h3>
+<ul>
+<li><kbd>⇧</kbd> + clic (ou <kbd>⇧</kbd> + glisser) pour sélectionner 2 points de port ou plus.</li>
+<li><span class="wires-btn"> Aligner H </span> pour déplacer tous les points sélectionnés au même niveau horizontal (même coordonnée Y).</li>
+<li><span class="wires-btn"> Aligner V </span> pour déplacer tous les points sélectionnés vers la même colonne verticale (même coordonnée X).</li>
+<li>↪	Utile pour aligner une rangée de ports sur l’image bien droite d’un appareil.</li>
+</ul>
+<h3 class="section-heading" id="sec-tape-6-appliquez"><strong>Étape 6 — Appliquez</strong></h3>
+<ul>
+<li>Cliquez sur <span class="wires-btn"> ✓ Appliquer </span> pour confirmer. Le recadrage est appliqué et les ports sont enregistrés.</li>
+<li>La fenêtre Configuration de l'image se ferme et revient à la boîte de dialogue Ajouter un appareil.</li>
+<li>L'aperçu de l’appareil affiche l'image nettoyée avec des points de port superposés.</li>
+</ul>
+<p>Si une image est déjà utilisée pour un autre appareil identique, un champ Numéro apparaît. Facultatif, il permet d’attribuer un numéro pour différencier les appareils.</p><h3 class="section-heading" id="sec-fen-tre-ajouter-un-appareil"><strong>Fenêtre «&nbsp;Ajouter un appareil&nbsp;»</strong></h3>
+<div class="ch-top-imgs">
+<figure class="ch-top-fig"><img alt="ajoutAppareil" class="ch-top-img" data-img-key="ajoutAppareil" src="../images/FR/ajoutAppareil-fr.png"></figure>
+</div>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Champ</strong></th><th><strong>Remarques</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Nom</strong></td><td>Nom complet de l'appareil : obligatoire.</td></tr><tr class="pair-b"><td><strong>Nom court</strong></td><td>Étiquette courte affichée sur le canevas. Rempli automatiquement à partir du nom. Modifiable.</td></tr><tr class="pair-a"><td><strong>Catégorie</strong></td><td>Un appareil arrive en catégorie « Non classé ». Choisissez sa catégorie dans la liste. Sélectionnez Personnalisé… si vous voulez créer une nouvelle catégorie.</td></tr><tr class="pair-b"><td><strong>Zone d'image</strong></td><td>Affiche l'image déjà choisie — cliquez dessus pour la reconfigurer. Les boutons d'import et de formes restent disponibles à côté pour en choisir une autre.</td></tr></tbody></table></div>
+
+<h3 class="section-heading" id="sec-modification-d-un-n-ud"><strong>Modification d'un appareil</strong></h3>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Action</strong></th><th><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Cliquez sur l'étiquette (canevas)</strong></td><td>Renommer - tapez et appuyez sur <kbd>Entrée</kbd></td></tr><tr class="pair-b"><td><strong>Double-cliquez sur l'appareil</strong></td><td>Ouvrez la configuration de l'image pour modifier l'image et les ports</td></tr><tr class="pair-a"><td><strong>Faites glisser l'appareil</strong></td><td>Déplace l'appareil&nbsp;: les câbles suivent en direct</td></tr><tr class="pair-b"><td><strong>Faites glisser le coin supérieur gauche</strong></td><td>Redimensionner proportionnellement</td></tr><tr class="pair-a"><td><strong><kbd>⇧</kbd> + clic sur l'appareil</strong></td><td>Mettre au premier plan — déplace cet appareil devant tout appareil qui se chevauche.</td></tr></tbody></table></div>
+<h3 class="section-heading" id="sec-changer-la-cat-gorie-d-un-n-ud"><strong>Changer la catégorie d'un appareil</strong></h3>
+<p>Lorsqu'un appareil est sélectionné, sa catégorie s'affiche sous la forme d'un badge coloré en haut du panneau d'information de droite (par exemple VIDEO, CAMERA, AUDIO). Vous pouvez réattribuer la catégorie à tout moment directement.</p>
+<ul>
+<li>Cliquez sur l'appareil sur le canevas pour ouvrir le panneau d'information de droite.</li>
+<li>Cliquez sur le badge de catégorie coloré en haut du panneau.</li>
+<li>Une liste s'ouvre répertoriant toutes les catégories disponibles, chacune avec son point de couleur.</li>
+<li>Cliquez sur une catégorie → le badge est mis à jour immédiatement et le nombre d'appareils dans la barre latérale gauche est actualisé.</li>
+</ul>
+<p><em>ℹ</em><em> Si le même appareil est présent en plusieurs exemplaires, Wires propose de tous les déplacer d'un coup.</em></p>
+<h3 class="section-heading" id="sec-s-lection-de-plusieurs-n-uds"><strong>Sélection de plusieurs appareils</strong></h3>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Geste</strong></th><th><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong><kbd>Alt</kbd> + cliquer et glisser sur le canevas</strong></td><td>Dessine un rectangle de sélection : tous les appareils qu'il touche sont sélectionnés</td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + clic sur un appareil</strong></td><td class="pair-action" rowspan="2">L'ajoute ou le supprime de la sélection actuelle</td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + clic</strong></td></tr><tr class="pair-a"><td><strong>Cliquer sur un appareil sélectionné</strong></td><td>Supprime cet appareil de la sélection</td></tr><tr class="pair-b"><td><strong>Cliquer sur le canevas</strong></td><td>Efface la sélection</td></tr><tr class="pair-a"><td><strong>Cliquer et glisser sur le canevas</strong></td><td>Effectue un panoramique de la vue sans perdre la sélection</td></tr><tr class="pair-b"><td><strong><kbd>Suppr</kbd></strong></td><td>Supprime tous les appareils sélectionnés (confirmation requise)</td></tr><tr class="pair-a"><td><strong><kbd>Echap</kbd></strong></td><td>Efface la sélection</td></tr></tbody></table></div>
+<p>Les appareils sélectionnés sont mis en évidence par une lueur cyan. Le panneau d'information de droite répertorie tous les appareils sélectionnés. Cliquez sur une ligne pour la développer et voir ses connexions.</p>
+<p>Le bouton&nbsp;<span class="wires-btn wires-btn-danger"> <svg fill="currentColor" height="10" style="flex-shrink:0;vertical-align:middle" viewBox="0 0 12 14" width="10" xmlns="http://www.w3.org/2000/svg"><path d="M4 0h4l1 1h3v2H0V1h3L4 0zM1 4h10l-.9 9.5A.5.5 0 0 1 9.6 14H2.4a.5.5 0 0 1-.5-.5L1 4zm3 2v5h1V6H4zm2 0v5h1V6H6zm2 0v5h1V6H8z"></path></svg> Supprimer cet appareil </span>&nbsp;permet de supprimer cet appareil individuellement depuis ce panneau.</p>
+<h3 class="section-heading" id="sec-copier-couper-coller"><strong>Copier, couper, coller</strong></h3>
+<p>Ces actions opèrent sur les appareils sélectionnés sur le canevas. La sélection doit être active avant de copier ou couper. Coller crée un duplicata indépendant, positionné au centre de la vue.</p>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Raccourci</strong></th><th><strong>Action</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + <kbd>C</kbd></strong></td><td class="pair-action" rowspan="2">Copie le ou les appareils sélectionnés dans le presse-papier</td></tr><tr class="pair-a"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + <kbd>C</kbd></strong></td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + <kbd>X</kbd></strong></td><td class="pair-action" rowspan="2">Coupe le ou les appareils sélectionnés </td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + <kbd>X</kbd></strong></td></tr><tr class="pair-a"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + <kbd>V</kbd></strong></td><td class="pair-action" rowspan="2">Colle un duplicata au centre de la vue.</td></tr><tr class="pair-a"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + <kbd>V</kbd></strong></td></tr></tbody></table></div>
+<p><em>ℹ Les câbles connectés aux appareils copiés ne sont pas inclus dans le collage — chaque duplicata est placé sans connexion, prêt à être câblé.</em></p>
+<h3 class="section-heading" id="sec-supprimer-un-n-ud"><strong>Supprimer un appareil</strong></h3>
+<ul>
+<li><em>Sélectionnez l’appareil puis appuyez sur la touche&nbsp;<kbd>Suppr</kbd>&nbsp;ou <kbd>Retour arrière</kbd></em></li>
+<li>Ou : bouton 🗑️ dans le panneau d’information de droite</li>
+</ul>
+<p><em>ℹ</em><em> Les câbles connectés à l'appareil supprimé deviennent orphelins (une extrémité flottante). Ils restent visibles et peuvent être reconnectés ou supprimés.</em></p>
+<h3 class="section-heading" id="sec-ic-ne-internet"><strong>Icône Internet</strong></h3>
+<p>Chaque projet comprend une icône Internet intégrée — ajoutée automatiquement lors de la première ouverture et présente dans tous les nouveaux projets. Elle peut être supprimée si votre configuration n'utilise pas de connexion externe, et restaurée à tout moment.</p>
+<h3 class="section-heading" id="sec-apparence-et-placement"><strong>Apparence et placement</strong></h3>
+<ul>
+<li>Icône globe (bleu clair), positionnée par défaut en bas à gauche du canevas.</li>
+<li>Peut être glissé librement vers n’importe quelle position sur le canevas.</li>
+<li>Déconnecté (aucun câble connecté) : icône affichée en niveaux de gris avec une opacité réduite.</li>
+<li>Connecté (au moins un câble connecté) : icône affichée en couleur.</li>
+</ul>
+<h3 class="section-heading" id="sec-suppression"><strong>Suppression</strong></h3>
+<p>Sélectionnez l'icône Internet, puis appuyez sur&nbsp;<kbd>Suppr</kbd>&nbsp;ou cliquez sur le bouton <span class="wires-btn wires-btn-danger"><svg fill="currentColor" height="10" style="flex-shrink:0;vertical-align:middle" viewBox="0 0 12 14" width="10" xmlns="http://www.w3.org/2000/svg"><path d="M4 0h4l1 1h3v2H0V1h3L4 0zM1 4h10l-.9 9.5A.5.5 0 0 1 9.6 14H2.4a.5.5 0 0 1-.5-.5L1 4zm3 2v5h1V6H4zm2 0v5h1V6H6zm2 0v5h1V6H8z"></path></svg></span> dans le panneau d'information de droite. Une confirmation est demandée : si des câbles y sont connectés, ils seront supprimés du canevas et retirés de toutes leurs routes.</p>
+<h3 class="section-heading" id="sec-restauration"><strong>Restauration</strong></h3>
+<p>Si l'icône Internet a été supprimée, cliquez sur le bouton <span class="wires-btn"> + </span> dans l'en-tête puis <span class="wires-btn"> ⬡ Nouvel appareil </span>. Dans la fenêtre <strong>⚙ IMAGE</strong> qui s'ouvre, cliquez sur <span class="wires-btn wires-btn-danger">⟳ Restaurer l'icône Internet</span>. L'icône est replacée en bas à gauche de la vue actuelle, à un emplacement vide.</p>
+<h3 class="section-heading" id="sec-liaison"><strong>Liaison</strong></h3>
+<p>L'icône Internet représente une connexion vers l'extérieur (réseau, cloud, internet). Elle possède un port RJ45 et se connecte comme n'importe quel appareil.</p>
+<p>Le sens du câble est important pour l'animation des routes de signal — définissez-le avant de connecter.</p>
+<p><span class="wires-btn"> + </span> puis <span class="wires-btn"> ⤢ Nouveau câble </span> et suivez les instructions du bandeau.</p>
+<h3 class="section-heading" id="sec-exclusions"><strong>Exclusions</strong></h3>
+<ul>
+<li>N'apparaît pas dans la bibliothèque d'appareils standard.</li>
+<li>N'apparaît pas dans la barre latérale gauche.</li>
+<li>N'apparaît pas dans l'exportation de la liste de paquetage PDF.</li>
+</ul>
+<p><em>ℹ&nbsp;L'icône Internet représente un point de connexion réseau externe. Il est présent par défaut dans tout nouveau projet, peut être supprimé si inutile, et restauré à tout moment.</em></p>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch3')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch5')">Suivant →</button></div>
+</section>
+<section class="ch-section" hidden="" id="ch5">
+<h2 class="chapter-heading">Modifier l’image d’un appareil</h2>
+<div class="ch-top-imgs">
+<figure class="ch-top-fig"><img alt="configImage" class="ch-top-img" data-img-key="configImage" src="../images/FR/configImage-fr.png"></figure>
+</div><p>Une fois qu'un appareil est placé sur le canevas, vous pouvez rééditer son image sans affecter ses points de connexion ni les câbles qui y sont déjà connectés. </p>
+<h3 class="section-heading" id="sec-ouverture-de-la-configuration-d-image-pour-un-appa"><strong>Ouverture de la configuration d'image pour un appareil existant</strong></h3>
+<p>Double-cliquez sur n’importe quel appareil sur le canevas. La page <strong>CONFIGURATION IMAGE &amp; POINTS DE CONNEXION</strong> s'ouvre avec l'image actuelle et tous les points de connexion déjà chargés et prêts à être modifiés.</p>
+<h3 class="section-heading" id="sec-remplacer-l-image"><strong>Remplacer l'image</strong></h3>
+<p>Cliquez sur <span class="wires-btn"> Remplacer l'image </span> pour substituer l'image actuelle par un nouveau fichier. La suppression de l'arrière-plan est appliquée automatiquement. Les points de connexion existants restent en place — repositionnez-les si nécessaire.</p>
+<h3 class="section-heading" id="sec-utiliser-un-diteur-d-images-externe-optionnel"><strong>Utiliser un éditeur d'images externe (optionnel)</strong></h3>
+<p>L’interface inclut une connexion directe à n'importe quel éditeur d'images installé sur votre machine (Photoshop®, GIMP, Affinity Photo®, etc.). Le flux de travail comporte quatre étapes.</p>
+<h3 class="section-heading" id="sec-tape-1-configurer-l-diteur"><strong>Étape 1 — Configurer l'éditeur</strong></h3>
+<p>Dans la section Éditeur externe en bas à gauche de Configuration de l'image, saisissez le chemin complet de l'exécutable de votre éditeur ou cliquez sur <span class="wires-btn"> Parcourir </span> pour le localiser. Ce chemin est enregistré et mémorisé au fil des sessions.</p>
+<h3 class="section-heading" id="sec-tape-2-exporter-vers-l-diteur"><strong>Étape 2 — Exporter vers l'éditeur</strong></h3>
+<p>Cliquez sur <span class="wires-btn"> Ouvrir </span>. Wires convertit l'image actuelle en PNG et l'écrit dans un fichier temporaire, puis l'ouvre directement dans votre éditeur. Le bouton <span class="wires-btn"> Ré-importer </span> devient actif.</p>
+<h3 class="section-heading" id="sec-tape-3-modifier-et-enregistrer"><strong>Étape 3 — Modifier et enregistrer</strong></h3>
+<p>Effectuez vos modifications dans l'éditeur externe. Enregistrez le fichier (<kbd>Ctrl</kbd> + <kbd>S</kbd> ou <kbd>⌘</kbd> + <kbd>S</kbd>). Vous pouvez enregistrer et affiner autant de fois que nécessaire. Wires ne sera pas réimporté tant que vous ne le lui demanderez pas explicitement.</p>
+<h3 class="section-heading" id="sec-tape-4-r-importer"><strong>Étape 4 — Ré-importer</strong></h3>
+<p>Une fois satisfait, cliquez sur <span class="wires-btn"> Ré-importer </span> dans <strong>CONFIGURATION IMAGE &amp; POINTS DE CONNEXION</strong>. Wires lit le fichier enregistré, applique à nouveau la suppression de l'arrière-plan au paramètre de tolérance actuel et met à jour l'aperçu. Les points de connexion et les câbles ne sont pas affectés. Vous pouvez répéter les étapes 3 et 4 autant de fois que nécessaire avant de cliquer sur <span class="wires-btn"> ✓ Appliquer </span>.</p>
+<h3 class="section-heading" id="sec-avertissement-concernant-la-taille-du-canevas"><strong>Avertissement concernant la taille du canevas</strong></h3>
+<p>Si vous utilisez un éditeur externe et que les dimensions de l'image changent (marges ajoutées, recadrage, etc.), Wires vous avertit lors de la réimportation. Cliquez sur OK pour continuer — repositionnez ensuite manuellement les points de connexion pour qu'ils correspondent à la nouvelle image.</p>
+
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch4')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch6')">Suivant →</button></div>
+</section>
+<section class="ch-section" hidden="" id="ch6">
+<h2 class="chapter-heading">Câbles (Connexions)</h2>
+<h3 class="section-heading" id="sec-cr-ation-d-un-c-ble"><strong>Création d'un câble</strong></h3>
+<ul>
+<li>Cliquez sur le bouton <span class="wires-btn"> + </span> dans l'en-tête puis <span class="wires-btn"> ⤢ Nouveau câble </span> (ou sur le bouton <span class="wires-btn"> ⤢ Nouveau câble </span> dans le panneau d’information d’un appareil)</li>
+<li>La bannière supérieure affiche <span class="wires-banner">Cliquer sur un connecteur — <strong>SOURCE</strong></span> — cliquez sur le point du port source</li>
+<li>Puis affiche <span class="wires-banner">Cliquer sur un connecteur — <strong>DESTINATION</strong></span> — cliquez sur le point du port de destination.</li>
+</ul>
+<p><em>ℹ</em><em> Ports bidirectionnels (IN/OUT) : lorsque vous cliquez sur un port double, une fenêtre contextuelle affiche </em><span style="display:inline-block;background:#0a0f1e;border:1px solid #1e2d45;border-radius:4px;overflow:hidden;width:36px;box-shadow:0 2px 8px rgba(0,0,0,.6);vertical-align:middle;font-family:'Share Tech Mono',monospace;font-size:7px;font-weight:500;letter-spacing:1px;text-align:center"><span style="display:block;padding:5px 0;color:#00d4ff;border-bottom:1px solid #1e2d45">IN</span><span style="display:block;padding:5px 0;color:#b8ccec">OUT</span></span><em>. Passez la souris pour voir chaque option en surbrillance, puis cliquez sur votre choix.</em></p><p><em>ℹ</em><em> Connexion sans fil (WiFi</em> <img class="ch-icon-inline" src="../images/FR/wifi-icon-blue.png" alt="WiFi"> /Bluetooth <img class="ch-icon-inline" src="../images/FR/bluetooth-icon-blue.png" alt="Bluetooth"> /HF <img class="ch-icon-inline" src="../images/FR/hf-icon-blue.png" alt="HF"> <em>): aucun câble n’est dessiné sur le canevas — seul le lien logique est créé. Un port sans fil accepte un nombre illimité de connexions, dans les deux sens.</em></p>
+<ul>
+<li>Le câble est tiré automatiquement.</li>
+<li>Une invite d'affectation de route apparaît automatiquement après la création.</li>
+</ul>
+<p>Annuler le mode câble : appuyez sur <kbd>Échap</kbd> ou cliquez sur le bouton <span class="wires-btn"> ✕ Annuler </span> dans la bannière.</p>
+<div class="sec-layout"><div class="sec-body">
+<p>Le nom est pré-rempli à partir des appareils reliés, mais reste modifiable. Choisissez une couleur et un type de signal (Audio, Data, DMX, Vidéo, Réseau, Alimentation,USB, Midi, ou Personnalisé). Cliquez sur <span class="wires-btn"> Créer </span> pour valider. Le type de signal pourra être changé à tout moment par la suite.</p>
+</div><div class="sec-imgs">
+<figure class="ch-fig"><img alt="nouvelleRoute" class="ch-img" data-img-key="nouvelleRoute" src="../images/FR/Nouvelle-route-fr.png"></figure>
+</div></div>
+<h3 class="section-heading" id="sec-s-lection-d-un-c-ble"><strong>Sélection d'un câble</strong></h3>
+<ul>
+<li>Cliquez n'importe où sur le câble (une large zone de frappe invisible facilite la tâche). Pour un lien sans fil (aucun tracé dessiné), cliquez sur son symbole sur l’appareil à la place.</li>
+<li>Le panneau d’information de droite affiche le type de câble, les points de terminaison et les actions</li>
+</ul>
+<h3 class="section-heading" id="sec-modification-d-un-chemin-de-c-ble"><strong>Modification d'un chemin de câble</strong></h3>
+<p>Les câbles sont acheminés automatiquement. Vous pouvez ajuster le chemin manuellement :</p>
+<p>Le premier ou le dernier segment d’un câble (celui directement relié à un appareil) peut être réorienté. Clic droit dessus, ou sur sa poignée d’extrémité, pour ouvrir un menu à deux choix&nbsp;: <span style="display:inline-block;background:#0a0f1e;border:1px solid #1e2d45;border-radius:4px;padding:6px 12px;box-shadow:0 2px 8px rgba(0,0,0,.6);vertical-align:middle;font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:500;letter-spacing:1px;color:#00d4ff">Changer de direction</span> ou <span style="display:inline-block;background:#0a0f1e;border:1px solid #1e2d45;border-radius:4px;padding:6px 12px;box-shadow:0 2px 8px rgba(0,0,0,.6);vertical-align:middle;font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:500;letter-spacing:1px;color:#00d4ff">Créer un coude</span>.</p>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Action</strong></th><th><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Faites glisser un segment</strong></td><td>Déplacez ce segment perpendiculairement - ajuste le chemin</td></tr><tr class="pair-b"><td><strong>Clic droit sur un segment à proximité de l’appareil (ou sa poignée)</strong></td><td>Ouvre le menu&nbsp;: Changer de direction / Créer un coude.</td></tr><tr class="pair-a"><td><strong>Touches fléchées après Changer de direction</strong></td><td>Change la direction de sortie du segment&nbsp;: ← → ↑ ↓</td></tr><tr class="pair-b"><td><strong>Touches fléchées après Créer un coude</strong></td><td>Insère un coude à 90° avec les flèches.</td></tr><tr class="pair-a"><td><strong>Glisser le point de connexion</strong></td><td>Reconnecte l'extrémité à un nouveau port.</td></tr></tbody></table></div>
+<p><em>ℹ Tous les ajustements du chemin de câble sont enregistrés dans le projet et sont annulables.</em></p>
+<h3 class="section-heading" id="sec-types-et-couleurs-de-c-bles"><strong>Types et couleurs de câbles</strong></h3>
+<p><em>ℹ  Seuls les ports du même type peuvent être connectés — sauf les connecteurs audio analogiques (XLR, Jack&nbsp;3.5, Jack&nbsp;6.35, RCA/Cinch) et les connecteurs USB (USB-A, USB-C) qui sont compatibles entre eux.</em></p>
+<h3 class="section-heading" id="sec-supprimer-un-c-ble"><strong>Supprimer un câble</strong></h3>
+<ul>
+<li>Sélectionnez le câble puis appuyez sur la touche <kbd>Suppr</kbd> ou <kbd>Retour arrière</kbd></li>
+<li>Ou : bouton <span class="wires-btn wires-btn-danger"> <svg fill="currentColor" height="10" style="flex-shrink:0;vertical-align:middle" viewBox="0 0 12 14" width="10" xmlns="http://www.w3.org/2000/svg"><path d="M4 0h4l1 1h3v2H0V1h3L4 0zM1 4h10l-.9 9.5A.5.5 0 0 1 9.6 14H2.4a.5.5 0 0 1-.5-.5L1 4zm3 2v5h1V6H4zm2 0v5h1V6H6zm2 0v5h1V6H8z"></path></svg> Supprimer ce câble </span> dans le panneau d’information de droite</li>
+</ul>
+<h3 class="section-heading" id="sec-tats-visuels-du-c-ble"><strong>États visuels du câble</strong></h3>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>État</strong></th><th><strong>Apparence</strong></th><th>Aperçu</th></tr></thead><tbody><tr class="pair-a"><td><strong>Survol de la souris sur un câble</strong></td><td>Zone de frappe invisible plus large, plus facile à cliquer</td><td style="text-align:center;vertical-align:middle"><svg height="20" width="90" xmlns="http://www.w3.org/2000/svg"><line opacity="0.85" stroke="#5ecb7a" stroke-linecap="round" stroke-width="3.5" x1="5" x2="85" y1="10" y2="10"></line></svg></td></tr><tr class="pair-b"><td><strong>Orphelin</strong></td><td>Pointillés, semi-transparent – une extrémité sans nœud</td><td style="text-align:center;vertical-align:middle"><svg height="20" width="90" xmlns="http://www.w3.org/2000/svg"><line opacity="0.45" stroke="#5ecb7a" stroke-dasharray="6,5" stroke-width="2.5" x1="5" x2="85" y1="10" y2="10"></line></svg></td></tr><tr class="pair-a"><td><strong>Route active</strong></td><td>Lueur brillante – fait partie d'une route active</td><td style="text-align:center;vertical-align:middle"><svg height="20" width="90" xmlns="http://www.w3.org/2000/svg"><line opacity="0.06" stroke="#39e87a" stroke-linecap="round" stroke-width="16" x1="5" x2="85" y1="10" y2="10"></line><line opacity="0.15" stroke="#39e87a" stroke-linecap="round" stroke-width="9" x1="5" x2="85" y1="10" y2="10"></line><line opacity="0.35" stroke="#39e87a" stroke-linecap="round" stroke-width="4" x1="5" x2="85" y1="10" y2="10"></line><line opacity="1" stroke="#39e87a" stroke-linecap="round" stroke-width="3" x1="5" x2="85" y1="10" y2="10"></line></svg></td></tr><tr class="pair-b"><td><strong>Route grisée</strong></td><td>Presque invisible &nbsp;–&nbsp;ne fait pas partie de la route active</td><td style="text-align:center;vertical-align:middle"><svg height="20" width="90" xmlns="http://www.w3.org/2000/svg"><line opacity="0.5" stroke="#3a4a5a" stroke-linecap="round" stroke-width="3" x1="5" x2="85" y1="10" y2="10"></line></svg></td></tr></tbody></table></div>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch5')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch7')">Suivant →</button></div>
+</section>
+<section class="ch-section" hidden="" id="ch7">
+<h2 class="chapter-heading">Texte</h2>
+<p>Les étiquettes de texte sont des annotations indépendantes que vous pouvez placer sur le canevas : noms de zone, descriptions, notes ou toute autre information qui appartient au diagramme mais pas à un appareil.</p>
+<h3 class="section-heading" id="sec-placer-un-texte"><strong>Placer un texte</strong></h3>
+<p>Cliquez sur le bouton <span class="wires-btn"> + </span> dans l'en-tête puis <span class="wires-btn"> T Nouveau texte </span>.</p>
+<p>Le curseur de la souris devient une croix et une bannière apparaît en haut du canevas&nbsp;:</p>
+<p>"Cliquez sur le canevas pour ajouter un Texte".</p>
+<p>Appuyez sur <kbd>Échap</kbd> ou sur <span class="wires-btn"> ✕ Annuler </span> dans la bannière pour abandonner le placement.</p>
+<h3 class="section-heading" id="sec-d-placer-un-texte"><strong>Déplacer un texte</strong></h3>
+<p>Survolez un texte : le curseur se transforme en &nbsp;✥. Cliquez et faites glisser pour repositionner le texte.</p>
+<h3 class="section-heading" id="sec-modification-du-texte"><strong>Modification du texte</strong></h3>
+<p>Double-cliquez sur un texte pour passer en mode d'édition. Saisissez un nouveau texte pour remplacer le contenu, ou cliquez à l'endroit souhaité pour le modifier directement. Une mise en forme riche est préservée : différentes polices, gras, italique et souligné, peuvent coexister sur différentes parties d'une même étiquette.</p>
+<p>Appuyez sur <kbd>Échap</kbd> pour annuler toutes les modifications.</p>
+<p>Cliquez n’importe où en dehors de la boîte pour quitter.</p>
+<h3 class="section-heading" id="sec-formatage"><strong>Formatage</strong></h3>
+<p>Sélectionnez un texte pour accéder à sa mise en forme dans le panneau d’information de droite :</p>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Contrôle</strong></th><th><strong>Fonction</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Police</strong></td><td>Liste déroulante des polices système disponibles. En mode édition, s'applique uniquement au texte sélectionné. S'affiche vide lorsque l'étiquette contient plusieurs polices.</td></tr><tr class="pair-b"><td><strong>Taille</strong></td><td>Taille de police. Peut également être ajusté en faisant glisser la poignée bleue dans le coin supérieur gauche de l’étiquette.</td></tr><tr class="pair-a"><td><strong>B</strong></td><td>Gras. En mode édition, s'applique uniquement à la sélection de texte actuelle. S’allume si une partie de la sélection est en gras.</td></tr><tr class="pair-b"><td><strong>I</strong></td><td>Italique. Même comportement de sélection que le gras.</td></tr><tr class="pair-a"><td><strong>U</strong></td><td>Souligner. Même comportement de sélection que le gras.</td></tr><tr class="pair-b"><td><strong>Couleur</strong></td><td>Sélecteur de couleur de texte : s'applique à l'étiquette entière.</td></tr><tr class="pair-a"><td><strong>Orientation</strong></td><td>⟷ Horizontal (par défaut) ou ↕ Vertical</td></tr></tbody></table></div>
+<p><em>ℹ B, I et U sont sensibles à la sélection en mode édition : ils s'appliquent juste au texte sélectionné. Si la sélection couvre un texte multiformats, les indicateurs s’affichent si le format est présent dans la sélection.</em></p>
+<h3 class="section-heading" id="sec-redimensionner-la-zone-de-texte"><strong>Redimensionner la zone de texte</strong></h3>
+<p>Par défaut, une boîte entoure son contenu. Cliquez sur <span class="wires-btn"> ⤡ Redimensionner </span> dans le panneau d’information de droite pour passer en mode de redimensionnement de la boîte :</p>
+<p>Quatre poignées de bord apparaissent sur les bordures de la boîte.</p>
+<p>Faites glisser n’importe quelle poignée pour redimensionner la boîte : le texte s’y redistribue en temps réel.</p>
+<p>Cliquez à nouveau sur Redimensionner pour quitter le mode : les dimensions de la boîte sont conservées.</p>
+<p>Cliquez n’importe où sur le canevas vide pour désélectionner et effacer le mode de redimensionnement.</p>
+<p>Le bouton <span class="wires-btn"> ↺ Réinitialiser </span> restaure la boîte à sa taille d'ajustement automatique d'origine.</p>
+<h3 class="section-heading" id="sec-supprimer-un-texte"><strong>Supprimer un texte</strong></h3>
+<p>Sélectionnez le texte puis appuyez sur la touche&nbsp;<kbd>Suppr</kbd>&nbsp;ou <kbd>Retour arrière</kbd>.</p>
+<p>Ou : cliquez sur le bouton <span class="wires-btn wires-btn-danger"> <svg fill="currentColor" height="10" style="flex-shrink:0;vertical-align:middle" viewBox="0 0 12 14" width="10" xmlns="http://www.w3.org/2000/svg"><path d="M4 0h4l1 1h3v2H0V1h3L4 0zM1 4h10l-.9 9.5A.5.5 0 0 1 9.6 14H2.4a.5.5 0 0 1-.5-.5L1 4zm3 2v5h1V6H4zm2 0v5h1V6H6zm2 0v5h1V6H8z"></path></svg> Supprimer le texte </span> dans le panneau d’information de droite : une boîte de dialogue de confirmation apparaît.</p>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch6')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch8')">Suivant →</button></div>
+</section>
+<section class="ch-section has-imgs" hidden="" id="ch8">
+<h2 class="chapter-heading">Zones</h2>
+<div class="ch-layout"><div class="ch-body"><p>Les zones rectangulaires colorées dessinées sur le canevas permettent de regrouper et organiser visuellement vos appareils. Elles sont purement visuelles et n’affectent pas les connexions ou le routage du signal.</p>
+<p>Une zone sélectionnée affiche sa bordure colorée et son étiquette au-dessus du bord supérieur. Quatre poignées de redimensionnement blanches apparaissent au milieu de chaque bordure. Le panneau d’information de droite affiche toutes les propriétés de la zone.</p>
+<p><em>ℹ</em><em> Les zones créées lors d'un import de projet ont un fond hachuré et un comportement propre. <strong><a class="ch-ref" href="#" onclick="showChapter('ch13');return false;">Voir Sous-projets</a></strong>.</em></p>
+<h3 class="section-heading" id="sec-cr-er-une-zone"><strong>Créer une zone</strong></h3>
+<p>Cliquez sur le bouton <span class="wires-btn"> + </span> dans l'en-tête puis <span class="wires-btn"> ▭ Nouvelle zone </span>.</p>
+<p>Une bannière apparaît en haut du canevas : "Cliquer et glisser pour créer une Zone".</p>
+<p>Cliquez et faites glisser sur le canevas pour dessiner le rectangle de zone.</p>
+<p>Relâcher — la zone est créée, sélectionnée. Le panneau d’information de droite s'ouvre automatiquement.</p>
+<p>Appuyez sur <kbd>Échap</kbd> ou sur le bouton <span class="wires-btn"> ✕ Annuler </span> dans la bannière pour abandonner sans créer de zone.</p>
+<h3 class="section-heading" id="sec-s-lection-d-une-zone"><strong>Sélection d'une zone</strong></h3>
+<p>Un simple clic sur le corps de la zone → sélectionne la zone et ouvre le panneau d’information de droite.</p>
+<p>Un simple clic sur l'étiquette de la zone → sélectionne également la zone.</p>
+<p>Cliquez sur le canevas vide → désélectionne la zone et ferme le panneau.</p>
+<p>Cliquer sur un appareil alors qu'une zone est sélectionnée → désélectionne la zone et sélectionne l'appareil.</p>
+<h3 class="section-heading" id="sec-d-placer-une-zone"><strong>Déplacer une zone</strong></h3>
+<p>Sélectionnez la zone, puis cliquez et faites glisser le corps de la zone pour le déplacer.</p>
+<p>Les appareils à l’intérieur de la zone ne bougent pas avec elle : seules les limites de la zone se déplacent.</p>
+<h3 class="section-heading" id="sec-redimensionner-une-zone"><strong>Redimensionner une zone</strong></h3>
+<p>Sélectionnez la zone : quatre poignées carrées blanches apparaissent au milieu de chaque bordure.</p>
+<p>Faites glisser une poignée pour redimensionner la zone dans cette direction.</p>
+<p>La liste "Appareils à l’intérieur" dans le panneau d’information de droite s’actualise.</p>
+<h3 class="section-heading" id="sec-nom-de-la-zone"><strong>Nom de la zone</strong></h3>
+<p>Le nom de la zone est affiché sous forme d'étiquette au-dessus de la zone.</p>
+<p>Double-cliquez sur le corps de la zone ou sur l'étiquette → passe en mode d'édition de nom.</p>
+<p>Appuyez sur <kbd>Entrée</kbd> ou cliquez à l'extérieur pour confirmer le nouveau nom.</p>
+<p>Ou : modifiez le Nom directement dans le panneau d’information de droite.</p>
+<h3 class="section-heading" id="sec-panneau-d-information-de-droite-propri-t-s-de-la-z"><strong>Panneau d’information de droite — Propriétés de la zone</strong></h3>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Contrôle</strong></th><th><strong>Fonction</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Nom</strong></td><td>Tapez pour renommer la zone – l’étiquette sur le canevas est mise à jour en temps réel.</td></tr><tr class="pair-b"><td><strong>Taille</strong></td><td>Taille de la police de l'étiquette du nom de zone.</td></tr><tr class="pair-a"><td><strong>Couleur</strong></td><td>7 échantillons de couleurs — cliquez pour appliquer. Modifie l'arrière-plan de la bordure, du remplissage et de l'étiquette.</td></tr><tr class="pair-b"><td><strong>Opacité</strong></td><td>Curseur qui contrôle la transparence du remplissage de la zone.</td></tr><tr class="pair-a"><td><strong>Appareils à l'intérieur</strong></td><td>Liste des appareils qui se situent à l’intérieur de la zone. Cliquez sur le nom d'un appareil pour le sélectionner sur le canevas.</td></tr><tr class="pair-b"><td><strong>Masquer la zone / Afficher la zone</strong></td><td>Basculez la visibilité de la zone sans la supprimer (voir ci-dessous).</td></tr><tr class="pair-a"><td><strong>Supprimer une zone par le panneau</strong></td><td>Deux options :&nbsp;<br><span class="wires-btn wires-btn-danger"> <svg fill="currentColor" height="10" style="flex-shrink:0;vertical-align:middle" viewBox="0 0 12 14" width="10" xmlns="http://www.w3.org/2000/svg"><path d="M4 0h4l1 1h3v2H0V1h3L4 0zM1 4h10l-.9 9.5A.5.5 0 0 1 9.6 14H2.4a.5.5 0 0 1-.5-.5L1 4zm3 2v5h1V6H4zm2 0v5h1V6H6zm2 0v5h1V6H8z"></path></svg> Supprimer la zone </span>&nbsp;— supprime uniquement la délimitation, les appareils restent sur le canevas.&nbsp;<br><span class="wires-btn wires-btn-danger"> <svg fill="currentColor" height="10" style="flex-shrink:0;vertical-align:middle" viewBox="0 0 12 14" width="10" xmlns="http://www.w3.org/2000/svg"><path d="M4 0h4l1 1h3v2H0V1h3L4 0zM1 4h10l-.9 9.5A.5.5 0 0 1 9.6 14H2.4a.5.5 0 0 1-.5-.5L1 4zm3 2v5h1V6H4zm2 0v5h1V6H6zm2 0v5h1V6H8z"></path></svg> Supprimer + tout le contenu </span> — supprime la zone, tous les appareils qu'elle contient et leurs câbles.</td></tr></tbody></table></div>
+<h3 class="section-heading" id="sec-supprimer-une-zone-au-clavier"><strong>Supprimer une zone au clavier</strong></h3>
+<p>Sélectionnez la zone puis appuyez sur la touche <kbd>Suppr</kbd> ou <kbd>Retour arrière</kbd> (supprime uniquement la délimitation).</p>
+<h3 class="section-heading" id="sec-masquer-une-zone"><strong>Masquer une zone</strong></h3>
+<p>Lorsqu'une zone est masquée, son corps et sa bordure deviennent invisibles tandis que l'étiquette du nom reste sur le canevas (avec une opacité réduite) :</p>
+<p>Cliquez sur <span class="wires-btn"> Masquer la zone </span> dans le panneau d’information de droite.</p>
+<p>Le corps et la bordure de la zone disparaissent — seule l'étiquette reste visible.</p>
+<p>Lorsqu'elle est masquée : la zone ne peut pas être déplacée ni redimensionnée.</p>
+<p>Toutes les données sont conservées : nom, couleur, opacité et liste des appareils.</p>
+<h3 class="section-heading" id="sec-restaurer-une-zone-cach-e"><strong>Restaurer une zone cachée</strong></h3>
+<p>Cliquez sur l'étiquette du nom de la zone sur le canevas — le panneau d’information de droite s'ouvre.</p>
+<p>Cliquez sur <span class="wires-btn"> Afficher la zone </span> — le corps et la bordure de la zone réapparaissent.</p>
+<p><em>ℹ Une étiquette de zone cachée reste visible sur le canevas afin qu'elle puisse toujours être trouvée et restaurée.</em></p>
+<p><em>ℹ</em><em> Toutes les opérations de zone sont annulables : créer, déplacer, redimensionner, renommer, masquer/afficher, supprimer.</em></p></div><div class="ch-imgs">
+<figure class="ch-fig"><img alt="zone" class="ch-img" data-img-key="zone" src="../images/FR/zone.png"></figure>
+</div></div>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch7')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch9')">Suivant →</button></div>
+</section>
+<section class="ch-section" hidden="" id="ch9">
+<h2 class="chapter-heading">Navigation dans le canevas</h2>
+<h3 class="section-heading" id="sec-zoom"><strong>Zoom</strong></h3>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Contrôle</strong></th><th><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Molette de la souris</strong></td><td>Zoom avant/arrière centré sur le canevas</td></tr><tr class="pair-b"><td><strong>Touche "+" ou "="</strong></td><td>Zoom avant</td></tr><tr class="pair-a"><td><strong>Touche "-"</strong></td><td>Zoom arrière</td></tr><tr class="pair-b"><td><strong><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="2" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="22"></line><line x1="2" y1="12" x2="8" y2="12"></line><line x1="16" y1="12" x2="22" y2="12"></line></svg></strong></td><td>Bascule le zoom molette en mode centré sur le curseur (permanent)</td></tr><tr class="pair-a"><td><strong><kbd>Alt</kbd> + Molette</strong></td><td>Zoom avant/arrière centré sur le curseur (ponctuel, le temps du geste)</td></tr></tbody></table></div>
+<h3 class="section-heading" id="sec-panoramique-d-place-la-vue"><strong>Panoramique : déplace la vue</strong></h3>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Contrôle</strong></th><th><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> Clic droit + glisser</strong></td><td class="pair-action" rowspan="2">Panoramique — fonctionne même au-dessus d'un appareil</td></tr><tr class="pair-a"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>Espace</kbd> + glisser</strong></td></tr><tr class="pair-b"><td><strong>Clic gauche + glisser sur une zone vide</strong></td><td>Panoramique</td></tr></tbody></table></div>
+<h3 class="section-heading" id="sec-s-lection-rectangulaire"><strong>Sélection rectangulaire</strong></h3>
+<p>Dessinez une sélection rectangulaire pour sélectionner plusieurs appareils à la fois :</p>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Action</strong></th><th><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong><kbd>Alt</kbd> + cliquer et glisser sur le canevas</strong></td><td>Dessinez un rectangle de sélection : tous les appareils qu'il touche sont sélectionnés</td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + clic (Appareil)</strong></td><td class="pair-action" rowspan="2">Ajouter ou retirer un seul appareil de la multi-sélection actuelle</td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + clic (Appareil)</strong></td></tr></tbody></table></div>
+<h3 class="section-heading" id="sec-ajuster-la-vue"><strong>Ajuster la vue</strong></h3>
+<p>Appuyez sur <kbd>F</kbd>—&nbsp;ajuste le zoom et la vue&nbsp;pour afficher tous les nœuds à la fois.</p>
+<h3 class="section-heading" id="sec-mini-carte"><strong>Mini-carte</strong></h3>
+<div class="ch-top-imgs">
+<figure class="ch-top-fig"><img alt="minimap" class="ch-top-img" data-img-key="minimap" src="../images/FR/minimap.png"></figure>
+</div>
+<ul>
+<li>Situé dans le coin inférieur gauche du canevas</li>
+<li>Rectangle cyan = votre fenêtre actuelle</li>
+<li>Cliquez ou faites glisser n'importe où dans la mini-carte pour naviguer instantanément</li>
+</ul>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch8')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch10')">Suivant →</button></div>
+</section>
+<section class="ch-section has-imgs" hidden="" id="ch10">
+<h2 class="chapter-heading">Routes de signal</h2>
+<div class="ch-layout"><div class="ch-body"><p>Les routes vous permettent de documenter et de visualiser les chemins de signaux sur votre plan de câblage. Une route trace un signal (vidéo, audio, réseau, etc.) à travers une chaîne de câbles.</p>
+<h3 class="section-heading" id="sec-ouverture-du-panneau-routes"><strong>Ouverture du panneau Routes</strong></h3>
+<p>Cliquez sur le bouton <span class="wires-btn"> ⬡ ROUTES </span> dans l'en-tête. Le panneau d’information de droite s’ouvre. Il reste ouvert pendant que vous travaillez : sa fermeture n'arrête PAS une animation en cours.</p>
+<h3 class="section-heading" id="sec-structure-de-la-route"><strong>Structure de la route</strong></h3>
+<p>Une route contient :</p>
+<ul>
+<li>Tronc — la séquence principale des segments de câble</li>
+<li>Chemins&nbsp;–&nbsp;segments alternatifs ou de branchement facultatifs (emboîtables, profondeur illimitée). Chaque segment fait référence à un câble et une direction : sens (source→dest.) ou sens inv. ​​(dest.→source).</li>
+</ul>
+<h3 class="section-heading" id="sec-chemins"><strong>Chemins</strong></h3>
+<ul>
+<li>Les chemins permettent de documenter les branches d'une route : une source qui se distribue vers plusieurs appareils, un chemin de secours, ou tout itinéraire secondaire propre à votre installation. Chaque chemin peut contenir ses propres sous-chemins, pour représenter des architectures à plusieurs niveaux. Dans l'animation, le signal parcourt le tronc et tous les chemins simultanément. Cliquez sur l’en-tête d’un chemin/sous-chemin pour le replier ou le déplier individuellement (comme une route), indépendamment de ses chemins frères et de la route elle-même.</li>
+</ul>
+<h3 class="section-heading" id="sec-affectation-de-c-bles-une-route"><strong>Affectation de câbles à une route</strong></h3>
+<ul>
+<li>Après avoir créé un câble : une invite apparaît automatiquement. Choisissez <span class="wires-btn"> Créer une nouvelle route </span> ou     <span class="wires-btn">  Ajouter à une route existante </span>. Dans le sélecteur, survolez un nom de route pour illuminer ses câbles sur le canevas. Cliquer sur&nbsp;<span class="wires-btn wires-btn-ghost"> Annuler </span>&nbsp;retire le câble du canevas sans l'affecter à aucune route.</li>
+<li>Pour ajouter un câble existant à une route supplémentaire : sélectionnez le câble — ses routes apparaissent dans le panneau d'information. Cliquez sur&nbsp;<span class="wires-btn"> + Ajouter à une autre route </span>&nbsp;pour ouvrir le sélecteur de routes.</li>
+<li>Par glisser-déposer dans le panneau Routes : faites glisser n'importe quelle ligne de segment pour la déplacer vers le tronc ou vers un autre chemin.</li>
+</ul>
+<h3 class="section-heading" id="sec-nom-d-une-route"><strong>Nom d’une route</strong></h3>
+<p>Le nom d’une route est généré automatiquement à partir des deux appareils à ses extrémités&nbsp;: celui où le signal commence, et celui où il se termine. Ce nom n’est jamais figé, donc il change tout seul dès que vous remplacez l’appareil de départ ou d’arrivée. Si deux routes ou plus obtiennent ainsi exactement le même nom, chacune reçoit en plus une lettre entre parenthèses — (a), (b), (c)… — pour rester identifiable, sans que le nom réel de la route soit modifié.</p>
+<h3 class="section-heading" id="sec-gestion-des-segments-et-des-chemins"><strong>Gestion des segments et des chemins</strong></h3>
+<p>Vous pouvez modifier la route ou ses segments, chemins et sous-chemins pour que l’animation suive précisément le sens réel du signal.</p>
+<ul>
+<li>Une route entière glissée sur une autre route (ou sur un de ses chemins) devient un nouveau chemin de cette route, avec toute sa structure ; la route d'origine est supprimée (déplacée, pas copiée).</li>
+<li>Un chemin glissé sur le corps d'un autre chemin devient son sous-chemin. S'il est déposé sur la bordure supérieure de son en-tête, il se réordonne à la place comme chemin frère.</li>
+<li>Survolez 1 seconde une route ou un chemin repliés pendant un glisser-déposer pour les déplier temporairement et voir son contenu.</li>
+</ul>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Action</strong></th><th><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Cliquez sur l’en-tête d’un chemin/sous-chemin</strong></td><td>Replie ou déplie ce chemin/sous-chemin individuellement</td></tr><tr class="pair-b"><td><span class="wires-btn">⇄</span> sur le segment</td><td>Inversez la direction du signal de ce segment. Le titre de la route est mis à jour automatiquement</td></tr><tr class="pair-a"><td><span class="wires-btn wires-btn-danger">✕</span> sur le segment</td><td>Supprimer ce segment et son câble (confirmation demandée)</td></tr><tr class="pair-b"><td><strong>Faites glisser la ligne du segment</strong></td><td>Déplacez-le à une autre position, dans le tronc ou un autre chemin</td></tr><tr class="pair-a"><td><span class="wires-btn">+ Chemin</span></td><td>Ajouter un nouveau chemin de branche à l'intérieur de cette route</td></tr><tr class="pair-b"><td><span class="wires-btn wires-btn-danger">✕</span> sur l'en-tête du chemin</td><td>Supprimez ce chemin et tous ses segments</td></tr><tr class="pair-b"><td></td><td></td></tr></tbody></table></div>
+<p><em>ℹ  Si</em><em> </em><em>les extrémités de </em><em>deux segments consécutifs ne sont pas connecté</em><em>e</em><em>s, un symbole </em><em>≠</em><em> apparaît. Cela peut se produire après avoir inversé la direction d'un câble (</em><em>⇄</em><em>). L'indicateur est uniquement informatif.</em></p>
+<h3 class="section-heading" id="sec-masquer-une-route"><strong>Masquer une route</strong></h3>
+<p><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;display:inline-block"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg> devant l'en-tête d'une route la rend visible sur le canevas. Cliquez dessus pour la masquer et il devient <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;display:inline-block"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle><line x1="2" y1="2" x2="22" y2="22"></line></svg> : ses câbles disparaissent, ainsi que les appareils qu'elle est seule à utiliser. Un câble ou un appareil partagé avec une autre route restée visible n'est jamais masqué.</p>
+<h3 class="section-heading" id="sec-modifier-une-route"><strong>Modifier une route</strong></h3>
+<ul>
+<li>Cliquez sur ✎ sur l'en-tête d’une route pour modifier sa couleur et son type de signal.</li>
+<li><strong>Copier/coller un segment.</strong> Pour copier un segment ailleurs dans la route, y compris une autre route, faites un clic droit dessus : un menu <span style="display:inline-block;background:#0a0f1e;border:1px solid #1e2d45;border-radius:4px;padding:6px 12px;box-shadow:0 2px 8px rgba(0,0,0,.6);vertical-align:middle;font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:500;letter-spacing:1px;color:#00d4ff">Copier</span>/<span style="display:inline-block;background:#0a0f1e;border:1px solid #1e2d45;border-radius:4px;padding:6px 12px;box-shadow:0 2px 8px rgba(0,0,0,.6);vertical-align:middle;font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:500;letter-spacing:1px;color:#00d4ff">Coller</span> s'affiche.<br> Sélectionnez <span style="display:inline-block;background:#0a0f1e;border:1px solid #1e2d45;border-radius:4px;padding:6px 12px;box-shadow:0 2px 8px rgba(0,0,0,.6);vertical-align:middle;font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:500;letter-spacing:1px;color:#00d4ff">Copier</span>, puis faites un clic droit à l'endroit de destination et choisissez <span style="display:inline-block;background:#0a0f1e;border:1px solid #1e2d45;border-radius:4px;padding:6px 12px;box-shadow:0 2px 8px rgba(0,0,0,.6);vertical-align:middle;font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:500;letter-spacing:1px;color:#00d4ff">Coller</span>.<br> Cela insère une copie de ce segment à cet endroit — sans créer de nouveau câble sur le canevas. Le même câble peut ainsi apparaître à plusieurs endroits de l'animation.<br> <em>ℹ Supprimer une copie ne supprime le câble que s'il ne reste plus aucune autre occurrence.</em></li>
+<li><strong>Supprimer un segment.</strong> Cliquer ✕ sur un segment supprimera son câble — un câble ne peut exister sans route. Le câble concerné est mis en surbrillance sur le canevas. La boîte de dialogue de confirmation indique les deux appareils reliés par ce câble. Cliquez sur&nbsp;<span class="wires-btn wires-btn-danger"> Supprimer le câble </span>&nbsp;pour confirmer, ou sur <span class="wires-btn wires-btn-ghost"> Annuler </span> pour tout laisser inchangé.</li>
+<li><strong>Supprimer une route.</strong> Cliquer sur ✕ sur l'en-tête d’une route supprime la route et tous ses câbles. Une boîte de dialogue de confirmation répertorie les câbles à supprimer. Cliquez sur&nbsp;<span class="wires-btn wires-btn-danger"> Supprimer route + câbles </span>&nbsp;pour confirmer, ou sur <span class="wires-btn wires-btn-ghost"> Annuler </span> pour tout laisser inchangé.</li>
+</ul>
+<h3 class="section-heading" id="sec-animation-suivi-du-signal"><strong>Animation — suivi du signal</strong></h3>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Action</strong></th><th><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Double-cliquez sur le titre du panneau</strong> <img alt="routesTitreGeneral" data-img-key="routesTitreGeneral" src="../images/FR/Boutons/routes_titre_general-fr.png" style="height:30px;width:auto;display:inline-block;vertical-align:middle;border-radius:3px;margin-left:2px;margin-top:-5px;margin-bottom:-5px"></td><td>Lance l’animation de toutes les routes en même temps&nbsp;; un second double-clic les arrête toutes</td></tr><tr class="pair-b"><td><strong>Double-cliquez sur le titre de la route</strong></td><td>Lancement de l’animation : un point lumineux se déplace le long des câbles</td></tr><tr class="pair-a"><td><strong>Double-cliquez sur un segment/chemin/sous-chemin</strong></td><td>Lance l’animation uniquement sur ce segment/chemin/sous-chemin.</td></tr><tr class="pair-b"><td><strong>Appuyez sur <kbd>Espace</kbd> pendant une animation</strong></td><td>Met l'animation en pause ; réappuyez pour reprendre.</td></tr><tr class="pair-a"><td><strong>Cliquez sur le nom de la route</strong></td><td>Arrêter l'animation</td></tr><tr class="pair-b"><td><strong>Cliquez sur un canevas vide</strong></td><td>Arrêter l'animation</td></tr><tr class="pair-a"><td><strong>Double-cliquez sur un câble sur le canevas</strong></td><td>Activer/désactiver l'animation pour toutes les routes contenant ce câble</td></tr></tbody></table></div>
+<p><em> </em><em>ℹ</em><em> L'en-tête de la route devient jaune pendant l'exécution de l'animation. </em></p><p><em> </em><em>ℹ</em><em> Pour un lien sans fil, une onde (3 arcs, comme le symbole WiFi) parcourt la ligne entre les deux appareils pour montrer le signal se déplacer, pendant que leurs ports clignotent en alternance.</em></p>
+<h3 class="section-heading" id="sec-tats-visuels-de-la-route"><strong>États visuels de la route</strong></h3>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>État</strong></th><th><strong>Apparence</strong></th><th>Aperçu</th></tr></thead><tbody><tr class="pair-a"><td><strong>Inactif</strong></td><td>Panneau : en-tête normal / Canevas : câbles normaux</td><td style="text-align:center;vertical-align:middle;padding:10px 14px"><img alt="route.inactive" data-img-key="route.inactive" src="../images/FR/route.inactive-fr.png" style="border-radius:4px;display:block"></td></tr><tr class="pair-b"><td><strong>Actif (en cours d'exécution)</strong></td><td>Panneau : en-tête jaune + bordure gauche dorée / Canevas : câbles lumineux, autres grisés</td><td style="text-align:center;vertical-align:middle;padding:10px 14px"><img alt="route.active" data-img-key="route.active" src="../images/FR/route.active-fr.png" style="border-radius:4px;display:block"></td></tr></tbody></table></div></div><div class="ch-imgs">
+<figure class="ch-fig"><img alt="routes" class="ch-img" data-img-key="routes" src="../images/FR/routes-fr.png"></figure>
+<figure class="ch-fig"><img alt="chemin" class="ch-img" data-img-key="chemin" src="../images/FR/chemin-fr.png"></figure>
+</div></div>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch9')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch11')">Suivant →</button></div>
+</section>
+<section class="ch-section" hidden="" id="ch11">
+<h2 class="chapter-heading">Bibliothèque et catégories</h2>
+<h3 class="section-heading" id="sec-filtres-de-la-barre-lat-rale-gauche"><strong>Filtres de la barre latérale gauche</strong></h3>
+<p>La barre latérale gauche comporte trois sections réductibles : Catégories, Câbles et Zones. Cliquez sur son nom pour la réduire ou la développer. L'interrupteur <span style="position:relative;display:inline-block;width:28px;height:16px;border-radius:8px;background:#00d4ff;vertical-align:middle"><span style="position:absolute;top:2px;left:14px;width:12px;height:12px;border-radius:50%;background:#fff"></span></span> de la ligne <span class="wires-btn"> Tous </span> choisit le mode de la section : isoler (seuls les éléments ouverts s'affichent) ou masquer (seuls les éléments fermés se cachent). L'œil devant chaque élément affiche ou cache cet élément dans ce mode. La barre latérale s'ouvre lorsque vous survolez la bande gauche et se ferme automatiquement lorsque vous vous en éloignez. Appuyez sur B pour la garder ouverte en permanence. Appuyez à nouveau pour revenir au mode automatique.</p>
+<h3 class="section-heading" id="sec-rubrique-cat-gories"><strong>Rubrique Catégories</strong></h3>
+<ul>
+<li>Affiche uniquement les catégories qui ont au moins un appareil sur le canevas.</li>
+<li>Mode isoler : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;display:inline-block"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg> affiche ses appareils en pleine opacité ; leurs appareils fantômes (reliés par un câble) apparaissent en opacité réduite.</li><li>Mode masquer : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;display:inline-block"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle><line x1="2" y1="2" x2="22" y2="22"></line></svg> d'une catégorie cache ses appareils, ainsi que les câbles qui les relient à un appareil resté visible ; pas de nuance fantôme dans ce mode.</li>
+</ul>
+<h3 class="section-heading" id="sec-rubrique-c-bles"><strong>Rubrique Câbles</strong></h3>
+<ul>
+<li>Affiche uniquement les types de câbles actuellement utilisés sur le canevas.</li>
+<li>Mode isoler : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;display:inline-block"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg> affiche ses câbles et les appareils qu'ils relient ; tout le reste reste caché. Pas de nuance fantôme.</li><li>Mode masquer : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;display:inline-block"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle><line x1="2" y1="2" x2="22" y2="22"></line></svg> d'un type cache uniquement ses câbles ; les appareils concernés restent affichés normalement.</li>
+</ul>
+<h3 class="section-heading" id="sec-rubrique-zones"><strong>Rubrique Zones</strong></h3>
+<ul>
+<li>Affiche toutes les zones nommées définies dans le projet.</li>
+<li>Mode isoler : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;display:inline-block"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg> affiche les appareils dont le centre est à l'intérieur ; leurs câbles vers l'extérieur restent visibles en fantôme ; les étiquettes de texte restent toujours visibles.</li><li>Mode masquer : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;display:inline-block"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle><line x1="2" y1="2" x2="22" y2="22"></line></svg> d'une zone cache les appareils dont le centre est à l'intérieur, ainsi que leurs câbles vers un appareil resté visible ailleurs.</li>
+</ul>
+<h3 class="section-heading" id="sec-combinaison-de-filtres-et-d-autres-comportements"><strong>Combinaison de filtres et d'autres comportements</strong></h3>
+<ul>
+<li>Catégorie + Câble combinés : primaires = appareils de la catégorie sélectionnée et disposant d'un câble du type sélectionné ; fantômes = autres catégories connectées à un primaire via ce type de câble.</li>
+<li>La sélection d'un appareil respecte les filtres actifs : un élément déjà masqué par un filtre reste caché même s'il est connecté à l'appareil sélectionné.</li>
+<li>Barre de recherche : filtrez les appareils sur le canevas par nom. Cliquez sur un résultat pour le sélectionner et le centrer.</li>
+</ul>
+<h3 class="section-heading" id="sec-cat-gories-par-d-faut"><strong>Catégories par défaut</strong></h3>
+<p><strong>Alimentation </strong><br><strong>Audio</strong><br><strong>Caméra</strong><br><strong>Capture</strong><br><strong>Conversion</strong><br><strong>Écran</strong><br><strong>Externe</strong><br><strong>Personnalisé</strong><br><strong>Hub USB</strong><br><strong>Mélangeur</strong><br><strong>Ordinateur</strong><br><strong>Rack</strong><br><strong>Réseau</strong><br><strong>Stockage</strong><br><strong>Vidéo</strong><br><strong>Non classé</strong></p>
+<p><em>ℹ Des catégories personnalisées peuvent être créées lors de l'ajout d'un appareil — sélectionnez Personnalisé... dans la liste déroulante des catégories.</em></p>
+<p><em>ℹ Non classé est la catégorie proposée par défaut lors de l'ajout d'un appareil. Elle ne peut pas être supprimée.</em></p>
+<h3 class="section-heading" id="sec-c-bles-par-d-faut"><strong>Câbles par défaut</strong></h3>
+<p><strong>Dante</strong><br><strong>DC</strong><br><strong>DisplayPort</strong><br><strong>HDMI</strong><br><strong>Jack 3.5</strong><br><strong>Jack 6.35</strong><br><strong>MADI</strong><br><strong>Optique</strong><br><strong>RCA/Cinch</strong><br><strong>Personnalisé…</strong> <strong>RJ45</strong><br><strong>SDI</strong><br><strong>SDI-F</strong><br><strong>Speakon</strong><br><strong>Thunderbolt</strong><br><strong>USB-A</strong><br><strong>USB-C</strong><br><strong>USB-DC</strong><br><strong>XLR</strong></p>
+<h3 class="section-heading" id="sec-biblioth-que-d-appareils"><strong>Bibliothèque d'appareils</strong></h3>
+<p>Votre bibliothèque est personnelle et persiste entre les projets. Les appareils ajoutés avec <span class="wires-btn"> ⬡ Nouvel appareil </span> sont enregistrés dans votre bibliothèque et disponibles dans les projets futurs.</p>
+<h3 class="section-heading" id="sec-renommer-une-cat-gorie-personnalis-e"><strong>Renommer une catégorie personnalisée</strong></h3>
+<p>Double-cliquez sur son nom dans la barre latérale gauche → éditez le nom → confirmez.</p>
+<h3 class="section-heading" id="sec-supprimer-une-cat-gorie-personnalis-e"><strong>Supprimer une catégorie personnalisée</strong></h3>
+<p>Double-cliquez sur son nom dans la barre latérale gauche → cliquez sur ✕.</p>
+<p><em>⚠  Tous les appareils de cette catégorie seront définitivement supprimés.</em></p>
+<h3 class="section-heading" id="sec-ajouter-un-type-de-c-ble-personnalis"><strong>Ajouter un type de câble personnalisé</strong></h3>
+<p>Lors de la configuration des ports d'un appareil → liste déroulante Type → sélectionnez Personnalisé… en bas de la liste. Saisissez le nom du nouveau type → confirmez. Le nouveau type est immédiatement disponible et apparaît dans la section Câbles de la barre latérale gauche.</p>
+<h3 class="section-heading" id="sec-renommer-un-type-de-c-ble-personnalis"><strong>Renommer un type de câble personnalisé</strong></h3>
+<p>Double-cliquez sur son nom dans la barre latérale gauche → éditez le nom → confirmez.</p>
+<h3 class="section-heading" id="sec-supprimer-un-type-de-c-ble-personnalis"><strong>Supprimer un type de câble personnalisé</strong></h3>
+<p>Double-cliquez sur son nom dans la barre latérale gauche → cliquez sur ✕.</p>
+<p><em>⚠  Tous les câbles de ce type seront définitivement supprimés.</em></p>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch10')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch12')">Suivant →</button></div>
+</section>
+<section class="ch-section" hidden="" id="ch12">
+<h2 class="chapter-heading">Édition des couleurs</h2>
+<p>La page Édition des couleurs permet de personnaliser les couleurs des catégories, des types de câbles et des zones du projet en cours. Les modifications s’appliquent en temps réel sur le canevas.</p>
+<h3 class="section-heading" id="sec-ouvrir-la-page"><strong>Ouvrir la page</strong></h3>
+<p>Menu → Édition → Couleurs…</p>
+<h3 class="section-heading" id="sec-trois-colonnes"><strong>Trois colonnes</strong></h3>
+<p>La page est divisée en trois colonnes&nbsp;: Catégories, Câbles et Zones.</p>
+<p>Cliquez sur une ligne pour ouvrir son sélecteur de couleur. Cliquez à nouveau pour le refermer.</p>
+<h3 class="section-heading" id="sec-colonne-cat-gories"><strong>Colonne Catégories</strong></h3>
+<p>Liste toutes les catégories présentes dans le projet.</p>
+<h3 class="section-heading" id="sec-s-lecteur-de-couleur"><strong>Sélecteur de couleur&nbsp;:</strong></h3>
+<ul>
+<li><strong>10 teintes prédéfinies</strong></li>
+<li><strong>Roue de couleur pour une valeur libre</strong></li>
+</ul>
+<p>La couleur s’applique immédiatement.</p>
+<h3 class="section-heading" id="sec-colonne-c-bles"><strong>Colonne Câbles</strong></h3>
+<p>Liste tous les types de câbles — natifs et personnalisés.</p>
+<h3 class="section-heading" id="sec-style-de-trait"><strong>Style de trait</strong></h3>
+<p>Liste tous les styles de trait&nbsp;: Continu, Tirets ou Longs tirets.</p>
+<p>La couleur et le style s’appliquent immédiatement à tous les câbles de ce type sur le canevas. </p>
+<h3 class="section-heading" id="sec-colonne-zones"><strong>Colonne Zones</strong></h3>
+<p>Liste toutes les zones nommées du projet en cours.</p>
+<p>Le sélecteur comporte deux onglets&nbsp;:</p>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Onglet</strong></th><th><strong>Ce qu’il modifie</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Intérieur</strong></td><td>Couleur de remplissage de la zone.</td></tr><tr class="pair-b"><td><strong>Bordure</strong></td><td>Couleur et style de trait de la bordure.</td></tr></tbody></table></div>
+<p>Le style de trait&nbsp;(Continu, Tirets, Longs tirets)&nbsp;n'est disponible que sur l'onglet Bordure.</p>
+<p><em>ℹ  Si le projet ne contient aucune zone, la colonne Zones affiche un message vide. Créez d’abord une zone (<strong><a class="ch-ref" href="#" onclick="showChapter('ch8');return false;">voir Zones</a></strong>).</em></p>
+<h3 class="section-heading" id="sec-fermer-la-page"><strong>Fermer la page</strong></h3>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Bouton</strong></th><th><strong>Effet</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Appliquer</strong></td><td>Ferme la fenêtre et conserve toutes les modifications.</td></tr><tr class="pair-b"><td><strong>Annuler</strong></td><td>Ferme la fenêtre et annule toutes les modifications effectuées depuis l’ouverture.</td></tr></tbody></table></div>
+<p><em>ℹ</em><em>  Chaque modification de couleur est annulable individuellement via <kbd>Ctrl</kbd> + <kbd>Z</kbd> ou <kbd>⌘</kbd> + <kbd>Z</kbd>.</em></p>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch11')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch13')">Suivant →</button></div>
+</section>
+<section class="ch-section has-imgs" hidden="" id="ch13">
+<h2 class="chapter-heading">Sous-projets</h2>
+<div class="ch-layout"><div class="ch-body"><p><em>ℹ Cette fonctionnalité est réservée à la version Wires PRO.</em></p>
+<p>Un sous-projet permet d'importer le contenu d'un fichier .wires existant dans le projet en cours. Les appareils, câbles, routes de signal et zones du fichier importé sont placés sur le canevas actuel comme un bloc indépendant, encadré par une zone colorée portant le nom du projet source.</p>
+<h3 class="section-heading" id="sec-importer-un-sous-projet"><strong>Importer un sous-projet</strong></h3>
+<p>Menu Fichier → Importer un projet…</p>
+<p>Une boîte de dialogue s'ouvre : sélectionnez le fichier .wires à importer. Un aperçu en pointillés apparaît sous le curseur, représentant l'emprise du contenu importé.</p>
+<p>Déplacez le curseur. L'aperçu passe en rouge si l'emplacement chevauche des appareils existants — déplacez-le jusqu'à ce qu'il redevienne bleu. Cliquez pour placer  </p>
+<p>Si aucun espace libre n'est visible, approchez le curseur d'un bord de la fenêtre : le canevas défile automatiquement et ralentit dès qu'un emplacement valide est trouvé. Appuyez sur <kbd>Échap</kbd> ou cliquez sur      <span class="wires-btn"> ✕ Annuler </span> dans la bannière pour annuler l'import.</p>
+<h3 class="section-heading" id="sec-ce-qui-est-import"><strong>Ce qui est importé</strong></h3>
+<ul>
+<li>Appareils (hors nœud Internet)</li>
+<li>Câbles internes au projet importé</li>
+<li>Routes de signal</li>
+<li>Zones</li>
+</ul>
+<h3 class="section-heading" id="sec-zone-de-sous-projet"><strong>Zone de sous-projet</strong></h3>
+<p>Une zone englobante bleue est automatiquement créée autour du contenu importé, nommée d'après le titre du projet source. Sélectionnez cette zone pour accéder aux actions dans le panneau d'information de droite :</p>
+<p><span class="wires-btn"> Détacher (conserver le contenu) </span>&nbsp;— la zone est supprimée, le contenu reste sur le canevas comme éléments normaux.</p>
+<p><span class="wires-btn wires-btn-danger"> Supprimer + tout le contenu </span>&nbsp;— supprime la zone et tout ce qu'elle contient.</p></div><div class="ch-imgs">
+<figure class="ch-fig"><img alt="sous-projets" class="ch-img" data-img-key="sous-projets" src="../images/FR/sous-projets.png"></figure>
+</div></div>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch12')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch14')">Suivant →</button></div>
+</section>
+<section class="ch-section" hidden="" id="ch14">
+<h2 class="chapter-heading">Raccourcis clavier</h2>
+<h3 class="section-heading" id="sec-g-n-ral"><strong>Général</strong></h3>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Raccourci</strong></th><th><strong>Action</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + <kbd>N</kbd></strong></td><td class="pair-action" rowspan="2">Nouveau projet</td></tr><tr class="pair-a"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + <kbd>N</kbd></strong></td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + <kbd>O</kbd></strong></td><td class="pair-action" rowspan="2">Ouvrir le fichier</td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + <kbd>O</kbd></strong></td></tr><tr class="pair-a"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + <kbd>S</kbd></strong></td><td class="pair-action" rowspan="2">Enregistrer</td></tr><tr class="pair-a"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + <kbd>S</kbd></strong></td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + <kbd>⇧</kbd> + <kbd>S</kbd></strong></td><td class="pair-action" rowspan="2">Enregistrer sous</td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>S</kbd></strong></td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + <kbd>Z</kbd></strong></td><td class="pair-action" rowspan="2">Annuler</td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + <kbd>Z</kbd></strong></td></tr><tr class="pair-a"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + <kbd>⇧</kbd> + <kbd>Z</kbd></strong></td><td class="pair-action" rowspan="2">Rétablir</td></tr><tr class="pair-a"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>Z</kbd></strong></td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + <kbd>Y</kbd></strong></td><td class="pair-action" rowspan="2">Rétablir (alternatif)</td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + <kbd>Y</kbd></strong></td></tr><tr class="pair-a"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + <kbd>E</kbd></strong></td><td class="pair-action" rowspan="2">Exporter…</td></tr><tr class="pair-a"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + <kbd>E</kbd></strong></td></tr><tr class="pair-b"><td><strong><kbd>Echap</kbd></strong></td><td>Quitter le mode câble / fermer modal / tout désélectionner</td></tr><tr class="pair-a"><td><strong><kbd>B</kbd></strong></td><td>Basculer la barre latérale gauche</td></tr></tbody></table></div>
+<h3 class="section-heading" id="sec-s-lection-et-dition"><strong>Sélection et édition</strong></h3>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Raccourci</strong></th><th><strong>Action</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Supprimer ou <kbd>Retour arrière</kbd></strong></td><td><em>Supprimer l'élément sélectionné (nœud, câble, texte ou zone)</em></td></tr><tr class="pair-b"><td><strong><kbd>⇧</kbd> + clic (près du point final)</strong></td><td>Sélectionner la borne tronquée d'un câble</td></tr><tr class="pair-a"><td><strong><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> <em>(segment sélectionné)</em></strong></td><td>Changer la direction de sortie du segment</td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>Ctrl</kbd> + <kbd>X</kbd> / <kbd>Ctrl</kbd> + <kbd>V</kbd></strong></td><td class="pair-action" rowspan="2">Copier / Couper / Coller</td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + <kbd>C</kbd> / <kbd>⌘</kbd> + <kbd>X</kbd> / <kbd>⌘</kbd> + <kbd>V</kbd></strong></td></tr><tr class="pair-a"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> <kbd>Ctrl</kbd> + clic</strong></td><td class="pair-action" rowspan="2">Ajouter/retirer un appareil de la sélection</td></tr><tr class="pair-a"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>⌘</kbd> + clic</strong></td></tr></tbody></table></div>
+<h3 class="section-heading" id="sec-navigation-dans-le-canevas"><strong>Navigation dans le canevas</strong></h3>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Raccourci</strong></th><th><strong>Action</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong><kbd>F</kbd></strong></td><td>Ajuster tous les nœuds en vue</td></tr><tr class="pair-b"><td><strong><kbd>F11</kbd></strong></td><td>Plein écran</td></tr><tr class="pair-a"><td><strong><kbd>+</kbd> ou <kbd>=</kbd> / <kbd>-</kbd></strong></td><td>Zoom avant / Zoom arrière</td></tr><tr class="pair-a"><td><strong><kbd>Alt</kbd> + cliquer et glisser sur le canevas</strong></td><td>Dessiner un rectangle de sélection</td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-win"><svg fill="currentColor" height="13" viewBox="0 0 22 22" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M1 1h9v9H1zm11 0h9v9h-9zM1 12h9v9H1zm11 0h9v9h-9z"></path></svg></span> Clic droit + glisser</strong></td><td class="pair-action" rowspan="2">Panoramique — fonctionne même au-dessus d'un appareil</td></tr><tr class="pair-b"><td><strong><span class="os-badge os-badge-mac"><svg fill="currentColor" height="14" viewBox="0 0 24 24" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"></path></svg></span> <kbd>Espace</kbd> + glisser</strong></td></tr><tr class="pair-a"><td><strong><kbd>Alt</kbd> + Molette</strong></td><td>Zoom avant/arrière centré sur le curseur (ponctuel, le temps du geste)</td></tr></tbody></table></div>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch13')">← Précédent</button><button class="ch-nav-btn" onclick="showChapter('ch15')">Suivant →</button></div>
+</section>
+<section class="ch-section" hidden="" id="ch15">
+<h2 class="chapter-heading">Exporter</h2>
+<p>Wires permet d'exporter votre plan sous plusieurs formats, chacun adapté à un usage différent : partage interactif, impression, liste de matériel ou documentation d'une route de signal précise.</p>
+<p><kbd>Ctrl</kbd> + <kbd>E</kbd> ou <kbd>⌘</kbd> + <kbd>E</kbd> ou Fichier → Exporter… ouvre une fenêtre unique organisée en 4 onglets : Canevas HTML Interactif, Canevas PDF, Liste de Paquetage et Routes.</p>
+<p>Chaque onglet donne accès à un format d'export différent, avec ses propres réglages. La fenêtre reste ouverte après un export : vous pouvez enchaîner plusieurs exports ou ajuster les réglages sans avoir à la rouvrir.</p>
+
+<h3 class="section-heading" id="ch15-html"><strong>Canevas HTML Interactif</strong></h3>
+<div class="surround-layout"><div class="surround-side" style="width:260px"><figure class="ch-fig"><img alt="Onglet Canevas HTML Interactif" class="ch-img" data-img-key="exporterHtml" src="../images/FR/exporter1-html-fr.png"></figure></div><div class="surround-body">
+<p>Génère un fichier HTML autonome et interactif, à ouvrir dans n'importe quel navigateur : recherche, navigation et animation des routes de signal, exactement comme dans Wires.</p>
+</div></div>
+<p><strong>Utilisation</strong></p>
+<ul>
+<li>Cliquez directement sur <span class="wires-btn"> Exporter </span> et choisissez le dossier de destination et le nom du fichier.</li>
+<li>Le résultat est un fichier .zip contenant un fichier .html et un dossier assets/ avec les images des appareils.</li>
+<li>Le fichier .html et le dossier assets/ qui l'accompagne doivent rester ensemble et être mis en ligne dans le même dossier. Vous pouvez aussi le consulter en local après avoir extrait le zip, ou l'envoyer directement dans sa version .zip.</li>
+</ul>
+<h3 class="section-heading" id="sec-cas-d-utilisation-partager-int-grer-pr-senter"><strong>Cas d'utilisation - partager, intégrer, présenter</strong></h3>
+<p>La visionneuse HTML est le format de livraison idéal lorsque Wires ne peut pas être installé sur la machine du destinataire :</p>
+<ul>
+<li>Intégration de site Web ou intranet : copiez le fichier .html sur votre serveur Web ou intranet. Les visiteurs parcourent le plan interactif complet dans n'importe quel navigateur, cliquent sur les appareils et les câbles pour plus de détails et regardent les routes de signal s'animer, sans aucun logiciel à installer.</li>
+<li>Partage d'équipe ou de client : envoyez le fichier par e-mail ou par transfert de fichier. Le destinataire l'ouvre dans son navigateur et obtient une copie en direct entièrement navigable de votre plan. Bien plus informatif qu'un PDF plat : ils peuvent cliquer sur n'importe quel appareil ou câble pour obtenir des détails complets et regarder le trajet du signal s'animer en temps réel.</li>
+<li>Présentation en direct : ouvrez le fichier HTML sur un projecteur ou un écran partagé. Cliquez sur chaque appareil pour afficher ses spécifications, double-cliquez sur un câble pour animer la route et guidez les parties prenantes de manière interactive tout au long de la chaîne de signal.</li>
+</ul>
+<h3 class="section-heading" id="sec-fonctions-interactives-dans-la-visionneuse"><strong>Fonctions interactives dans la visionneuse</strong></h3>
+<p>La visionneuse préserve l’expérience interactive complète de Wires. Chaque élément est cliquable et entièrement explorable :</p>
+<div class="table-wrap"><table class="help-table"><thead><tr><th><strong>Action</strong></th><th><strong>Effet dans la visionneuse</strong></th></tr></thead><tbody><tr class="pair-a"><td><strong>Cliquez sur un appareil</strong></td><td>Ouvre le panneau d'information de droite sur l'appareil : nom, catégorie et liste complète des câbles qui y sont connectés.</td></tr><tr class="pair-b"><td><strong>Cliquez sur un câble</strong></td><td>Ouvre le panneau d'information de droite sur le câble : type de signal, appareil source, appareil de destination. Si le câble appartient à un ou plusieurs routes de signal, des puces de route apparaissent : cliquez sur une puce pour ouvrir le panneau Routes et lancer l'animation de cette route.</td></tr><tr class="pair-a"><td><strong>Double-cliquez sur un câble</strong></td><td>Bascule le flux du signal animé pour tous les routes utilisant ce câble. Une particule lumineuse se déplace le long du tracé du câble de la source à la destination. Double-cliquez à nouveau pour arrêter.</td></tr><tr class="pair-b"><td><strong>Cliquez sur un canevas vide</strong></td><td>Arrête toute animation en cours et restaure tous les câbles et appareils à leur apparence normale.</td></tr><tr class="pair-a"><td><strong>Panneau Routes</strong></td><td>Cliquez sur le bouton <span class="wires-btn"> ⬡ ROUTES </span> (barre supérieure) pour ouvrir le panneau. Double-cliquez sur le titre d’une route pour démarrer l'animation. Cliquez une fois sur le titre pour l'arrêter.</td></tr><tr class="pair-b"><td><strong>Zoom</strong></td><td>Molette de la souris : effectue un zoom avant et arrière centré sur le canevas. Plage : 0,15× à 4×.</td></tr><tr class="pair-a"><td>Centrage du zoom</td><td>Cliquez sur le bouton <strong><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="2" x2="12" y2="8"></line><line x1="12" y1="16" x2="12" y2="22"></line><line x1="2" y1="12" x2="8" y2="12"></line><line x1="16" y1="12" x2="22" y2="12"></line></svg></strong> pour basculer le zoom molette en mode centré sur le curseur (permanent).</td></tr><tr class="pair-b"><td>Alt + Molette</td><td>Zoom avant/arrière centré sur le curseur (ponctuel, le temps du geste).</td></tr><tr class="pair-a"><td><strong>Panoramique</strong></td><td>Faites un clic gauche + faites glisser sur un canevas vide. Le clic central + glisser fonctionne également.</td></tr><tr class="pair-b"><td><strong>Filtres Catégories / Câbles / Zones</strong></td><td>Barre latérale gauche — mêmes filtres isoler/masquer qu'à la création du fichier (<strong><a class="ch-ref" href="#" onclick="showChapter('ch11');return false;">voir Bibliothèque et catégories</a></strong>).</td></tr></tbody></table></div>
+<p><em>ℹ La visionneuse est en lecture seule. Toutes les fonctionnalités interactives de navigation et d'animation fonctionnent exactement comme dans Wires, mais le plan ne peut pas être modifié : aucun appareil ne peut être déplacé, créé ou supprimé.</em></p>
+
+<h3 class="section-heading" id="ch15-pdf"><strong>Canevas PDF</strong></h3>
+<div class="surround-layout"><div class="surround-side" style="width:260px"><figure class="ch-fig"><img alt="Onglet Canevas PDF" class="ch-img" data-img-key="exporterPdf" src="../images/FR/exporter2-pdf-fr.png"></figure></div><div class="surround-body">
+<p>Génère un PDF au format A4 paysage reproduisant l'ensemble du canevas : appareils, câbles, étiquettes et zones tels qu'affichés.</p>
+</div></div>
+<p><strong>Utilisation</strong></p>
+<ul>
+<li>Choisissez le Fond : <span class="wires-btn"> Blanc </span>, <span class="wires-btn"> Sombre </span>, ou une couleur personnalisée.</li>
+<li>Choisissez la Résolution : 75, 150, 300 ou 600 DPI.</li>
+<li>Un aperçu zoomable et déplaçable reflète le résultat en direct.</li>
+<li>Cliquez sur <span class="wires-btn"> Exporter </span> et sélectionnez où vous souhaitez enregistrer votre fichier.</li>
+<li>Le PDF s'ouvre automatiquement après l'enregistrement.</li>
+</ul>
+<p><em>ℹ La résolution d'export est sélectionnable avant l'enregistrement : 75 dpi est disponible dans toutes les versions. Les résolutions supérieures (150, 300 et 600 dpi) sont réservées à Wires PRO.</em></p>
+
+<h3 class="section-heading" id="ch15-packlist"><strong>Liste de Paquetage</strong></h3>
+<div class="surround-layout"><div class="surround-side" style="width:260px"><figure class="ch-fig"><img alt="Onglet Liste de Paquetage" class="ch-img" data-img-key="exporterPacklist" src="../images/FR/exporter3-packlist-fr.png"></figure></div><div class="surround-body">
+<p>Génère la liste complète des appareils et câbles du projet, en PDF ou en CSV.</p>
+</div></div>
+<p><strong>Utilisation</strong></p>
+<ul>
+<li>Choisissez le format : <span class="wires-btn"> PDF </span> ou <span class="wires-btn"> CSV </span>, en haut de l'onglet.</li>
+<li>Catégorie : regroupe les appareils par catégorie.</li>
+<li>Zones : ajoute une section séparée par zone après la liste principale — la liste principale elle-même n'est pas filtrée.</li>
+<li>Personnel : affiche les personnes responsables à côté des éléments concernés.</li>
+<li>Bouton <span class="wires-btn"> + Ajouter une personne </span> : donnez-lui un nom, puis choisissez si elle est responsable d'appareils, d'une catégorie ou d'une zone.</li>
+<li>Portrait ou Paysage.</li>
+<li>Un aperçu miniature (format PDF) reflète le résultat en direct — cliquez dessus pour l'ouvrir en plein écran.</li>
+<li>En CSV, les colonnes exportées sont : Zone, Catégorie, Type, Nom, Quantité, Longueur, Responsable.</li>
+<li>Cliquez sur <span class="wires-btn"> Exporter </span> et sélectionnez où vous souhaitez enregistrer votre fichier.</li>
+<li>Le fichier s'ouvre automatiquement après l'enregistrement.</li>
+</ul>
+<p><em>ℹ L'icône Internet est exclue de la liste de paquetage. Les cases □ sont destinées à être utilisées sur une copie imprimée.</em></p>
+
+<h3 class="section-heading" id="ch15-routes"><strong>Routes</strong></h3>
+<div class="surround-layout"><div class="surround-side" style="width:260px"><figure class="ch-fig"><img alt="Onglet Routes" class="ch-img" data-img-key="exporterRoutes" src="../images/FR/exporter4-routes-fr.png"></figure></div><div class="surround-body">
+<p>Exporte une ou plusieurs routes de signal sélectionnées sous forme de document : texte détaillé de la route accompagné d'un schéma.</p>
+</div></div>
+<p><strong>Utilisation</strong></p>
+<ul>
+<li>Cochez une ou plusieurs routes dans la liste.</li>
+<li>Double-cliquez sur une route, un chemin ou un câble pour le surligner directement sur le canevas.</li>
+<li><span class="wires-btn"> Source → Destination </span> : inverse le sens du signal pour <span class="wires-btn"> Destination → Source </span>.</li>
+<li>Aperçu ouvre le document dans une fenêtre séparée pour vérifier avant d'exporter.</li>
+<li>Cliquez sur <span class="wires-btn"> Exporter </span> et sélectionnez où vous souhaitez enregistrer votre fichier.</li>
+<li>Le PDF s'ouvre automatiquement après l'enregistrement.</li>
+</ul>
+
+<p><em>Routage professionnel du signal AV</em></p>
+<p>© 2026 Alkoda. Tous droits réservés.</p>
+<div class="ch-nav"><button class="ch-nav-btn" onclick="showChapter('ch14')">← Précédent</button><span></span></div>
+</section>
+  </div>
+</main>
+
+
+
+
+<script src="../assets/js/language-navigation.js"></script>{% include help-runtime.html %}</body></html>

@@ -1,12 +1,30 @@
+---
+lang: en
+asset_prefix: ""
+nav_active: "try"
+contact_href: "#contact"
+home_href: "index.html"
+features_href: "fonctions.html"
+try_href: "try-it.html"
+help_href: "help.html"
+license_href: "licence.html"
+downloads_href: "downloads.html"
+release_href: "release-notes.html"
+terms_href: "terms-of-service-wires.html"
+refunds_href: "refund-policy-wires.html"
+privacy_href: "privacy-cookies.html"
+lang_en_href: "try-it.html"
+lang_fr_href: "fr/try-it.html"
+lang_es_href: "es/try-it.html"
+---
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Try Wires | AV Signal Flow Diagram Software</title>
   <meta name="description" content="Try Wires AV signal flow diagram software in your browser and build a sample AV wiring diagram with devices, cables, zones and labels.">
   <meta name="robots" content="index, follow, max-image-preview:large">
-  <link rel="canonical" href="https://alkoda-wires.com/try-it.html">
+  <link rel="canonical" href="https://alkoda-wires.com/try-it.html"><link rel="alternate" hreflang="x-default" href="https://alkoda-wires.com/try-it.html"><link rel="alternate" hreflang="es" href="https://alkoda-wires.com/es/try-it.html"><link rel="alternate" hreflang="fr" href="https://alkoda-wires.com/fr/try-it.html"><link rel="alternate" hreflang="en" href="https://alkoda-wires.com/try-it.html">
   <meta property="og:title" content="Try Wires | AV Signal Flow Diagram Software">
   <meta property="og:description" content="Build a sample AV wiring diagram in your browser with devices, cables, zones and labels.">
   <meta property="og:type" content="website">
@@ -25,62 +43,35 @@
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="manifest" href="site.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&display=swap">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Share+Tech+Mono&amp;display=swap">
   <link rel="stylesheet" href="assets/css/site.css?v=20260809-1">
-  <script src="assets/js/seo.js?v=20260716-1"></script>
-  <script src="assets/js/consent.js?v=20260716-2" defer></script>
+  <script src="assets/js/consent.js?v=20260716-2" defer=""></script>
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="index.html" aria-label="Wires home"><img src="Logos/Logo-horizontal-transparent.png" alt="Wires"></a>
-    <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false"><span></span><span></span><span></span></button>
-    <nav class="site-nav" aria-label="Main navigation">
-      <a href="index.html" data-i18n="nav_home">Home</a>
-      <a href="fonctions.html" data-i18n="nav_features">Features</a>
-      <a class="active" href="try-it.html" data-i18n="nav_try">Try Wires</a>
-      <a href="help.html" data-i18n="nav_help">Help</a>
-      <a href="#contact" data-i18n="nav_contact">Contact</a>
-      <a href="licence.html" data-i18n="nav_license">License</a>
-      <a class="nav-cta js-download" href="downloads.html" data-i18n="nav_download">Download Wires</a>
-      <div id="lang-selector" class="lang-selector">
-        <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Change language" aria-expanded="false"><span id="lang-flag"></span><span id="lang-name"></span><span class="lang-arrow">v</span></button>
-        <div id="lang-drop" class="lang-drop" role="menu">
-          <button id="lang-opt-en" class="lang-opt" type="button" data-lang="en" role="menuitem"><span id="drop-flag-en"></span><span>English</span></button>
-          <button id="lang-opt-fr" class="lang-opt" type="button" data-lang="fr" role="menuitem"><span id="drop-flag-fr"></span><span>Français</span></button>
-          <button id="lang-opt-es" class="lang-opt" type="button" data-lang="es" role="menuitem"><span id="drop-flag-es"></span><span>Español</span></button>
-        </div>
-      </div>
-    </nav>
-  </header>
+  {% include header-compact.html %}
 
   <main>
     <section class="page-hero try-hero">
-      <h1 data-i18n="try_h1">Try Wires live here.</h1>
-      <p data-i18n="try_sub">Add devices, create cables, place text or zones, and see how Wires makes your cabling easier to read.</p>
+      <h1>Try Wires live here.</h1>
+      <p>Add devices, create cables, place text or zones, and see how Wires makes your cabling easier to read.</p>
       <div class="try-demo-workspace">
-        <div class="try-demo-embed is-loading" data-demo-loader>
-          <button class="try-fullscreen-toggle" type="button" data-demo-fullscreen aria-label="Open demo in full screen" title="Open demo in full screen">
-            <svg class="try-fullscreen-open-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 15 4 20m0 0h5m-5 0v-5M15 9l5-5m0 0h-5m5 0v5"/></svg>
-            <svg class="try-fullscreen-close-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 5-5m0 0H4m5 0v5M20 4l-5 5m0 0h5m-5 0V4"/></svg>
+        <div class="try-demo-embed is-loading" data-demo-loader="">
+          <button class="try-fullscreen-toggle" type="button" data-demo-fullscreen="" aria-label="Open demo in full screen" title="Open demo in full screen">
+            <svg class="try-fullscreen-open-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 15 4 20m0 0h5m-5 0v-5M15 9l5-5m0 0h-5m5 0v5"></path></svg>
+            <svg class="try-fullscreen-close-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 5-5m0 0H4m5 0v5M20 4l-5 5m0 0h5m-5 0V4"></path></svg>
           </button>
           <div class="try-demo-loader" aria-live="polite">
             <span class="try-loader-mark"></span>
-            <strong data-i18n="try_loading_title">Loading the Wires demo</strong>
-            <small data-i18n="try_loading_text">Preparing the live workspace...</small>
+            <strong>Loading the Wires demo</strong>
+            <small>Preparing the live workspace...</small>
           </div>
           <div class="try-mobile-message" aria-live="polite">
             <span class="try-mobile-mark"></span>
-            <strong data-i18n="try_mobile_title">Desktop version required</strong>
-            <small data-i18n="try_mobile_text">The online demo does not work on mobile. Please use the desktop version to try Wires.</small>
+            <strong>Desktop version required</strong>
+            <small>The online demo does not work on mobile. Please use the desktop version to try Wires.</small>
           </div>
-          <iframe
-            data-demo-src="renderer-web-demo/index.html"
-            title="Wires live demo"
-            loading="eager"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads"
-            referrerpolicy="no-referrer"
-            allow="clipboard-read; clipboard-write">
+          <iframe data-demo-src="renderer-web-demo/index.html" title="Wires live demo" loading="eager" sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-downloads" referrerpolicy="no-referrer" allow="clipboard-read; clipboard-write">
           </iframe>
         </div>
 
@@ -88,183 +79,183 @@
           <div class="try-guide-head">
             <img class="try-guide-head-logo" src="Logos/ico-transparent.png" alt="" aria-hidden="true">
             <div>
-              <small data-i18n="try_guide_eyebrow">QUICK HELP</small>
-              <h2 data-i18n="try_guide_title">Useful controls</h2>
+              <small>QUICK HELP</small>
+              <h2>Useful controls</h2>
             </div>
           </div>
 
           <div class="try-guide-menu-list">
           <details class="try-guide-group">
-            <summary data-i18n="try_guide_commands">Main controls</summary>
+            <summary>Main controls</summary>
             <div class="try-guide-content">
               <div class="try-guide-item">
                 <span class="try-guide-control try-guide-routes">ROUTES</span>
-                <p data-i18n="try_guide_routes">Open the Signal Routes panel.</p>
+                <p>Open the Signal Routes panel.</p>
               </div>
               <div class="try-guide-item">
                 <span class="try-guide-control try-guide-plus">+</span>
                 <div>
-                  <p data-i18n="try_guide_add">Open the creation menu:</p>
-                  <small data-i18n="try_guide_add_items">New Device · New Cable · Add Text Label · Add Zone</small>
+                  <p>Open the creation menu:</p>
+                  <small>New Device · New Cable · Add Text Label · Add Zone</small>
                 </div>
               </div>
             </div>
           </details>
 
           <details class="try-guide-group">
-            <summary data-i18n="try_guide_device_edit">Edit a device</summary>
+            <summary>Edit a device</summary>
             <div class="try-guide-content try-guide-steps">
               <div class="try-guide-step">
-                <strong data-i18n="try_guide_device_name">Click the device name</strong>
-                <p data-i18n="try_guide_device_name_text">Rename it, type the new name and press Enter.</p>
+                <strong>Click the device name</strong>
+                <p>Rename it, type the new name and press Enter.</p>
               </div>
               <div class="try-guide-step">
-                <strong data-i18n="try_guide_device_double_click">Double-click the device</strong>
-                <p data-i18n="try_guide_device_double_click_text">Open image configuration to edit its image and ports.</p>
+                <strong>Double-click the device</strong>
+                <p>Open image configuration to edit its image and ports.</p>
               </div>
               <div class="try-guide-step">
-                <strong data-i18n="try_guide_device_drag">Drag the device</strong>
-                <p data-i18n="try_guide_device_drag_text">Move it on the canvas.</p>
+                <strong>Drag the device</strong>
+                <p>Move it on the canvas.</p>
               </div>
               <div class="try-guide-step">
-                <strong data-i18n="try_guide_device_resize">Drag its top-left corner</strong>
-                <p data-i18n="try_guide_device_resize_text">Resize it proportionally.</p>
+                <strong>Drag its top-left corner</strong>
+                <p>Resize it proportionally.</p>
               </div>
               <div class="try-guide-step">
-                <strong><span class="try-guide-shortcut"><kbd data-i18n="try_guide_shift_key">Shift</kbd><span>+</span><span data-i18n="try_guide_device_click">device click</span></span></strong>
-                <p data-i18n="try_guide_shift_click_text">Bring it to front, above any overlapping device.</p>
+                <strong><span class="try-guide-shortcut"><kbd>Shift</kbd><span>+</span><span>device click</span></span></strong>
+                <p>Bring it to front, above any overlapping device.</p>
               </div>
               <div class="try-guide-step">
                 <strong class="try-guide-trash" aria-label="Delete this device">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"/></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"></path></svg>
                 </strong>
-                <p data-i18n="try_guide_delete_device_text">Use the red trash icon in the Info panel to delete this device.</p>
+                <p>Use the red trash icon in the Info panel to delete this device.</p>
               </div>
             </div>
           </details>
 
           <details class="try-guide-group">
-            <summary data-i18n="try_guide_paths">Edit a cable path</summary>
+            <summary>Edit a cable path</summary>
             <div class="try-guide-content try-guide-steps">
               <div class="try-guide-step">
-                <strong data-i18n="try_guide_drag">Drag a segment</strong>
-                <p data-i18n="try_guide_drag_text">Move it perpendicularly to adjust the path.</p>
+                <strong>Drag a segment</strong>
+                <p>Move it perpendicularly to adjust the path.</p>
               </div>
               <div class="try-guide-step">
-                <strong data-i18n="try_guide_right_click">Right-click near a device</strong>
-                <p data-i18n="try_guide_right_click_text">Open the Change direction / Create bend menu.</p>
+                <strong>Right-click near a device</strong>
+                <p>Open the Change direction / Create bend menu.</p>
               </div>
               <div class="try-guide-step try-guide-key-step">
-                <div class="try-guide-keys" aria-label="Arrow keys"><kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd></div>
-                <p><strong data-i18n="try_guide_change_dir">After Change direction:</strong> <span data-i18n="try_guide_change_dir_text">change the segment exit direction.</span></p>
+                <div class="try-guide-keys" aria-label="Arrow keys"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd></div>
+                <p><strong>After Change direction:</strong> <span>change the segment exit direction.</span></p>
               </div>
               <div class="try-guide-step try-guide-key-step">
-                <div class="try-guide-keys" aria-label="Arrow keys"><kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd></div>
-                <p><strong data-i18n="try_guide_add_bend">After Create bend:</strong> <span data-i18n="try_guide_add_bend_text">insert a 90-degree bend.</span></p>
+                <div class="try-guide-keys" aria-label="Arrow keys"><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd></div>
+                <p><strong>After Create bend:</strong> <span>insert a 90-degree bend.</span></p>
               </div>
             </div>
           </details>
 
           <details class="try-guide-group">
-            <summary data-i18n="try_guide_multi">Select multiple devices</summary>
+            <summary>Select multiple devices</summary>
             <div class="try-guide-content try-guide-steps">
               <div class="try-guide-step">
-                <strong><span class="try-guide-shortcut"><kbd>Alt</kbd><span>+</span><span data-i18n="try_guide_drag_action">click and drag</span></span></strong>
-                <p data-i18n="try_guide_alt_drag_text">Draw a selection rectangle. Every device it touches is selected.</p>
+                <strong><span class="try-guide-shortcut"><kbd>Alt</kbd><span>+</span><span>click and drag</span></span></strong>
+                <p>Draw a selection rectangle. Every device it touches is selected.</p>
               </div>
               <div class="try-guide-step">
-                <strong><span class="try-guide-platform">Windows</span> <span class="try-guide-shortcut"><kbd>Ctrl</kbd><span>+</span><span data-i18n="try_guide_device_click">device click</span></span></strong>
-                <strong><span class="try-guide-platform">Mac</span> <span class="try-guide-shortcut"><kbd>⌘</kbd><span>+</span><span data-i18n="try_guide_device_click">device click</span></span></strong>
-                <p data-i18n="try_guide_ctrl_click_text">Add or remove that device from the current selection.</p>
+                <strong><span class="try-guide-platform">Windows</span> <span class="try-guide-shortcut"><kbd>Ctrl</kbd><span>+</span><span>device click</span></span></strong>
+                <strong><span class="try-guide-platform">Mac</span> <span class="try-guide-shortcut"><kbd>⌘</kbd><span>+</span><span>device click</span></span></strong>
+                <p>Add or remove that device from the current selection.</p>
               </div>
               <div class="try-guide-step">
-                <strong data-i18n="try_guide_selected_click">Click a selected device</strong>
-                <p data-i18n="try_guide_selected_click_text">Remove that device from the selection.</p>
+                <strong>Click a selected device</strong>
+                <p>Remove that device from the selection.</p>
               </div>
               <div class="try-guide-step">
-                <strong data-i18n="try_guide_canvas_click">Click the canvas</strong>
-                <p data-i18n="try_guide_canvas_click_text">Clear the selection.</p>
+                <strong>Click the canvas</strong>
+                <p>Clear the selection.</p>
               </div>
               <div class="try-guide-step">
-                <strong data-i18n="try_guide_canvas_drag">Click and drag the canvas</strong>
-                <p data-i18n="try_guide_canvas_drag_text">Pan the view without losing the selection.</p>
+                <strong>Click and drag the canvas</strong>
+                <p>Pan the view without losing the selection.</p>
               </div>
               <div class="try-guide-step">
-                <strong><span class="try-guide-shortcut"><kbd data-i18n="try_guide_delete_key">Del</kbd></span></strong>
-                <p data-i18n="try_guide_delete_text">Delete all selected devices after confirmation.</p>
+                <strong><span class="try-guide-shortcut"><kbd>Del</kbd></span></strong>
+                <p>Delete all selected devices after confirmation.</p>
               </div>
               <div class="try-guide-step">
                 <strong><span class="try-guide-shortcut"><kbd>Esc</kbd></span></strong>
-                <p data-i18n="try_guide_escape_text">Clear the selection.</p>
+                <p>Clear the selection.</p>
               </div>
             </div>
           </details>
 
           <details class="try-guide-group">
-            <summary data-i18n="try_guide_image">Configure a device image</summary>
+            <summary>Configure a device image</summary>
             <div class="try-guide-content try-guide-steps">
               <div class="try-guide-step">
-                <strong data-i18n="try_guide_image_double_click">Double-click a device</strong>
-                <p data-i18n="try_guide_image_double_click_text">Open its image configuration.</p>
+                <strong>Double-click a device</strong>
+                <p>Open its image configuration.</p>
               </div>
             </div>
           </details>
 
           <details class="try-guide-group">
-            <summary data-i18n="try_guide_zoom">Zoom</summary>
+            <summary>Zoom</summary>
             <div class="try-guide-content try-guide-steps">
               <div class="try-guide-step">
-                <strong data-i18n="try_guide_wheel">Mouse wheel</strong>
-                <p data-i18n="try_guide_wheel_text">Zoom in or out around the pointer.</p>
+                <strong>Mouse wheel</strong>
+                <p>Zoom in or out around the pointer.</p>
               </div>
               <div class="try-guide-step">
-                <strong><span class="try-guide-shortcut"><kbd>+</kbd><span data-i18n="try_guide_or">or</span><kbd>−</kbd></span></strong>
-                <p data-i18n="try_guide_zoom_keys_text">Zoom in or zoom out.</p>
+                <strong><span class="try-guide-shortcut"><kbd>+</kbd><span>or</span><kbd>−</kbd></span></strong>
+                <p>Zoom in or zoom out.</p>
               </div>
               <div class="try-guide-step">
-                <strong data-i18n="try_guide_pinch">Pinch gesture</strong>
-                <p data-i18n="try_guide_pinch_text">Zoom on a touch surface.</p>
+                <strong>Pinch gesture</strong>
+                <p>Zoom on a touch surface.</p>
               </div>
             </div>
           </details>
 
           <details class="try-guide-group">
-            <summary data-i18n="try_guide_pan">Pan the view</summary>
+            <summary>Pan the view</summary>
             <div class="try-guide-content try-guide-steps">
               <div class="try-guide-step">
-                <strong><span class="try-guide-platform">Windows</span> <span data-i18n="try_guide_right_drag">Right-click and drag</span></strong>
-                <p data-i18n="try_guide_right_drag_text">Pan even when the pointer is over a device.</p>
+                <strong><span class="try-guide-platform">Windows</span> <span>Right-click and drag</span></strong>
+                <p>Pan even when the pointer is over a device.</p>
               </div>
               <div class="try-guide-step">
-                <strong><span class="try-guide-platform">Mac</span> <span class="try-guide-shortcut"><kbd data-i18n="try_guide_space_key">Space</kbd><span>+</span><span data-i18n="try_guide_drag_action">click and drag</span></span></strong>
-                <p data-i18n="try_guide_space_drag_text">Pan the view.</p>
+                <strong><span class="try-guide-platform">Mac</span> <span class="try-guide-shortcut"><kbd>Space</kbd><span>+</span><span>click and drag</span></span></strong>
+                <p>Pan the view.</p>
               </div>
               <div class="try-guide-step">
-                <strong data-i18n="try_guide_left_drag">Left-click and drag an empty area</strong>
-                <p data-i18n="try_guide_space_drag_text">Pan the view.</p>
+                <strong>Left-click and drag an empty area</strong>
+                <p>Pan the view.</p>
               </div>
             </div>
           </details>
 
           <details class="try-guide-group">
-            <summary data-i18n="try_guide_box_select">Rectangle selection</summary>
+            <summary>Rectangle selection</summary>
             <div class="try-guide-content try-guide-steps">
               <div class="try-guide-step">
-                <strong><span class="try-guide-shortcut"><kbd>Alt</kbd><span>+</span><span data-i18n="try_guide_drag_action">click and drag</span></span></strong>
-                <p data-i18n="try_guide_alt_drag_text">Draw a selection rectangle. Every device it touches is selected.</p>
+                <strong><span class="try-guide-shortcut"><kbd>Alt</kbd><span>+</span><span>click and drag</span></span></strong>
+                <p>Draw a selection rectangle. Every device it touches is selected.</p>
               </div>
               <div class="try-guide-step">
-                <strong><span class="try-guide-platform">Windows</span> <span class="try-guide-shortcut"><kbd>Ctrl</kbd><span>+</span><span data-i18n="try_guide_device_click">device click</span></span></strong>
-                <strong><span class="try-guide-platform">Mac</span> <span class="try-guide-shortcut"><kbd>⌘</kbd><span>+</span><span data-i18n="try_guide_device_click">device click</span></span></strong>
-                <p data-i18n="try_guide_ctrl_click_text">Add or remove that device from the current selection.</p>
+                <strong><span class="try-guide-platform">Windows</span> <span class="try-guide-shortcut"><kbd>Ctrl</kbd><span>+</span><span>device click</span></span></strong>
+                <strong><span class="try-guide-platform">Mac</span> <span class="try-guide-shortcut"><kbd>⌘</kbd><span>+</span><span>device click</span></span></strong>
+                <p>Add or remove that device from the current selection.</p>
               </div>
             </div>
           </details>
           </div>
 
           <a class="try-guide-full-help" href="help.html" target="_blank" rel="noopener">
-            <span data-i18n="try_guide_full_help">Open the full help</span>
-            <small data-i18n="try_guide_new_tab">(new tab)</small>
+            <span>Open the full help</span>
+            <small>(new tab)</small>
           </a>
         </aside>
       </div>
@@ -272,33 +263,19 @@
 
     <section id="contact" class="contact">
       <div class="section-head centered">
-        <p class="kicker" data-i18n="contact_kicker">Contact</p>
-        <h2 data-i18n="contact_h2">Need help or want to follow Wires?</h2>
-        <p data-i18n="contact_text">Join the community first, or send an email for license and support questions.</p>
+        <p class="kicker">Contact</p>
+        <h2>Need help or want to follow Wires?</h2>
+        <p>Join the community first, or send an email for license and support questions.</p>
       </div>
       <div class="contact-actions">
-        <a class="contact-link contact-card contact-youtube" href="https://www.youtube.com/@AlkodaWires" target="_blank" rel="noopener"><span class="contact-title"><svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.6V8.4l6.2 3.6-6.2 3.6Z"/></svg><span data-i18n="contact_youtube_label">YouTube</span></span><span class="contact-subtitle" data-i18n="contact_youtube">Tutorials and Wires news</span></a>
-        <a class="contact-link contact-card contact-discord" href="https://discord.gg/bXV6QcW4G9" target="_blank" rel="noopener"><span class="contact-title"><svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A16.5 16.5 0 0 0 16.2 3l-.2.4c-.2.4-.4.8-.5 1.2a15.4 15.4 0 0 0-7 0c-.2-.4-.3-.8-.6-1.2L7.8 3a16.8 16.8 0 0 0-4.1 1.4C1.1 8.2.4 11.9.8 15.6a16.7 16.7 0 0 0 5.1 2.6l.5-.7c.3-.4.5-.8.7-1.2-.4-.2-.8-.4-1.2-.6l.3-.2a11.8 11.8 0 0 0 11.6 0l.3.2c-.4.3-.8.5-1.2.6.2.4.4.8.7 1.2l.5.7a16.9 16.9 0 0 0 5.1-2.6c.5-4.3-.8-8-2.9-11.2ZM8.3 13.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm7.4 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"/></svg><span data-i18n="contact_discord_label">Discord</span></span><span class="contact-subtitle" data-i18n="contact_discord">Join the Wires Community</span></a>
-        <a class="contact-link contact-card contact-mail" href="mailto:contact@alkoda-wires.com"><span class="contact-title"><svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3.8 5h16.4c1 0 1.8.8 1.8 1.8v10.4c0 1-.8 1.8-1.8 1.8H3.8c-1 0-1.8-.8-1.8-1.8V6.8C2 5.8 2.8 5 3.8 5Zm.3 2.7v9.1h15.8V7.7l-7.1 5.1c-.5.4-1.1.4-1.6 0L4.1 7.7Zm1.4-.9 6.5 4.7 6.5-4.7h-13Z"/></svg><span data-i18n="contact_mail_label">Mail</span></span><span class="contact-subtitle">contact@alkoda-wires.com</span></a>
+        <a class="contact-link contact-card contact-youtube" href="https://www.youtube.com/@AlkodaWires" target="_blank" rel="noopener"><span class="contact-title"><svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.6V8.4l6.2 3.6-6.2 3.6Z"></path></svg><span>YouTube</span></span><span class="contact-subtitle">Tutorials and Wires news</span></a>
+        <a class="contact-link contact-card contact-discord" href="https://discord.gg/bXV6QcW4G9" target="_blank" rel="noopener"><span class="contact-title"><svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A16.5 16.5 0 0 0 16.2 3l-.2.4c-.2.4-.4.8-.5 1.2a15.4 15.4 0 0 0-7 0c-.2-.4-.3-.8-.6-1.2L7.8 3a16.8 16.8 0 0 0-4.1 1.4C1.1 8.2.4 11.9.8 15.6a16.7 16.7 0 0 0 5.1 2.6l.5-.7c.3-.4.5-.8.7-1.2-.4-.2-.8-.4-1.2-.6l.3-.2a11.8 11.8 0 0 0 11.6 0l.3.2c-.4.3-.8.5-1.2.6.2.4.4.8.7 1.2l.5.7a16.9 16.9 0 0 0 5.1-2.6c.5-4.3-.8-8-2.9-11.2ZM8.3 13.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm7.4 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"></path></svg><span>Discord</span></span><span class="contact-subtitle">Join the Wires Community</span></a>
+        <a class="contact-link contact-card contact-mail" href="mailto:contact@alkoda-wires.com"><span class="contact-title"><svg class="contact-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3.8 5h16.4c1 0 1.8.8 1.8 1.8v10.4c0 1-.8 1.8-1.8 1.8H3.8c-1 0-1.8-.8-1.8-1.8V6.8C2 5.8 2.8 5 3.8 5Zm.3 2.7v9.1h15.8V7.7l-7.1 5.1c-.5.4-1.1.4-1.6 0L4.1 7.7Zm1.4-.9 6.5 4.7 6.5-4.7h-13Z"></path></svg><span>Mail</span></span><span class="contact-subtitle">contact@alkoda-wires.com</span></a>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div><img src="Logos/Logo-horizontal-transparent.png" alt="Wires"><p data-i18n="footer_text">Wires is published by Alkoda.</p></div>
-    <nav aria-label="Footer navigation">
-      <a href="index.html" data-i18n="nav_home">Home</a>
-      <a href="fonctions.html" data-i18n="nav_features">Features</a>
-      <a href="try-it.html" data-i18n="nav_try">Try Wires</a>
-      <a href="help.html" data-i18n="nav_help">Help</a>
-      <a href="#contact" data-i18n="nav_contact">Contact</a>
-      <a href="licence.html" data-i18n="nav_license">License</a>
-      <a href="release-notes.html" data-i18n="footer_release_notes">Release notes</a>
-      <a href="terms-of-service-wires.html" data-i18n="footer_terms">Terms</a>
-      <a href="refund-policy-wires.html" data-i18n="footer_refunds">Refunds</a>
-      <a href="privacy-cookies.html" data-i18n="footer_privacy">Privacy &amp; cookies</a>
-    </nav>
-  </footer>
-  <script src="assets/js/site.js?v=20260809-1"></script>
-</body>
-</html>
+  {% include footer-compact.html %}
+
+
+<script src="assets/js/site-runtime.js"></script><script src="assets/js/language-navigation.js"></script></body></html>

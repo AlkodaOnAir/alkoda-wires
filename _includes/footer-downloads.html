@@ -1,0 +1,13 @@
+{% assign ui = site.data.interface[page.lang] %}<footer class="site-footer">
+    <div>
+      <img src="{{ page.asset_prefix }}Logos/Logo-horizontal-transparent.png" alt="Wires">
+      <p>{{ ui.footer_text }}</p>
+    </div>
+    <nav aria-label="Footer navigation">
+      <a href="{{ page.terms_href }}">{{ ui.footer_terms }}</a>
+      <a href="{{ page.refunds_href }}">{{ ui.footer_refunds }}</a>
+      <a href="{{ page.privacy_href }}">{{ ui.footer_privacy }}</a>
+      <a href="{{ page.release_href }}">{{ ui.footer_release_notes }}</a>
+      <a href="{{ page.contact_href }}">{{ ui.nav_contact }}</a>
+    </nav>
+  </footer>

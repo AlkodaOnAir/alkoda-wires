@@ -1,0 +1,30 @@
+{% assign ui = site.data.interface[page.lang] %}<header class="site-header">
+    <noscript><nav aria-label="Language" style="display:flex;align-items:center;gap:6px;font:700 13px Inter,system-ui,sans-serif"><a href="{{ page.lang_en_href }}" style="padding:6px 7px;border:1px solid var(--line);border-radius:7px">EN</a><a href="{{ page.lang_fr_href }}" style="padding:6px 7px;border:1px solid var(--line);border-radius:7px">FR</a><a href="{{ page.lang_es_href }}" style="padding:6px 7px;border:1px solid var(--line);border-radius:7px">ES</a></nav></noscript>
+    <a class="brand" href="{{ page.home_href }}" aria-label="Wires home">
+      <img src="{{ page.asset_prefix }}Logos/Logo-horizontal-transparent.png" alt="Wires">
+    </a>
+    <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a class="active" href="{{ page.home_href }}">{{ ui.nav_home }}</a>
+      <a href="{{ page.features_href }}">{{ ui.nav_features }}</a>
+      <a href="{{ page.try_href }}">{{ ui.nav_try }}</a>
+      <a href="{{ page.help_href }}">{{ ui.nav_help }}</a>
+      <a href="#contact">{{ ui.nav_contact }}</a>
+      <a href="{{ page.license_href }}">{{ ui.nav_license }}</a>
+      <a class="nav-cta js-download" href="{{ page.downloads_href }}">{{ ui.nav_download }}</a>
+      <div id="lang-selector" class="lang-selector">
+        <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Change language" aria-expanded="false">
+          <span id="lang-flag" class="lang-flag"></span>
+          <span id="lang-name" class="lang-name"></span>
+          <span class="lang-arrow">v</span>
+        </button>
+        <div id="lang-drop" class="lang-drop" role="menu">
+          <a id="lang-opt-en" class="lang-opt" style="padding:9px 11px;border:0" href="{{ page.lang_en_href }}" data-lang="en" role="menuitem"><span id="drop-flag-en"></span><span>English</span></a>
+          <a id="lang-opt-fr" class="lang-opt" style="padding:9px 11px;border:0" href="{{ page.lang_fr_href }}" data-lang="fr" role="menuitem"><span id="drop-flag-fr"></span><span>Français</span></a>
+          <a id="lang-opt-es" class="lang-opt" style="padding:9px 11px;border:0" href="{{ page.lang_es_href }}" data-lang="es" role="menuitem"><span id="drop-flag-es"></span><span>Español</span></a>
+        </div>
+      </div>
+    </nav>
+  </header>
