@@ -1,1 +1,113 @@
-function clearSelMulti(){APP.selMulti&&APP.selMulti.size&&(APP.selMulti.forEach(e=>{document.getElementById(`n-${e}`)?.classList.remove("sel-multi")}),APP.selMulti.clear())}function selectNode(e){if(APP.drag?.active||APP.drag?.moved||_segDragState||_segDragged)return;if(APP.sel===e)return void clearSelMulti();"function"==typeof _resetCanvasOpacity&&_resetCanvasOpacity(),clearSelMulti(),clearSelCable(),"function"==typeof clearSelTextLabel&&clearSelTextLabel(),"function"==typeof clearSelZone&&clearSelZone(),APP.sel=e,wLog("NODE_SEL",{id:e,name:APP.nodes[e]?.name,cat:APP.nodes[e]?.cat});const t=new Set,l=new Set;if(CM[e])for(const s of CM[e])t.add(s.sid),l.add(s.cid);for(const l of Object.keys(APP.nodes)){const s=document.getElementById(`n-${l}`);if(!s)continue;const a=document.getElementById(`nl-${l}`);s.classList.remove("sel","lit","dim","route-dim"),a?.classList.remove("dim","route-dim"),l===e?s.classList.add("sel"):t.has(l)?s.classList.add("lit"):(s.classList.add("dim"),a?.classList.add("dim"))}document.querySelectorAll("#cables-svg .cable-visual").forEach(e=>{const t=+e.dataset.cid;l.has(t)?(e.setAttribute("stroke-width","4.5"),e.setAttribute("opacity","0.97"),e.setAttribute("filter","url(#glow)"),e.dataset.selected="1"):(e.setAttribute("opacity","0.03"),e.setAttribute("stroke-width","1"),e.removeAttribute("filter"),delete e.dataset.selected)}),openInfoPanel(e),enterResizeMode(e)}function clearSel(){clearSelMulti(),"function"==typeof clearSelTextLabel&&clearSelTextLabel(),"function"==typeof clearSelZone&&clearSelZone(),APP.sel=null;for(const e of Object.keys(APP.nodes)){const t=document.getElementById(`n-${e}`);t?.classList.remove("sel","lit","dim","route-dim"),document.getElementById(`nl-${e}`)?.classList.remove("dim","route-dim")}document.querySelectorAll("#cables-svg .cable-visual").forEach(e=>{delete e.dataset.selected,e.removeAttribute("filter"),e.setAttribute("stroke-width","3.5"),e.setAttribute("opacity","0.85")}),exitResizeMode(),"function"==typeof applyCanvasFilters&&applyCanvasFilters()}
+/* ═══════════════════════════════════════════════════════════════
+   select.js — Sélection nœuds, états dim/lit/sel
+═══════════════════════════════════════════════════════════════ */
+
+function clearSelMulti() {
+  if (!APP.selMulti || !APP.selMulti.size) return;
+  APP.selMulti.forEach(id => {
+    document.getElementById(`n-${id}`)?.classList.remove('sel-multi');
+  });
+  APP.selMulti.clear();
+}
+
+function selectNode(id) {
+  if (APP.drag?.active || APP.drag?.moved || _segDragState || _segDragged) return;
+  if (APP.sel === id) { clearSelMulti(); return; }
+  if (typeof _resetCanvasOpacity === 'function') _resetCanvasOpacity();
+
+  clearSelMulti();
+  clearSelCable();
+  if (typeof clearSelTextLabel === 'function') clearSelTextLabel();
+  if (typeof clearSelZone      === 'function') clearSelZone();
+  // Panneau Routes et panneau appareil : mutuellement exclusifs (voir ui.js/panel.js) —
+  // sélectionner un appareil pendant que le panneau Routes est ouvert le referme.
+  document.getElementById('routes-panel')?.classList.remove('open');
+  APP.sel = id;
+  wLog('NODE_SEL', { id, name: APP.nodes[id]?.name, cat: APP.nodes[id]?.cat });
+
+  const litSet = new Set();
+  const cabSet = new Set();
+
+  if (CM[id]) {
+    for (const conn of CM[id]) {
+      litSet.add(conn.sid);
+      cabSet.add(conn.cid);
+    }
+  }
+
+  // Mettre à jour les classes des nœuds
+  for (const nid of Object.keys(APP.nodes)) {
+    const el = document.getElementById(`n-${nid}`);
+    if (!el) continue;
+    // L'étiquette (nl-*) est hors de .node : lui refléter l'estompage
+    const lbl = document.getElementById(`nl-${nid}`);
+    el.classList.remove('sel', 'lit', 'dim', 'route-dim');
+    lbl?.classList.remove('dim', 'route-dim');
+    if (nid === id)          el.classList.add('sel');
+    else if (litSet.has(nid)) el.classList.add('lit');
+    else { el.classList.add('dim'); lbl?.classList.add('dim'); }
+  }
+
+  // Filtre catégorie/câble/zone actif : un câble qu'il masque ne doit jamais être
+  // rallumé par la sélection, même connecté à l'appareil sélectionné — le filtre
+  // l'emporte toujours (voir _computeCatZoneState/_cablePassesFilter, library.js).
+  const filtersActive = !(_catFilter.has('__ALL__') && _cableFilter.has('__ALL__') && _zoneFilter.has('__ALL__'));
+  const catZoneState = filtersActive ? _computeCatZoneState() : null;
+
+  // Mettre à jour les câbles visuels
+  const visuals = document.querySelectorAll('#cables-svg .cable-visual');
+  visuals.forEach(p => {
+    const cid = +p.dataset.cid;
+    const hit = _svg?.querySelector(`.cable-hit[data-cid="${cid}"]`);
+    const c = filtersActive ? APP.cables.find(x => x.id === cid) : null;
+
+    if (c && !_cablePassesFilter(c, catZoneState)) {
+      p.setAttribute('opacity', '0');
+      p.setAttribute('stroke-width', '1');
+      p.removeAttribute('filter');
+      delete p.dataset.selected;
+      if (hit) hit.style.pointerEvents = 'none';
+      return;
+    }
+
+    if (hit) hit.style.pointerEvents = '';
+    if (cabSet.has(cid)) {
+      p.setAttribute('stroke-width', '4.5');
+      p.setAttribute('opacity', '0.97');
+      p.setAttribute('filter', 'url(#glow)');
+      p.dataset.selected = '1';
+    } else {
+      p.setAttribute('opacity', '0.03');
+      p.setAttribute('stroke-width', '1');
+      p.removeAttribute('filter');
+      delete p.dataset.selected;
+    }
+  });
+
+  openInfoPanel(id);
+  enterResizeMode(id);
+}
+
+function clearSel() {
+  clearSelMulti();
+  if (typeof clearSelTextLabel === 'function') clearSelTextLabel();
+  if (typeof clearSelZone      === 'function') clearSelZone();
+  APP.sel = null;
+
+  for (const nid of Object.keys(APP.nodes)) {
+    const el = document.getElementById(`n-${nid}`);
+    el?.classList.remove('sel', 'lit', 'dim', 'route-dim');
+    document.getElementById(`nl-${nid}`)?.classList.remove('dim', 'route-dim');
+  }
+
+  // Restaurer câbles
+  document.querySelectorAll('#cables-svg .cable-visual').forEach(p => {
+    delete p.dataset.selected;
+    p.removeAttribute('filter');
+    p.setAttribute('stroke-width', '3.5');
+    p.setAttribute('opacity', '0.85');
+  });
+
+  exitResizeMode();
+  if (typeof applyCanvasFilters === 'function') applyCanvasFilters();
+}

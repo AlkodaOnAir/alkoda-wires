@@ -1,1 +1,251 @@
-function getRealBB(t,n){const e=n||0,o=t.bb||{left:0,right:1,top:0,bottom:1},i=_nodeImgRect(t),r=i?i.offX:0,s=i?i.offY:0,f=i?i.rW:t.w,h=i?i.rH:t.h;return{x1:t.x+r+o.left*f-e,x2:t.x+r+o.right*f+e,y1:t.y+s+o.top*h-e,y2:t.y+s+o.bottom*h+e}}function getObstacles(t){return Object.entries(APP.nodes).filter(([n])=>!t.includes(n)).map(([,t])=>getRealBB(t,OBS_MARGIN))}function ptInObs(t,n,e){for(const o of e)if(t>o.x1&&t<o.x2&&n>o.y1&&n<o.y2)return!0;return!1}function segBlocked(t,n,e,o,i){for(const r of i)if(t===e){const e=Math.min(n,o),i=Math.max(n,o);if(t>r.x1&&t<r.x2&&e<r.y2&&i>r.y1)return!0}else{const o=Math.min(t,e),i=Math.max(t,e);if(n>r.y1&&n<r.y2&&o<r.x2&&i>r.x1)return!0}return!1}function edgePt(t,n,e){const o=t.bb||{left:0,right:1,top:0,bottom:1},i=t.x+o.left*t.w,r=t.x+o.right*t.w,s=t.y+o.top*t.h,f=t.y+o.bottom*t.h,h=(i+r)/2,c=(s+f)/2,u=(r-i)/2,a=(f-s)/2,d=n-h,g=e-c;return Math.abs(d)*a>Math.abs(g)*u?[h+Math.sign(d||1)*u,Math.max(s+3,Math.min(f-3,c+g*(u/Math.abs(d||1))))]:[Math.max(i+3,Math.min(r-3,h+d*(a/Math.abs(g||1)))),c+Math.sign(g||1)*a]}function _nodeImgRect(t){if(!t._imgW||!t._imgH)return null;const n=t.h-3,e=t.w-6,o=n-6,i=Math.min(e/t._imgW,o/t._imgH),r=t._imgW*i,s=t._imgH*i;return{offX:(e-r)/2+3+1,offY:(o-s)/2+3+1,rW:r,rH:s}}function edgePtFixed(t,n,e){const o=t=>Math.round(t),i=_nodeImgRect(t);return i?[o(t.x+i.offX+n*i.rW),o(t.y+i.offY+e*i.rH)]:[o(t.x+n*t.w),o(t.y+e*t.h)]}function stubPt(t,n,e){const[o,i]=edgePtFixed(t,n,e),r=t.stub||null;if("top"===r)return[o,i-STUB_LEN];if("bottom"===r)return[o,i+STUB_LEN];if("left"===r)return[o-STUB_LEN,i];if("right"===r)return[o+STUB_LEN,i];const s=n,f=1-n,h=e,c=1-e,u=Math.min(s,f,h,c);return u===s?[o-STUB_LEN,i]:u===f?[o+STUB_LEN,i]:u===h?[o,i-STUB_LEN]:[o,i+STUB_LEN]}function getGridLines(t){const n=new Set,e=new Set;for(const o of t)n.add(o.x1-20),n.add(o.x2+20),e.add(o.y1-20),e.add(o.y2+20);return n.add(0),n.add(CW),e.add(0),e.add(CH),{xs:[...n].sort((t,n)=>t-n),ys:[...e].sort((t,n)=>t-n)}}function findOrthPath(t,n,e,o){const i=getObstacles([t.id,n.id]),[r,s]=e||edgePt(t,n.cx||n.x+n.w/2,n.cy||n.y+n.h/2),[f,h]=o||edgePt(n,t.cx||t.x+t.w/2,t.cy||t.y+t.h/2),{xs:c,ys:u}=getGridLines(i),a=[...new Set([...c,r,f])].sort((t,n)=>t-n),d=[...new Set([...u,s,h])].sort((t,n)=>t-n),g={};a.forEach((t,n)=>g[t]=n);const l={};d.forEach((t,n)=>l[t]=n);const x=a.length,M=d.length,m=g[r],y=l[s],b=g[f],p=l[h],_=(t,n)=>t*M+n,$=new Map,B=new Map,F=_(m,y);$.set(F,0);const L=[[m,y]];let S=!1;const w=_(b,p);for(;L.length&&!S;){const[t,n]=L.shift(),e=_(t,n),o=$.get(e),r=[[t-1,n],[t+1,n],[t,n-1],[t,n+1]];for(const[s,f]of r){if(s<0||s>=x||f<0||f>=M)continue;const r=_(s,f);if($.has(r))continue;const h=a[t],c=d[n],u=a[s],g=d[f];if(segBlocked(h,c,u,g,i))continue;const l=Math.abs(u-h)+Math.abs(g-c);if($.set(r,o+l),B.set(r,e),L.push([s,f]),r===w){S=!0;break}}}if(!S)return[[r,s],[r,h],[f,h]];const E=[];let P=w;for(;void 0!==P;){const t=Math.floor(P/M),n=P%M;E.unshift([a[t],d[n]]),P=B.get(P)}return E}function normalizePts(t){const n=(t,n)=>Math.abs(t-n)<.5;if(t.length<2)return t;const e=[t[0]];for(let o=1;o<t.length;o++){const[i,r]=e[e.length-1],[s,f]=t[o];if(!n(i,s)&&!n(r,f)){const t=e.length>=2?e[e.length-2]:null;t&&n(t[0],i)?e.push([i,f]):e.push([s,r])}e.push([s,f])}return e}function simplify(t){if(t.length<=2)return t;const n=[t[0]];for(let e=1;e<t.length-1;e++){const[o,i]=t[e],[r,s]=t[e+1],[f,h]=n[n.length-1];if(o===f&&i===h)continue;const c=f===o&&o===r,u=h===i&&i===s;c||u||n.push(t[e])}return n.push(t[t.length-1]),n}function toSVG(t){if(t.length<2)return"";if(2===t.length)return`M${t[0][0]} ${t[0][1]} L${t[1][0]} ${t[1][1]}`;let n=`M${t[0][0].toFixed(1)} ${t[0][1].toFixed(1)}`;for(let e=1;e<t.length-1;e++){const[o,i]=t[e-1],[r,s]=t[e],[f,h]=t[e+1],c=Math.hypot(r-o,s-i),u=Math.hypot(f-r,h-s);if(c<.01||u<.01){n+=` L${r.toFixed(1)} ${s.toFixed(1)}`;continue}const a=Math.min(20,c/2,u/2),d=s-(s-i)/c*a,g=r+(f-r)/u*a,l=s+(h-s)/u*a;n+=` L${(r-(r-o)/c*a).toFixed(1)} ${d.toFixed(1)} Q${r.toFixed(1)} ${s.toFixed(1)} ${g.toFixed(1)} ${l.toFixed(1)}`}return n+=` L${t[t.length-1][0].toFixed(1)} ${t[t.length-1][1].toFixed(1)}`,n}
+/* ═══════════════════════════════════════════════════════════════
+   routing.js — Algorithmes BFS orthogonal (fonctions pures)
+   Extraits et adaptés de la référence Alkoda_transparent.html
+═══════════════════════════════════════════════════════════════ */
+
+function getRealBB(s, margin) {
+  const m = margin || 0;
+  const bb = s.bb || { left: 0, right: 1, top: 0, bottom: 1 };
+  // bb est exprimé en coordonnées de l'IMAGE (calculé sur ses pixels opaques, cf.
+  // _alphaBBFromCanvas), il doit donc être déplié dans le rectangle qu'occupe cette
+  // image à l'intérieur de l'appareil — le même que celui des ports (edgePtFixed).
+  // Appliqué à la boîte, il débordait du contour visible de toute la marge de
+  // centrage : sur un bandeau de rack large et plat, une image de 934 px dans une
+  // boîte de 1033 poussait l'obstacle 48 px trop loin à droite, et le faisait
+  // commencer 16 px avant le bord réel à gauche. Les câbles contournaient donc
+  // l'appareil bien avant de l'atteindre.
+  const r  = _nodeImgRect(s);
+  const ox = r ? r.offX : 0;
+  const oy = r ? r.offY : 0;
+  const w  = r ? r.rW   : s.w;
+  const h  = r ? r.rH   : s.h;
+  return {
+    x1: s.x + ox + bb.left   * w - m,
+    x2: s.x + ox + bb.right  * w + m,
+    y1: s.y + oy + bb.top    * h - m,
+    y2: s.y + oy + bb.bottom * h + m,
+  };
+}
+
+function getObstacles(excludeIds) {
+  return Object.entries(APP.nodes)
+    .filter(([sid]) => !excludeIds.includes(sid))
+    .map(([, s]) => getRealBB(s, OBS_MARGIN));
+}
+
+function ptInObs(x, y, obstacles) {
+  for (const o of obstacles) {
+    if (x > o.x1 && x < o.x2 && y > o.y1 && y < o.y2) return true;
+  }
+  return false;
+}
+
+function segBlocked(x1, y1, x2, y2, obstacles) {
+  for (const o of obstacles) {
+    if (x1 === x2) { // vertical
+      const minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
+      if (x1 > o.x1 && x1 < o.x2 && minY < o.y2 && maxY > o.y1) return true;
+    } else { // horizontal
+      const minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
+      if (y1 > o.y1 && y1 < o.y2 && minX < o.x2 && maxX > o.x1) return true;
+    }
+  }
+  return false;
+}
+
+function edgePt(s, tx, ty) {
+  const bb = s.bb || { left: 0, right: 1, top: 0, bottom: 1 };
+  const ox1 = s.x + bb.left  * s.w, ox2 = s.x + bb.right  * s.w;
+  const oy1 = s.y + bb.top   * s.h, oy2 = s.y + bb.bottom * s.h;
+  const ocx = (ox1 + ox2) / 2, ocy = (oy1 + oy2) / 2;
+  const ohw = (ox2 - ox1) / 2, ohh = (oy2 - oy1) / 2;
+  const dx = tx - ocx, dy = ty - ocy;
+  if (Math.abs(dx) * ohh > Math.abs(dy) * ohw) {
+    return [ocx + Math.sign(dx || 1) * ohw,
+            Math.max(oy1 + 3, Math.min(oy2 - 3, ocy + dy * (ohw / Math.abs(dx || 1))))];
+  }
+  return [Math.max(ox1 + 3, Math.min(ox2 - 3, ocx + dx * (ohh / Math.abs(dy || 1)))),
+          ocy + Math.sign(dy || 1) * ohh];
+}
+
+// Calcule le rect réel de l'image dans le node (padding img + objet-fit:contain)
+// Avec box-sizing:border-box global, la bordure 1px du node-box est intérieure :
+//   l'image commence à (border=1 + padding=3, border=1 + padding=3) = (4, 4) dans .node
+// catbar est display:none donc contribue 0px ; imgWrap a height explicite s.h-3.
+function _nodeImgRect(s) {
+  if (!s._imgW || !s._imgH) return null;
+  const PAD = 3;
+  const wrapH  = s.h - 3;        // imgWrap height explicite (nodes.js)
+  const availW = s.w  - PAD * 2;
+  const availH = wrapH - PAD * 2;
+  const scale  = Math.min(availW / s._imgW, availH / s._imgH);
+  const rW     = s._imgW * scale;
+  const rH     = s._imgH * scale;
+  const offX   = (availW - rW) / 2 + PAD + 1;  // +1 bordure node-box
+  const offY   = (availH - rH) / 2 + PAD + 1;  // +1 bordure node-box (catbar hidden)
+  return { offX, offY, rW, rH };
+}
+
+function edgePtFixed(s, nx, ny) {
+  const R = v => Math.round(v);
+  const r = _nodeImgRect(s);
+  if (r) return [R(s.x + r.offX + nx * r.rW), R(s.y + r.offY + ny * r.rH)];
+  return [R(s.x + nx * s.w), R(s.y + ny * s.h)];
+}
+
+function stubPt(s, nx, ny) {
+  // Utilise edgePtFixed pour que stub et ancre partagent le même point de base
+  const [px, py] = edgePtFixed(s, nx, ny);
+
+  // Direction override explicite sur le nœud → prioritaire
+  const dir = s.stub || null;
+  if (dir === 'top')    return [px, py - STUB_LEN];
+  if (dir === 'bottom') return [px, py + STUB_LEN];
+  if (dir === 'left')   return [px - STUB_LEN, py];
+  if (dir === 'right')  return [px + STUB_LEN, py];
+
+  // Sinon : inférer la direction depuis la position du port.
+  const dLeft   = nx;
+  const dRight  = 1 - nx;
+  const dTop    = ny;
+  const dBottom = 1 - ny;
+  const minD = Math.min(dLeft, dRight, dTop, dBottom);
+
+  if (minD === dLeft)   return [px - STUB_LEN, py];
+  if (minD === dRight)  return [px + STUB_LEN, py];
+  if (minD === dTop)    return [px, py - STUB_LEN];
+  return [px, py + STUB_LEN];
+}
+
+function getGridLines(obstacles) {
+  const xs = new Set(), ys = new Set();
+  for (const o of obstacles) {
+    xs.add(o.x1 - 20); xs.add(o.x2 + 20);
+    ys.add(o.y1 - 20); ys.add(o.y2 + 20);
+  }
+  xs.add(0); xs.add(CW);
+  ys.add(0); ys.add(CH);
+  return {
+    xs: [...xs].sort((a, b) => a - b),
+    ys: [...ys].sort((a, b) => a - b),
+  };
+}
+
+function findOrthPath(sa, sb, fromPt, toPt) {
+  const exIds = [sa.id, sb.id];
+  const obstacles = getObstacles(exIds);
+  const [x1, y1] = fromPt || edgePt(sa, sb.cx || sb.x + sb.w / 2, sb.cy || sb.y + sb.h / 2);
+  const [x2, y2] = toPt   || edgePt(sb, sa.cx || sa.x + sa.w / 2, sa.cy || sa.y + sa.h / 2);
+
+  const { xs, ys } = getGridLines(obstacles);
+  const allXs = [...new Set([...xs, x1, x2])].sort((a, b) => a - b);
+  const allYs = [...new Set([...ys, y1, y2])].sort((a, b) => a - b);
+
+  const xi = {}; allXs.forEach((x, i) => xi[x] = i);
+  const yi = {}; allYs.forEach((y, i) => yi[y] = i);
+  const NX = allXs.length, NY = allYs.length;
+
+  const si = xi[x1], sj = yi[y1];
+  const ti = xi[x2], tj = yi[y2];
+
+  const key = (i, j) => i * NY + j;
+  const dist = new Map();
+  const prev = new Map();
+  const sk = key(si, sj);
+  dist.set(sk, 0);
+  const queue = [[si, sj]];
+  let found = false;
+  const tk = key(ti, tj);
+
+  while (queue.length && !found) {
+    const [ci, cj] = queue.shift();
+    const ck = key(ci, cj);
+    const cd = dist.get(ck);
+
+    const neighbors = [[ci-1,cj],[ci+1,cj],[ci,cj-1],[ci,cj+1]];
+    for (const [ni, nj] of neighbors) {
+      if (ni < 0 || ni >= NX || nj < 0 || nj >= NY) continue;
+      const nk = key(ni, nj);
+      if (dist.has(nk)) continue;
+
+      const cx = allXs[ci], cy = allYs[cj];
+      const nx = allXs[ni], ny = allYs[nj];
+
+      if (segBlocked(cx, cy, nx, ny, obstacles)) continue;
+
+      const w = Math.abs(nx - cx) + Math.abs(ny - cy);
+      dist.set(nk, cd + w);
+      prev.set(nk, ck);
+      queue.push([ni, nj]);
+
+      if (nk === tk) { found = true; break; }
+    }
+  }
+
+  if (!found) return [[x1, y1], [x1, y2], [x2, y2]];
+
+  const path = [];
+  let cur = tk;
+  while (cur !== undefined) {
+    const i = Math.floor(cur / NY), j = cur % NY;
+    path.unshift([allXs[i], allYs[j]]);
+    cur = prev.get(cur);
+  }
+  return path;
+}
+
+function normalizePts(pts) {
+  const EQ = (a, b) => Math.abs(a - b) < 0.5;
+  if (pts.length < 2) return pts;
+  const r = [pts[0]];
+  for (let i = 1; i < pts.length; i++) {
+    const [px, py] = r[r.length - 1], [cx, cy] = pts[i];
+    if (!EQ(px, cx) && !EQ(py, cy)) {
+      const prev2 = r.length >= 2 ? r[r.length - 2] : null;
+      if (prev2 && EQ(prev2[0], px)) {
+        r.push([px, cy]);
+      } else {
+        r.push([cx, py]);
+      }
+    }
+    r.push([cx, cy]);
+  }
+  return r;
+}
+
+function simplify(pts) {
+  if (pts.length <= 2) return pts;
+  const r = [pts[0]];
+  for (let i = 1; i < pts.length - 1; i++) {
+    const [cx, cy] = pts[i], [nx, ny] = pts[i + 1];
+    const [px, py] = r[r.length - 1];
+    if (cx === px && cy === py) continue;
+    const sameXline = (px === cx && cx === nx);
+    const sameYline = (py === cy && cy === ny);
+    if (!sameXline && !sameYline) { r.push(pts[i]); continue; }
+    if (sameYline && (cx - px) * (nx - cx) < 0) { continue; }
+    if (sameXline && (cy - py) * (ny - cy) < 0) { continue; }
+  }
+  r.push(pts[pts.length - 1]);
+  return r;
+}
+
+function toSVG(pts) {
+  if (pts.length < 2) return '';
+  const R = 20;
+  if (pts.length === 2) {
+    return `M${pts[0][0]} ${pts[0][1]} L${pts[1][0]} ${pts[1][1]}`;
+  }
+  let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for (let i = 1; i < pts.length - 1; i++) {
+    const [px, py] = pts[i - 1], [cx, cy] = pts[i], [nx, ny] = pts[i + 1];
+    const l1 = Math.hypot(cx - px, cy - py), l2 = Math.hypot(nx - cx, ny - cy);
+    if (l1 < 0.01 || l2 < 0.01) { d += ` L${cx.toFixed(1)} ${cy.toFixed(1)}`; continue; }
+    const r = Math.min(R, l1 / 2, l2 / 2);
+    const bx = cx - (cx - px) / l1 * r, by = cy - (cy - py) / l1 * r;
+    const ax = cx + (nx - cx) / l2 * r, ay = cy + (ny - cy) / l2 * r;
+    d += ` L${bx.toFixed(1)} ${by.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${ax.toFixed(1)} ${ay.toFixed(1)}`;
+  }
+  d += ` L${pts[pts.length-1][0].toFixed(1)} ${pts[pts.length-1][1].toFixed(1)}`;
+  return d;
+}

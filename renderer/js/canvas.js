@@ -1,1 +1,590 @@
-let _area,_root,_mmCanvas,_mmCtx,_areaRect=null,_panStart=null,_panMoved=!1,_mmRafId=null,_marqueeStart=null,_marqueeEl=null,_marqueeMoved=!1,_zoneDrag=null,_zoneJustSelected=!1,_spaceDown=!1,_wheelRaf=null,_lastWheelT=0,_zoomHaloTmr=null;const _EMPTY_TARGETS=new Set(["canvas-area","canvas-root","nodes-layer"]);function startCanvasPanFromEvent(e){_panStart={x:e.clientX,y:e.clientY,px:APP.view.panX,py:APP.view.panY},_panMoved=!1,_area.setPointerCapture(e.pointerId)}function initCanvas(){_area=document.getElementById("canvas-area"),_root=document.getElementById("canvas-root"),_mmCanvas=document.getElementById("mm-canvas"),_mmCanvas.width=480,_mmCanvas.height=270,_mmCtx=_mmCanvas.getContext("2d"),_mmCtx.scale(3,3),_area.addEventListener("wheel",e=>{if(e.preventDefault(),window._zoomHaloSuppress&&(document.getElementById("cables-svg")?.classList.add("zoom-active"),clearTimeout(_zoomHaloTmr),_zoomHaloTmr=setTimeout(()=>{document.getElementById("cables-svg")?.classList.remove("zoom-active")},200)),window._zoomRafCoalesce){const e=performance.now();(!_areaRect||e-_lastWheelT>200)&&updateAreaRect(),_lastWheelT=e}else updateAreaRect();const t=_areaRect.width/2,a=_areaRect.height/2;let n;if(window._zoomProportional){const t=e.deltaY*(1===e.deltaMode?16:1);n=Math.max(.1,Math.min(4,APP.view.zoom*Math.exp(-t*window._zoomSensitivity)))}else{const t=e.deltaY<0?.02:-.02;n=Math.max(.1,Math.min(4,Math.round(50*(APP.view.zoom+t))/50))}if(n===APP.view.zoom)return;const o=n/APP.view.zoom;APP.view.panX=t-o*(t-APP.view.panX),APP.view.panY=a-o*(a-APP.view.panY),APP.view.zoom=n,window._zoomRafCoalesce?(_wheelRaf&&cancelAnimationFrame(_wheelRaf),_wheelRaf=requestAnimationFrame(()=>{_wheelRaf=null,applyT()})):applyT()},{passive:!1}),document.addEventListener("keydown",e=>{"Space"!==e.code||e.repeat||e.target.closest("input, textarea, [contenteditable]")||(e.preventDefault(),_spaceDown=!0,_area.style.cursor="grab")},{capture:!0}),document.addEventListener("keyup",e=>{"Space"===e.code&&(_spaceDown=!1,_panStart||(_area.style.cursor=""))}),document.addEventListener("pointerdown",e=>{_spaceDown&&0===e.button&&_area.contains(e.target)&&(e.preventDefault(),e.stopImmediatePropagation(),_panStart={x:e.clientX,y:e.clientY,px:APP.view.panX,py:APP.view.panY},_panMoved=!1,_area.style.cursor="grabbing",_area.setPointerCapture(e.pointerId))},{capture:!0}),document.addEventListener("click",e=>{_spaceDown&&(e.stopImmediatePropagation(),e.preventDefault())},{capture:!0}),_area.addEventListener("pointerdown",e=>{const t=_EMPTY_TARGETS.has(e.target.id);if(1===e.button||2===e.button)e.preventDefault(),_panStart={x:e.clientX,y:e.clientY,px:APP.view.panX,py:APP.view.panY},_panMoved=!1,_area.setPointerCapture(e.pointerId);else if(0===e.button&&t){if(e.preventDefault(),!e.altKey){const t=screenToCanvas(e.clientX,e.clientY),a="function"==typeof findZoneAtPoint?findZoneAtPoint(t.x,t.y):null;if(a){"function"==typeof selectZone&&selectZone(a),_zoneJustSelected=!0;const t=APP.zones[a];return t&&!t.hidden&&(_zoneDrag={id:a,startX:e.clientX,startY:e.clientY,ox:t.x,oy:t.y,moved:!1}),void _area.setPointerCapture(e.pointerId)}}e.altKey?(_marqueeStart=screenToCanvas(e.clientX,e.clientY),_marqueeMoved=!1):(_panStart={x:e.clientX,y:e.clientY,px:APP.view.panX,py:APP.view.panY},_panMoved=!1),_area.setPointerCapture(e.pointerId)}}),_area.addEventListener("pointermove",e=>{if(_zoneDrag){const t=(e.clientX-_zoneDrag.startX)/APP.view.zoom,a=(e.clientY-_zoneDrag.startY)/APP.view.zoom;if(!_zoneDrag.moved&&Math.hypot(t,a)<4)return;_zoneDrag.moved||"function"!=typeof pushUndo||pushUndo(),_zoneDrag.moved=!0;const n=APP.zones[_zoneDrag.id];if(n){n.x=_zoneDrag.ox+t,n.y=_zoneDrag.oy+a;const e=document.getElementById(`zone-${_zoneDrag.id}`);e&&(e.style.left=n.x+"px",e.style.top=n.y+"px")}return void(_area.style.cursor="move")}if(_panStart){const t=e.clientX-_panStart.x,a=e.clientY-_panStart.y;if(!_panMoved&&Math.hypot(t,a)<4)return;_panMoved=!0,APP.view.panX=_panStart.px+t,APP.view.panY=_panStart.py+a,_area.style.cursor="grabbing",applyT()}if(_marqueeStart){const t=screenToCanvas(e.clientX,e.clientY),a=Math.abs(t.x-_marqueeStart.x),n=Math.abs(t.y-_marqueeStart.y);if(!_marqueeMoved&&a<5&&n<5)return;_marqueeMoved=!0,_area.style.cursor="crosshair",_marqueeEl||(_marqueeEl=document.createElement("div"),_marqueeEl.id="marquee-rect",_area.appendChild(_marqueeEl)),_updateMarqueeEl(_marqueeStart,t)}}),_area.addEventListener("pointerup",e=>{if(_zoneDrag)return _zoneDrag.moved&&"function"==typeof setDirty&&setDirty(),_zoneDrag=null,_area.releasePointerCapture(e.pointerId),void(_area.style.cursor="");if(_panStart&&(_panStart=null,_area.releasePointerCapture(e.pointerId),_area.style.cursor=_spaceDown?"grab":""),null!==_marqueeStart){const t=screenToCanvas(e.clientX,e.clientY);_marqueeMoved&&_applyMarqueeSelect(_marqueeStart,t),_marqueeEl?.remove(),_marqueeEl=null,_area.releasePointerCapture(e.pointerId),_area.style.cursor="",_marqueeStart=null}}),_area.addEventListener("click",e=>{if(_panMoved||_marqueeMoved||_zoneJustSelected)return _panMoved=!1,_marqueeMoved=!1,_zoneJustSelected=!1,void e.stopImmediatePropagation();if(_EMPTY_TARGETS.has(e.target.id)){const t=screenToCanvas(e.clientX,e.clientY),a="function"==typeof findZoneAtPoint?findZoneAtPoint(t.x,t.y):null;if(a)return void("function"==typeof selectZone&&selectZone(a));const n=document.getElementById("routes-panel");if(n?.classList.contains("open")||window._routesPanelJustClosed)return window._routesPanelJustClosed=!1,void n?.classList.remove("open");if("function"==typeof clearRouteTrace&&_activeRoutes.size>0)return void clearRouteTrace();"function"==typeof clearSelMulti&&clearSelMulti(),"function"==typeof clearSel&&clearSel(),"function"==typeof closePanel&&closePanel()}},!0),_area.addEventListener("dblclick",e=>{if(!_EMPTY_TARGETS.has(e.target.id))return;const t=screenToCanvas(e.clientX,e.clientY),a="function"==typeof findZoneAtPoint?findZoneAtPoint(t.x,t.y):null;a&&"function"==typeof bringZoneToFront&&bringZoneToFront(a)}),_area.addEventListener("contextmenu",e=>e.preventDefault());let e=[],t=0,a=1;_area.addEventListener("touchstart",n=>{e=[...n.touches],2===e.length&&(t=Math.hypot(e[1].clientX-e[0].clientX,e[1].clientY-e[0].clientY),a=APP.view.zoom)},{passive:!0}),_area.addEventListener("touchmove",e=>{if(2===e.touches.length){e.preventDefault();const n=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);APP.view.zoom=Math.max(.03,Math.min(4,a*n/t)),applyT()}},{passive:!1});let n=!1;const o=e=>{const t=_mmCanvas.getBoundingClientRect(),a=CW/160,n=CH/90,o=(e.clientX-t.left)*a,i=(e.clientY-t.top)*n;updateAreaRect(),APP.view.panX=_areaRect.width/2-o*APP.view.zoom,APP.view.panY=_areaRect.height/2-i*APP.view.zoom,applyT()};_mmCanvas.addEventListener("pointerdown",e=>{n=!0,_mmCanvas.setPointerCapture(e.pointerId),o(e)}),_mmCanvas.addEventListener("pointermove",e=>{n&&o(e)}),_mmCanvas.addEventListener("pointerup",()=>{n=!1}),_mmCanvas.addEventListener("pointercancel",()=>{n=!1}),document.getElementById("btn-zoom-in").addEventListener("click",()=>dz(.02)),document.getElementById("btn-zoom-out").addEventListener("click",()=>dz(-.02)),applyT(),setTimeout(fitView,50)}function updateAreaRect(){_areaRect=_area.getBoundingClientRect()}window._zoomHaloSuppress=!1!==window._zoomHaloSuppress,window._zoomRafCoalesce=!1!==window._zoomRafCoalesce,window._zoomProportional=!1!==window._zoomProportional,window._zoomSensitivity=window._zoomSensitivity??.002;let _zoomLogTmr=null;function applyT(){const{zoom:e,panX:t,panY:a}=APP.view;_root.style.transform=`translate(${t}px, ${a}px) scale(${e})`,document.documentElement.style.setProperty("--z-border",(2/e).toFixed(3)+"px"),document.getElementById("zoom-val").textContent=Math.round(100*e)+"%","function"==typeof refreshCableHitWidths&&refreshCableHitWidths(),scheduleMinimap(),clearTimeout(_zoomLogTmr),_zoomLogTmr=setTimeout(()=>wLog("ZOOM",{pct:Math.round(100*e)}),600)}function dz(e){updateAreaRect();const t=Math.max(.1,Math.min(4,Math.round(50*(APP.view.zoom+e))/50)),a=t/APP.view.zoom,n=_areaRect?_areaRect.width/2:400,o=_areaRect?_areaRect.height/2:300;APP.view.panX=n-a*(n-APP.view.panX),APP.view.panY=o-a*(o-APP.view.panY),APP.view.zoom=t,applyT()}function fitView(){updateAreaRect();const e=document.getElementById("sidebar-left"),t=e?.classList.contains("pinned")?200:40,a=Object.keys(APP.nodes),n=Object.keys(APP.zones||{}),o=_areaRect?.width||800,i=_areaRect?.height||600;if(!a.length&&!n.length)return APP.view.zoom=1,APP.view.panX=t+(o-t)/2-CW/2,APP.view.panY=i/2-CH/2,void applyT();let r=1/0,l=1/0,c=-1/0,s=-1/0;for(const e of Object.values(APP.nodes))r=Math.min(r,e.x),l=Math.min(l,e.y),c=Math.max(c,e.x+e.w),s=Math.max(s,e.y+e.h+40);for(const e of Object.values(APP.zones||{}))r=Math.min(r,e.x),l=Math.min(l,e.y-24),c=Math.max(c,e.x+e.width),s=Math.max(s,e.y+e.height);const m=c-r+160,u=s-l+160,d=o-t,p=Math.min(d/m,i/u,2);APP.view.zoom=Math.max(.15,p),APP.view.panX=t+d/2-(r-80+m/2)*p,APP.view.panY=i/2-(l-80+u/2)*p,applyT()}function _updateMarqueeEl(e,t){if(!_marqueeEl)return;const a=e=>({x:e.x*APP.view.zoom+APP.view.panX,y:e.y*APP.view.zoom+APP.view.panY}),n=a(e),o=a(t),i=Math.min(n.x,o.x),r=Math.min(n.y,o.y);_marqueeEl.style.left=i+"px",_marqueeEl.style.top=r+"px",_marqueeEl.style.width=Math.abs(o.x-n.x)+"px",_marqueeEl.style.height=Math.abs(o.y-n.y)+"px"}function _applyMarqueeSelect(e,t){const a=Math.min(e.x,t.x),n=Math.min(e.y,t.y),o=Math.max(e.x,t.x),i=Math.max(e.y,t.y);"function"==typeof clearSelMulti&&clearSelMulti(),"function"==typeof clearSel&&clearSel(),"function"==typeof clearSelCable&&clearSelCable();for(const[e,t]of Object.entries(APP.nodes))t.x<o&&t.x+t.w>a&&t.y<i&&t.y+t.h>n&&(APP.selMulti.add(e),document.getElementById(`n-${e}`)?.classList.add("sel-multi"));if(1===APP.selMulti.size){const e=[...APP.selMulti][0];clearSelMulti(),selectNode(e)}else APP.selMulti.size>1&&(wLog("MARQUEE_SEL",{count:APP.selMulti.size}),"function"==typeof openMultiPanel&&openMultiPanel())}function screenToCanvas(e,t){return updateAreaRect(),{x:(e-_areaRect.left-APP.view.panX)/APP.view.zoom,y:(t-_areaRect.top-APP.view.panY)/APP.view.zoom}}function scheduleMinimap(){_mmRafId||(_mmRafId=requestAnimationFrame(()=>{_mmRafId=null,drawMinimap()}))}function drawMinimap(){if(!_mmCtx)return;const e=160/CW,t=90/CH;_mmCtx.fillStyle="#060810",_mmCtx.fillRect(0,0,160,90);const a=a=>{_mmCtx.lineWidth=.6;for(const n of APP.cables){if(WIRELESS_TYPES.has(n.type))continue;const o=cableOverrides[n.id];if(o&&!(o.length<2)){_mmCtx.strokeStyle=a?(n.color||"#888")+"88":"#48546688",_mmCtx.beginPath(),_mmCtx.moveTo(o[0][0]*e,o[0][1]*t);for(let a=1;a<o.length;a++)_mmCtx.lineTo(o[a][0]*e,o[a][1]*t);_mmCtx.stroke()}}for(const n of Object.values(APP.nodes)){const o=getCat(n.cat);_mmCtx.fillStyle=a?(o.color||"#888")+"cc":"#5a6678cc",_mmCtx.fillRect(n.x*e,n.y*t,n.w*e,n.h*t)}};updateAreaRect();const{zoom:n,panX:o,panY:i}=APP.view,r=-o/n*e,l=-i/n*t,c=(_areaRect?.width||800)/n*e,s=(_areaRect?.height||600)/n*t;a(!1),_mmCtx.save(),_mmCtx.beginPath(),_mmCtx.rect(r,l,c,s),_mmCtx.clip(),a(!0),_mmCtx.restore(),_mmCtx.strokeStyle="rgba(0,212,255,.7)",_mmCtx.lineWidth=1,_mmCtx.strokeRect(r,l,c,s)}
+/* ═══════════════════════════════════════════════════════════════
+   canvas.js — Pan / Zoom / Minimap
+═══════════════════════════════════════════════════════════════ */
+
+let _area, _root, _mmCanvas, _mmCtx;
+let _areaRect    = null;
+let _panStart    = null;
+let _panMoved    = false;
+let _mmRafId     = null;
+let _marqueeStart = null; // canvas coords {x,y}
+let _marqueeEl    = null;
+let _marqueeMoved = false;
+let _zoneDrag         = null; // { id, startX, startY, ox, oy, moved }
+let _zoneJustSelected = false; // suppress click after zone selected in pointerdown
+let _spaceDown        = false; // Espace tenu → pan partout (Mac trackpad)
+let _wheelRaf         = null;
+let _lastWheelT       = 0;
+let _zoomHaloTmr      = null;
+let _zoomOnCursor     = localStorage.getItem('wires-zoom-on-cursor') === '1'; // molette/trackpad : centré sur la souris (true) ou sur le viewport (false, défaut)
+let _zoomGesture      = null; // mode curseur : point de référence figé pour tout un geste de zoom (voir le handler wheel)
+
+const _EMPTY_TARGETS = new Set(['canvas-area', 'canvas-root', 'nodes-layer']);
+
+// Appelé depuis nodes.js quand un déplacement d'appareil est bloqué (une route/
+// chemin/segment anime, voir _isDimmingActive dans routes.js) : démarre un
+// panoramique à la place, comme un clic sur le canevas vide — sans dépendre de la
+// propagation de l'évènement, puisque le clic a eu lieu sur le nœud lui-même,
+// jamais dans _EMPTY_TARGETS.
+function startCanvasPanFromEvent(e) {
+  _panStart = { x: e.clientX, y: e.clientY, px: APP.view.panX, py: APP.view.panY };
+  _panMoved = false;
+  _area.setPointerCapture(e.pointerId);
+}
+
+// Sécurité anti-régression de la suspension du halo #glow pendant un zoom actif (voir le
+// handler 'wheel' plus bas) : window._zoomHaloSuppress = false dans la console désactive
+// la suspension (le halo reste recomposé à chaque frame pendant le zoom, comme avant).
+window._zoomHaloSuppress = window._zoomHaloSuppress !== false;
+
+// Sécurité anti-régression du correctif de clignotement au zoom molette (throttle de
+// updateAreaRect() + regroupement par frame de applyT(), voir le handler 'wheel' plus
+// bas) : window._zoomRafCoalesce = false dans la console repasse instantanément à
+// l'ancien comportement (rafraîchi et appliqué en synchrone à chaque tick de molette).
+window._zoomRafCoalesce = window._zoomRafCoalesce !== false;
+
+// Sécurité anti-régression du zoom proportionnel (voir le handler 'wheel') :
+// window._zoomProportional = false dans la console rétablit l'ancien zoom par paliers
+// fixes de 0,02 quantifiés au 1/50e, insensible à l'amplitude du geste.
+window._zoomProportional = window._zoomProportional !== false;
+// Sensibilité du zoom proportionnel, réglable en direct depuis la console
+// (window._zoomSensitivity = 0.003 pour un zoom plus vif, 0.001 pour plus doux).
+// 0,0024 (+20 % par rapport aux 0,002 d'origine, retenus après essais au
+// trackpad) — environ 22 % par cran de molette classique.
+window._zoomSensitivity = window._zoomSensitivity ?? 0.0024;
+
+function initCanvas() {
+  _area     = document.getElementById('canvas-area');
+  _root     = document.getElementById('canvas-root');
+  _mmCanvas = document.getElementById('mm-canvas');
+  _mmCanvas.width  = 480;
+  _mmCanvas.height = 270;
+  _mmCtx = _mmCanvas.getContext('2d');
+  _mmCtx.scale(3, 3);
+
+  // Zoom molette centré sur le centre du viewport
+  // ⚠️ window._zoomRafCoalesce (par défaut true) : getBoundingClientRect() (dans
+  // updateAreaRect) force un recalcul de mise en page synchrone — inutile à chaque tick
+  // de molette, la zone du canevas ne change pas pendant un geste de zoom. Rafraîchi une
+  // seule fois au DÉBUT d'un geste (silence > 200ms depuis le tick précédent), pas à
+  // chaque tick. L'écriture du transform (applyT) est en plus regroupée par frame
+  // d'affichage, comme pour le survol/glissement — un geste de zoom fluide peut envoyer
+  // des évènements plus vite qu'une frame.
+  _area.addEventListener('wheel', e => {
+    e.preventDefault();
+
+    // Suspendre le halo #glow pendant un zoom actif (recomposition coûteuse à chaque
+    // changement d'échelle) — purement visuel via une classe CSS, l'attribut filter réel
+    // n'est jamais touché. Rétabli après une accalmie de 200ms (fin du geste de zoom).
+    if (window._zoomHaloSuppress) {
+      document.getElementById('cables-svg')?.classList.add('zoom-active');
+      clearTimeout(_zoomHaloTmr);
+      _zoomHaloTmr = setTimeout(() => {
+        document.getElementById('cables-svg')?.classList.remove('zoom-active');
+      }, 200);
+    }
+
+    const now = performance.now();
+    const isNewGesture = !_areaRect || now - _lastWheelT > 200;
+    if (window._zoomRafCoalesce) {
+      if (isNewGesture) updateAreaRect();
+    } else {
+      updateAreaRect();
+    }
+    _lastWheelT = now;
+
+    const areaCX = _areaRect.width  / 2;
+    const areaCY = _areaRect.height / 2;
+    const cursorX = e.clientX - _areaRect.left;
+    const cursorY = e.clientY - _areaRect.top;
+
+    // Zoom proportionnel à l'AMPLITUDE réelle du geste, et multiplicatif.
+    // L'ancien calcul n'utilisait que le SENS de l'évènement (±0,02 par tick, arrondi
+    // au 1/50e) : correct pour un cran net de molette, mais inadapté au trackpad, qui
+    // envoie un flux d'évènements très fins et très rapides — chacun comptait alors
+    // pour un cran entier, d'où un zoom brutal et insensible à la douceur du geste.
+    // Multiplicatif (et non additif) pour que la sensation soit identique à 20 % comme
+    // à 200 % : +2 % de zoom absolu est énorme quand on est dézoomé, imperceptible
+    // quand on est zoomé. deltaMode 1 = lignes (souris classique), 0 = pixels (trackpad).
+    let nz;
+    if (window._zoomProportional) {
+      const dy = e.deltaY * (e.deltaMode === 1 ? 16 : 1);
+      nz = Math.max(0.1, Math.min(4, APP.view.zoom * Math.exp(-dy * window._zoomSensitivity)));
+    } else {
+      const step = e.deltaY < 0 ? 0.02 : -0.02;
+      nz = Math.max(0.1, Math.min(4, Math.round((APP.view.zoom + step) * 50) / 50));
+    }
+    if (nz === APP.view.zoom) return;
+
+    // Alt+molette : centrage actif pour ce geste précis, sans toucher au réglage
+    // permanent du bouton ⌖ (ni l'un ni l'autre ne s'excluent — Alt marche que
+    // le bouton soit actif ou non). Alt plutôt que Ctrl : sur Mac, Ctrl+molette
+    // est souvent capté par le zoom d'accessibilité système avant d'arriver ici.
+    if (_zoomOnCursor || e.altKey) {
+      // Point du canevas + position écran mémorisés UNE SEULE FOIS au début du
+      // geste (pas à chaque cran) : sinon le recentrage repart d'un nouveau
+      // point à chaque cran (molette/trackpad peut en envoyer des dizaines
+      // pour un seul geste), et l'effet s'accumule bien au-delà de l'intention
+      // — jusqu'à faire sortir le canevas du cadre. Le point ciblé reste donc
+      // fixe pour tout le geste ; seule sa progression vers le centre avance,
+      // en fonction du zoom cumulé depuis le DÉBUT du geste (pas du nombre de
+      // crans, pour un résultat identique à la molette comme au trackpad).
+      if (isNewGesture || !_zoomGesture) {
+        _zoomGesture = {
+          cx: (cursorX - APP.view.panX) / APP.view.zoom,
+          cy: (cursorY - APP.view.panY) / APP.view.zoom,
+          cursorX, cursorY,
+          startZoom: APP.view.zoom,
+        };
+      }
+      const progress = 1 - _zoomGesture.startZoom / nz;
+      const destX = _zoomGesture.cursorX + (areaCX - _zoomGesture.cursorX) * progress;
+      const destY = _zoomGesture.cursorY + (areaCY - _zoomGesture.cursorY) * progress;
+      APP.view.panX = destX - nz * _zoomGesture.cx;
+      APP.view.panY = destY - nz * _zoomGesture.cy;
+    } else {
+      const sc = nz / APP.view.zoom;
+      APP.view.panX = areaCX - sc * (areaCX - APP.view.panX);
+      APP.view.panY = areaCY - sc * (areaCY - APP.view.panY);
+    }
+    APP.view.zoom = nz;
+
+    if (window._zoomRafCoalesce) {
+      if (_wheelRaf) cancelAnimationFrame(_wheelRaf);
+      _wheelRaf = requestAnimationFrame(() => { _wheelRaf = null; applyT(); });
+    } else {
+      applyT();
+    }
+  }, { passive: false });
+
+  // Espace + drag gauche → pan partout, y compris au-dessus des nœuds (Mac trackpad)
+  document.addEventListener('keydown', e => {
+    if (e.code !== 'Space' || e.repeat) return;
+    if (e.target.closest('input, textarea, [contenteditable]')) return;
+    e.preventDefault();
+    _spaceDown = true;
+    _area.style.cursor = 'grab';
+  }, { capture: true });
+
+  document.addEventListener('keyup', e => {
+    if (e.code !== 'Space') return;
+    _spaceDown = false;
+    if (!_panStart) _area.style.cursor = '';
+  });
+
+  document.addEventListener('pointerdown', e => {
+    if (!_spaceDown || e.button !== 0 || !_area.contains(e.target)) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    _panStart = { x: e.clientX, y: e.clientY, px: APP.view.panX, py: APP.view.panY };
+    _panMoved = false;
+    _area.style.cursor = 'grabbing';
+    _area.setPointerCapture(e.pointerId);
+  }, { capture: true });
+
+  document.addEventListener('click', e => {
+    if (_spaceDown) { e.stopImmediatePropagation(); e.preventDefault(); }
+  }, { capture: true });
+
+  // Pan : clic gauche ou droit ou milieu sur canvas vide | Marquee : Alt+clic gauche | Zone : clic gauche sur zone
+  _area.addEventListener('pointerdown', e => {
+    const onEmpty = _EMPTY_TARGETS.has(e.target.id);
+    if (e.button === 1 || e.button === 2) {
+      e.preventDefault();
+      _panStart = { x: e.clientX, y: e.clientY, px: APP.view.panX, py: APP.view.panY };
+      _panMoved = false;
+      _area.setPointerCapture(e.pointerId);
+    } else if (e.button === 0 && onEmpty) {
+      e.preventDefault();
+      if (!e.altKey) {
+        // Vérifier s'il y a une zone sous le curseur
+        const pos     = screenToCanvas(e.clientX, e.clientY);
+        const hitZone = typeof findZoneAtPoint === 'function' ? findZoneAtPoint(pos.x, pos.y) : null;
+        if (hitZone) {
+          if (typeof selectZone === 'function') selectZone(hitZone);
+          _zoneJustSelected = true;
+          const z = APP.zones[hitZone];
+          if (z && !z.hidden) _zoneDrag = { id: hitZone, startX: e.clientX, startY: e.clientY, ox: z.x, oy: z.y, moved: false };
+          _area.setPointerCapture(e.pointerId);
+          return;
+        }
+      }
+      if (e.altKey) {
+        // Alt+clic gauche → marquee
+        _marqueeStart = screenToCanvas(e.clientX, e.clientY);
+        _marqueeMoved = false;
+      } else {
+        // Clic gauche sur canvas vide → pan
+        _panStart = { x: e.clientX, y: e.clientY, px: APP.view.panX, py: APP.view.panY };
+        _panMoved = false;
+      }
+      _area.setPointerCapture(e.pointerId);
+    }
+  });
+  _area.addEventListener('pointermove', e => {
+    if (_zoneDrag) {
+      const dx = (e.clientX - _zoneDrag.startX) / APP.view.zoom;
+      const dy = (e.clientY - _zoneDrag.startY) / APP.view.zoom;
+      if (!_zoneDrag.moved && Math.hypot(dx, dy) < 4) return;
+      if (!_zoneDrag.moved && typeof pushUndo === 'function') pushUndo();
+      _zoneDrag.moved = true;
+      const z = APP.zones[_zoneDrag.id];
+      if (z) {
+        z.x = _zoneDrag.ox + dx;
+        z.y = _zoneDrag.oy + dy;
+        const el = document.getElementById(`zone-${_zoneDrag.id}`);
+        if (el) { el.style.left = z.x + 'px'; el.style.top = z.y + 'px'; }
+      }
+      _area.style.cursor = 'move';
+      return;
+    }
+    if (_panStart) {
+      const dx = e.clientX - _panStart.x;
+      const dy = e.clientY - _panStart.y;
+      if (!_panMoved && Math.hypot(dx, dy) < 4) return;
+      _panMoved = true;
+      APP.view.panX = _panStart.px + dx;
+      APP.view.panY = _panStart.py + dy;
+      _area.style.cursor = 'grabbing';
+      applyT();
+    }
+    if (_marqueeStart) {
+      const cur = screenToCanvas(e.clientX, e.clientY);
+      const dx = Math.abs(cur.x - _marqueeStart.x), dy = Math.abs(cur.y - _marqueeStart.y);
+      if (!_marqueeMoved && dx < 5 && dy < 5) return;
+      _marqueeMoved = true;
+      _area.style.cursor = 'crosshair';
+      if (!_marqueeEl) {
+        _marqueeEl = document.createElement('div');
+        _marqueeEl.id = 'marquee-rect';
+        _area.appendChild(_marqueeEl);
+      }
+      _updateMarqueeEl(_marqueeStart, cur);
+    }
+  });
+  _area.addEventListener('pointerup', e => {
+    if (_zoneDrag) {
+      if (_zoneDrag.moved && typeof setDirty === 'function') setDirty();
+      _zoneDrag = null;
+      _area.releasePointerCapture(e.pointerId);
+      _area.style.cursor = '';
+      return;
+    }
+    if (_panStart) {
+      _panStart = null;
+      _area.releasePointerCapture(e.pointerId);
+      _area.style.cursor = _spaceDown ? 'grab' : '';
+    }
+    if (_marqueeStart !== null) {
+      const cur = screenToCanvas(e.clientX, e.clientY);
+      if (_marqueeMoved) {
+        _applyMarqueeSelect(_marqueeStart, cur);
+      }
+      _marqueeEl?.remove(); _marqueeEl = null;
+      _area.releasePointerCapture(e.pointerId);
+      _area.style.cursor = '';
+      _marqueeStart = null;
+    }
+  });
+  // Click sur canvas vide : bloquer si c'était un drag, sinon zone hit-test ou clear sélection
+  _area.addEventListener('click', e => {
+    if (_panMoved || _marqueeMoved || _zoneJustSelected) {
+      _panMoved = false; _marqueeMoved = false; _zoneJustSelected = false;
+      e.stopImmediatePropagation();
+      return;
+    }
+    if (_EMPTY_TARGETS.has(e.target.id)) {
+      const pos     = screenToCanvas(e.clientX, e.clientY);
+      const hitZone = typeof findZoneAtPoint === 'function' ? findZoneAtPoint(pos.x, pos.y) : null;
+      if (hitZone) {
+        if (typeof selectZone === 'function') selectZone(hitZone);
+        return;
+      }
+      const routesPanel = document.getElementById('routes-panel');
+      if (routesPanel?.classList.contains('open') || window._routesPanelJustClosed) {
+        window._routesPanelJustClosed = false;
+        routesPanel?.classList.remove('open');
+        return;
+      }
+      // Arrête l'animation active, quelle qu'elle soit — segment isolé, chemin
+      // isolé ou route entière (un seul actif à la fois en pratique) — jusqu'ici
+      // seule la route entière était prise en compte ici : un chemin ou un
+      // segment isolé animait indéfiniment sans jamais réagir au clic sur le
+      // canevas vide.
+      if (_segAnim.cableId != null && typeof _stopSegAnimation === 'function') {
+        _stopSegAnimation();
+        if (typeof _updateTrace === 'function') _updateTrace();
+        if (_activeRoutes.size) _restartAnimation();
+        if (typeof renderRoutesList === 'function') renderRoutesList();
+        return;
+      }
+      if (_tracedPathId && typeof _clearPathAnimation === 'function') {
+        _clearPathAnimation();
+        return;
+      }
+      if (typeof clearRouteTrace === 'function' && _activeRoutes.size > 0) {
+        clearRouteTrace();
+        return;
+      }
+      if (typeof clearSelMulti === 'function') clearSelMulti();
+      if (typeof clearSel      === 'function') clearSel();
+      if (typeof closePanel    === 'function') closePanel();
+    }
+  }, true);
+  _area.addEventListener('dblclick', e => {
+    if (!_EMPTY_TARGETS.has(e.target.id)) return;
+    const pos     = screenToCanvas(e.clientX, e.clientY);
+    const hitZone = typeof findZoneAtPoint === 'function' ? findZoneAtPoint(pos.x, pos.y) : null;
+    if (hitZone && typeof bringZoneToFront === 'function') bringZoneToFront(hitZone);
+  });
+  _area.addEventListener('contextmenu', e => e.preventDefault());
+
+  // Touch pinch-zoom
+  let _touches = [], _pinchDist0 = 0, _zoom0 = 1;
+  _area.addEventListener('touchstart', e => {
+    _touches = [...e.touches];
+    if (_touches.length === 2) {
+      _pinchDist0 = Math.hypot(
+        _touches[1].clientX - _touches[0].clientX,
+        _touches[1].clientY - _touches[0].clientY
+      );
+      _zoom0 = APP.view.zoom;
+    }
+  }, { passive: true });
+  _area.addEventListener('touchmove', e => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const d = Math.hypot(
+        e.touches[1].clientX - e.touches[0].clientX,
+        e.touches[1].clientY - e.touches[0].clientY
+      );
+      APP.view.zoom = Math.max(0.03, Math.min(4, _zoom0 * d / _pinchDist0));
+      applyT();
+    }
+  }, { passive: false });
+
+  // Drag sur minimap → naviguer en live
+  let _mmDragging = false;
+  const _mmNavigate = e => {
+    const r = _mmCanvas.getBoundingClientRect();
+    const sx = CW / 160, sy = CH / 90;
+    const cx = (e.clientX - r.left) * sx;
+    const cy = (e.clientY - r.top)  * sy;
+    updateAreaRect();
+    APP.view.panX = _areaRect.width  / 2 - cx * APP.view.zoom;
+    APP.view.panY = _areaRect.height / 2 - cy * APP.view.zoom;
+    applyT();
+  };
+  _mmCanvas.addEventListener('pointerdown', e => {
+    _mmDragging = true;
+    _mmCanvas.setPointerCapture(e.pointerId);
+    _mmNavigate(e);
+  });
+  _mmCanvas.addEventListener('pointermove', e => {
+    if (_mmDragging) _mmNavigate(e);
+  });
+  _mmCanvas.addEventListener('pointerup',   () => { _mmDragging = false; });
+  _mmCanvas.addEventListener('pointercancel', () => { _mmDragging = false; });
+
+  // Boutons toolbar zoom
+  document.getElementById('btn-zoom-in') .addEventListener('click', () => dz(+0.02));
+  document.getElementById('btn-zoom-out').addEventListener('click', () => dz(-0.02));
+
+  // Bascule zoom molette/trackpad centré sur la souris — sans effet sur les boutons
+  // +/- ci-dessus (au clic, la souris est sur le bouton, pas sur le canevas).
+  const btnZoomCursor = document.getElementById('btn-zoom-cursor');
+  btnZoomCursor.classList.toggle('active', _zoomOnCursor);
+  btnZoomCursor.addEventListener('click', () => {
+    _zoomOnCursor = !_zoomOnCursor;
+    localStorage.setItem('wires-zoom-on-cursor', _zoomOnCursor ? '1' : '0');
+    btnZoomCursor.classList.toggle('active', _zoomOnCursor);
+    btnZoomCursor.blur(); // sinon garde le focus clavier et peut bloquer un raccourci (ex. F)
+  });
+
+  applyT();
+  setTimeout(fitView, 50);
+}
+
+function updateAreaRect() {
+  _areaRect = _area.getBoundingClientRect();
+}
+
+let _zoomLogTmr = null;
+function applyT() {
+  const { zoom, panX, panY } = APP.view;
+  _root.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+  document.documentElement.style.setProperty('--z-border', (2 / zoom).toFixed(3) + 'px');
+  document.getElementById('zoom-val').textContent = Math.round(zoom * 100) + '%';
+  // Bande de capture des câbles : largeur constante à l'écran au-delà de 100 %, donc à
+  // réécrire quand le zoom bouge. Aucun redessin — un seul attribut par câble, et la
+  // fonction sort d'elle-même si la largeur n'a pas changé (pan, zoom sous 100 %).
+  if (typeof refreshCableHitWidths === 'function') refreshCableHitWidths();
+  // Nom du type sous un point de connexion (mode ajouter un câble) : la distance qui
+  // compte est celle À L'ÉCRAN entre deux ports, donc à recalculer à chaque zoom.
+  if (typeof _refreshPortLabelCrowding === 'function') _refreshPortLabelCrowding();
+  scheduleMinimap();
+  clearTimeout(_zoomLogTmr);
+  _zoomLogTmr = setTimeout(() => wLog('ZOOM', { pct: Math.round(zoom * 100) }), 600);
+}
+
+function dz(d) {
+  updateAreaRect();
+  const nz = Math.max(0.1, Math.min(4, Math.round((APP.view.zoom + d) * 50) / 50));
+  const sc = nz / APP.view.zoom;
+  const mx = _areaRect ? _areaRect.width  / 2 : 400;
+  const my = _areaRect ? _areaRect.height / 2 : 300;
+  APP.view.panX = mx - sc * (mx - APP.view.panX);
+  APP.view.panY = my - sc * (my - APP.view.panY);
+  APP.view.zoom = nz;
+  applyT();
+}
+
+function fitView() {
+  updateAreaRect();
+  const sl = document.getElementById('sidebar-left');
+  const leftOffset = sl?.classList.contains('pinned') ? 200 : 40;
+  const ids   = Object.keys(APP.nodes);
+  const zids  = Object.keys(APP.zones || {});
+  const aW = _areaRect?.width  || 800;
+  const aH = _areaRect?.height || 600;
+  if (!ids.length && !zids.length) {
+    APP.view.zoom = 1;
+    APP.view.panX = leftOffset + (aW - leftOffset) / 2 - CW / 2;
+    APP.view.panY = aH / 2 - CH / 2;
+    applyT();
+    return;
+  }
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const s of Object.values(APP.nodes)) {
+    minX = Math.min(minX, s.x);
+    minY = Math.min(minY, s.y);
+    maxX = Math.max(maxX, s.x + s.w);
+    maxY = Math.max(maxY, s.y + s.h + 40);
+  }
+  for (const z of Object.values(APP.zones || {})) {
+    minX = Math.min(minX, z.x);
+    minY = Math.min(minY, z.y - 24); // 24px for zone label above
+    maxX = Math.max(maxX, z.x + z.width);
+    maxY = Math.max(maxY, z.y + z.height);
+  }
+  const pad = 80;
+  const bw = maxX - minX + pad * 2;
+  const bh = maxY - minY + pad * 2;
+  const usableW = aW - leftOffset;
+  const zoom = Math.min(usableW / bw, aH / bh, 2);
+  APP.view.zoom = Math.max(0.15, zoom);
+  APP.view.panX = leftOffset + usableW / 2 - (minX - pad + bw / 2) * zoom;
+  APP.view.panY = aH / 2 - (minY - pad + bh / 2) * zoom;
+  applyT();
+}
+
+// ── Marquee helpers ──────────────────────────────────────────
+function _updateMarqueeEl(start, cur) {
+  if (!_marqueeEl) return;
+  // Convertir coords canvas → coords écran relatives à _area
+  const toScreen = c => ({
+    x: c.x * APP.view.zoom + APP.view.panX,
+    y: c.y * APP.view.zoom + APP.view.panY,
+  });
+  const s = toScreen(start), e2 = toScreen(cur);
+  const x = Math.min(s.x, e2.x), y = Math.min(s.y, e2.y);
+  _marqueeEl.style.left   = x + 'px';
+  _marqueeEl.style.top    = y + 'px';
+  _marqueeEl.style.width  = Math.abs(e2.x - s.x) + 'px';
+  _marqueeEl.style.height = Math.abs(e2.y - s.y) + 'px';
+}
+
+function _applyMarqueeSelect(start, end) {
+  const x1 = Math.min(start.x, end.x), y1 = Math.min(start.y, end.y);
+  const x2 = Math.max(start.x, end.x), y2 = Math.max(start.y, end.y);
+  if (typeof clearSelMulti === 'function') clearSelMulti();
+  if (typeof clearSel      === 'function') clearSel();
+  if (typeof clearSelCable === 'function') clearSelCable();
+  for (const [id, s] of Object.entries(APP.nodes)) {
+    if (s.x < x2 && s.x + s.w > x1 && s.y < y2 && s.y + s.h > y1) {
+      APP.selMulti.add(id);
+      document.getElementById(`n-${id}`)?.classList.add('sel-multi');
+    }
+  }
+  if (APP.selMulti.size === 1) {
+    const id = [...APP.selMulti][0];
+    clearSelMulti();
+    selectNode(id);
+  } else if (APP.selMulti.size > 1) {
+    wLog('MARQUEE_SEL', { count: APP.selMulti.size });
+    if (typeof openMultiPanel === 'function') openMultiPanel();
+  }
+}
+
+// Coordonnées écran → canvas
+function screenToCanvas(clientX, clientY) {
+  updateAreaRect();
+  return {
+    x: (clientX - _areaRect.left - APP.view.panX) / APP.view.zoom,
+    y: (clientY - _areaRect.top  - APP.view.panY) / APP.view.zoom,
+  };
+}
+
+// ── Minimap ──────────────────────────────────────────────────
+function scheduleMinimap() {
+  if (_mmRafId) return;
+  _mmRafId = requestAnimationFrame(() => {
+    _mmRafId = null;
+    drawMinimap();
+  });
+}
+
+function drawMinimap() {
+  if (!_mmCtx) return;
+  const W = 160, H = 90;
+  const sx = W / CW, sy = H / CH;
+
+  _mmCtx.fillStyle = '#060810';
+  _mmCtx.fillRect(0, 0, W, H);
+
+  // Contenu de la minimap. `colored` = false → tout en gris neutre : sert à dessiner
+  // ce qui est HORS du cadre de visualisation, pour que seule la portion réellement
+  // affichée à l'écran garde ses couleurs (catégories, types de câble).
+  const _drawContent = colored => {
+    _mmCtx.lineWidth = 0.6;
+    for (const c of APP.cables) {
+      if (WIRELESS_TYPES.has(c.type)) continue; // pas de trajet pour un lien sans fil
+      const pts = cableOverrides[c.id];
+      if (!pts || pts.length < 2) continue;
+      _mmCtx.strokeStyle = colored ? (c.color || '#888') + '88' : '#48546688';
+      _mmCtx.beginPath();
+      _mmCtx.moveTo(pts[0][0] * sx, pts[0][1] * sy);
+      for (let i = 1; i < pts.length; i++) {
+        _mmCtx.lineTo(pts[i][0] * sx, pts[i][1] * sy);
+      }
+      _mmCtx.stroke();
+    }
+    for (const s of Object.values(APP.nodes)) {
+      const cat = getCat(s.cat);
+      _mmCtx.fillStyle = colored ? (cat.color || '#888') + 'cc' : '#5a6678cc';
+      _mmCtx.fillRect(s.x * sx, s.y * sy, s.w * sx, s.h * sy);
+    }
+  };
+
+  // Cadre de visualisation (portion du canevas réellement à l'écran)
+  updateAreaRect();
+  const { zoom, panX, panY } = APP.view;
+  const vx = -panX / zoom * sx;
+  const vy = -panY / zoom * sy;
+  const vw = (_areaRect?.width  || 800) / zoom * sx;
+  const vh = (_areaRect?.height || 600) / zoom * sy;
+
+  // Tout en gris d'abord, puis uniquement l'intérieur du cadre repassé en couleur.
+  _drawContent(false);
+  _mmCtx.save();
+  _mmCtx.beginPath();
+  _mmCtx.rect(vx, vy, vw, vh);
+  _mmCtx.clip();
+  _drawContent(true);
+  _mmCtx.restore();
+
+  _mmCtx.strokeStyle = 'rgba(0,212,255,.7)';
+  _mmCtx.lineWidth = 1;
+  _mmCtx.strokeRect(vx, vy, vw, vh);
+}

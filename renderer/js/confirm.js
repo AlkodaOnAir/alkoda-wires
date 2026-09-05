@@ -1,1 +1,41 @@
-function showConfirm(e,n={}){return new Promise(o=>{const c=document.getElementById("confirm-overlay"),i=document.getElementById("confirm-msg"),m=document.getElementById("confirm-ok"),r=document.getElementById("confirm-cancel");if(!c)return void o(window.confirm(e));i.textContent=e,m.textContent=n.ok||("function"==typeof t?t("ok"):"OK"),r.textContent=n.cancel||("function"==typeof t?t("cancel"):"Cancel"),m.className="confirm-btn-ok"+(n.danger?" danger":""),c.classList.add("visible"),window.electronAPI?.beep?.(),m.focus();let d=!1;const s=e=>{d||(d=!0,c.classList.remove("visible"),document.removeEventListener("keydown",l),o(e))};m.onclick=()=>s(!0),r.onclick=()=>s(!1),c.onclick=e=>{e.target===c&&s(!1)};const l=e=>{"Escape"===e.key&&s(!1),"Enter"===e.key&&s(!0)};document.addEventListener("keydown",l)})}
+/* ═══════════════════════════════════════════════════════════════
+   confirm.js — Custom confirmation dialog (replaces native confirm)
+═══════════════════════════════════════════════════════════════ */
+
+function showConfirm(msg, opts = {}) {
+  return new Promise(resolve => {
+    const overlay  = document.getElementById('confirm-overlay');
+    const msgEl    = document.getElementById('confirm-msg');
+    const okBtn    = document.getElementById('confirm-ok');
+    const cancelBtn = document.getElementById('confirm-cancel');
+    if (!overlay) { resolve(window.confirm(msg)); return; }
+
+    msgEl.textContent = msg;
+    okBtn.textContent = opts.ok     || (typeof t === 'function' ? t('ok') : 'OK');
+    cancelBtn.textContent = opts.cancel || (typeof t === 'function' ? t('cancel') : 'Cancel');
+    okBtn.className = 'confirm-btn-ok' + (opts.danger ? ' danger' : '');
+
+    overlay.classList.add('visible');
+    window.electronAPI?.beep?.();
+    okBtn.focus();
+
+    let done = false;
+    const finish = result => {
+      if (done) return;
+      done = true;
+      overlay.classList.remove('visible');
+      document.removeEventListener('keydown', onKey);
+      resolve(result);
+    };
+
+    okBtn.onclick     = () => finish(true);
+    cancelBtn.onclick = () => finish(false);
+    overlay.onclick   = e => { if (e.target === overlay) finish(false); };
+
+    const onKey = e => {
+      if (e.key === 'Escape') finish(false);
+      if (e.key === 'Enter')  finish(true);
+    };
+    document.addEventListener('keydown', onKey);
+  });
+}

@@ -1,1 +1,291 @@
-let _spPlaceActive=!1;async function importSubproject(){if(!LICENSE.isPro())return void LICENSE.showGate("subprojects");if(!window.electronAPI)return;const e=await window.electronAPI.openDialog();if(!e)return;let t;try{t=JSON.parse(e.data)}catch(e){return void alert("Invalid project file.")}if(!t||1!==t.version)return void alert("Unsupported file format.");const n=(t.nodes||[]).filter(e=>"internet"!==e.cat);if(!n.length)return void alert("This project contains no importable devices.");const o=Math.min(...n.map(e=>e.x)),r=Math.min(...n.map(e=>e.y)),c=Math.max(...n.map(e=>e.x+e.w)),s=Math.max(...n.map(e=>e.y+e.h));_startSubprojectPlaceMode(t,n,c-o+120,s-r+120,o,r)}function _ghostCollides(e,t,n,o){for(const r of Object.values(APP.nodes)){const c=r.y+r.h+14+(r.lblSize||48);if(e<r.x+r.w&&e+n>r.x&&t<c&&t+o>r.y)return!0}return!1}function _startSubprojectPlaceMode(e,n,o,r,c,s){if(_spPlaceActive)return;_spPlaceActive=!0;const a=document.getElementById("canvas-area"),i=document.getElementById("canvas-root"),l=document.createElement("div");l.id="sp-ghost",l.style.cssText=`\n    position:absolute; pointer-events:none; z-index:200;\n    width:${o}px; height:${r}px;\n    border:2px dashed rgba(0,176,240,0.9);\n    background:rgba(0,176,240,0.35);\n    border-radius:6px; box-sizing:border-box;\n    display:flex; align-items:center; justify-content:center;\n    transition:background .1s, border-color .1s;\n  `;const d=document.createElement("span");d.id="sp-ghost-label",d.style.cssText="font-family:monospace;font-size:12px;letter-spacing:1px;color:rgba(0,176,240,0.9);pointer-events:none;text-align:center;padding:4px",d.textContent=e.meta?.title||"Import",l.appendChild(d),i.appendChild(l);let p=document.getElementById("cable-add-banner");p||(p=document.createElement("div"),p.id="cable-add-banner",document.body.appendChild(p)),p.innerHTML=t("sp_place_banner")+" <strong>"+(e.meta?.title||"project")+"</strong> &nbsp;"+`<button class="cab-cancel-btn" id="sp-cancel-btn">✕ ${t("cancel")}</button>`,p.classList.add("visible"),document.getElementById("sp-cancel-btn")?.addEventListener("click",_cancelSubprojectPlace),a.style.cursor="crosshair";const u=document.getElementById("sidebar-left");u&&(u.style.pointerEvents="none");let b=!1,m=0,f=0,y=0,h=0,v=null;const g=80,x=()=>{const e=screenToCanvas(y,h);m=e.x-o/2,f=e.y-r/2,l.style.left=m+"px",l.style.top=f+"px",b=!_ghostCollides(m,f,o,r),b?(l.style.borderColor="rgba(0,176,240,0.9)",l.style.background="rgba(0,176,240,0.35)",d.style.color="rgba(0,176,240,0.9)",a.style.cursor="crosshair"):(l.style.borderColor="rgba(255,60,60,0.9)",l.style.background="rgba(255,60,60,0.35)",d.style.color="rgba(255,60,60,0.9)",a.style.cursor="not-allowed")},P=()=>{if(!_spPlaceActive)return;v=requestAnimationFrame(P);const e=a.getBoundingClientRect(),t=y-e.left,n=h-e.top,o=e.width,r=e.height;let c=0,s=0;if(t<g&&(c=5*-(1-t/g)),t>o-g&&(c=5*(1-(o-t)/g)),n<g&&(s=5*-(1-n/g)),n>r-g&&(s=5*(1-(r-n)/g)),0===c&&0===s)return;const i=b?.12:1;APP.view.panX-=c*i,APP.view.panY-=s*i,applyT(),x()},w=e=>{y=e.clientX,h=e.clientY,x()},j=t=>{if(0!==t.button)return;if(!b)return;t.stopPropagation();const o=m+60-c,r=f+60-s;E(),_placeSubproject(e,n,o,r)},_=e=>{"Escape"===e.key&&_cancelSubprojectPlace()},E=()=>{_spPlaceActive=!1,l.remove(),v&&(cancelAnimationFrame(v),v=null),a.removeEventListener("pointermove",w),a.removeEventListener("pointerdown",j,!0),document.removeEventListener("keydown",_),a.style.cursor="",u&&(u.style.pointerEvents="");const e=document.getElementById("cable-add-banner");e&&e.classList.remove("visible")};window._cancelSubprojectPlace=E,a.addEventListener("pointermove",w),a.addEventListener("pointerdown",j,!0),document.addEventListener("keydown",_),v=requestAnimationFrame(P)}function _cancelSubprojectPlace(){"function"==typeof window._cancelSubprojectPlace&&(window._cancelSubprojectPlace(),window._cancelSubprojectPlace=null)}function _placeSubproject(e,t,n,o){const r="sp-"+Date.now();pushUndo();const c={};for(const e of t){const t=uuid();c[e.id]=t;const s=e.x+n,a=e.y+o;APP.nodes[t]={...e,id:t,x:s,y:a,cx:s+e.w/2,cy:a+e.h/2,subproject_id:r}}const s={};for(const t of e.cables||[]){const e=c[t.from],n=c[t.to];if(!e||!n)continue;const o=_nextCableId++;s[t.id]=o,APP.cables.push({...t,id:o,from:e,to:n,subproject_id:r})}const a=e=>(e||[]).filter(e=>void 0!==s[e.cableId]).map(e=>({...e,cableId:s[e.cableId]})),i=function e(t){return(t||[]).map(t=>({...t,id:uuid(),segments:a(t.segments),paths:e(t.paths)}))};for(const t of e.chains||[]){const e=a(t.segments);e.length&&APP.chains.push({...t,id:uuid(),segments:e,paths:i(t.paths),subproject_id:r})}for(const t of Object.values(e.zones||{})){const e=_newZoneId();APP.zones[e]={...t,id:e,x:t.x+n,y:t.y+o,subproject_id:r}}const l=Object.values(APP.nodes).filter(e=>e.subproject_id===r),d=Math.min(...l.map(e=>e.x))-60,p=Math.min(...l.map(e=>e.y))-60,u=Math.max(...l.map(e=>e.x+e.w))+60,b=Math.max(...l.map(e=>e.y+e.h))+60,m=_newZoneId(),f=Object.values(APP.zones).reduce((e,t)=>Math.max(e,t.zIndex||1),0);APP.zones[m]={id:m,x:d,y:p,width:u-d,height:b-p,name:e.meta?.title||"Imported project",color:"#00b0f0",opacity:.3,labelSize:96,hidden:!1,zIndex:f+1,isSubproject:!0,subproject_id:r},renderNodes(),rebuildCM(),renderCables(),renderAllZones(),"function"==typeof renderRoutesList&&renderRoutesList(),refreshSidebar(),setDirty(),requestAnimationFrame(()=>fitView())}
+/* ═══════════════════════════════════════════════════════════════
+   subproject.js — Import a .wires file as a sub-project
+═══════════════════════════════════════════════════════════════ */
+
+let _spPlaceActive = false;
+
+async function importSubproject() {
+  if (!LICENSE.isPro()) { LICENSE.showGate('subprojects'); return; }
+  if (!window.electronAPI) return;
+
+  const result = await window.electronAPI.openDialog();
+  if (!result) return;
+
+  let data;
+  try { data = JSON.parse(result.data); }
+  catch(e) { alert('Invalid project file.'); return; }
+  if (!data || data.version !== 1) { alert('Unsupported file format.'); return; }
+
+  const importedNodes = (data.nodes || []).filter(n => n.cat !== 'internet');
+  if (!importedNodes.length) { alert('This project contains no importable devices.'); return; }
+
+  // Bounding box of imported content (canvas-space)
+  const PAD   = 60;
+  const srcMinX = Math.min(...importedNodes.map(n => n.x));
+  const srcMinY = Math.min(...importedNodes.map(n => n.y));
+  const srcMaxX = Math.max(...importedNodes.map(n => n.x + n.w));
+  const srcMaxY = Math.max(...importedNodes.map(n => n.y + n.h));
+  const ghostW  = srcMaxX - srcMinX + PAD * 2;
+  const ghostH  = srcMaxY - srcMinY + PAD * 2;
+
+  _startSubprojectPlaceMode(data, importedNodes, ghostW, ghostH, srcMinX, srcMinY);
+}
+
+// ── Collision : ghost rect vs existing nodes (+ label) ───────
+function _ghostCollides(gx, gy, gw, gh) {
+  for (const n of Object.values(APP.nodes)) {
+    const bottom = n.y + n.h + 14 + (n.lblSize || 48);
+    if (gx < n.x + n.w && gx + gw > n.x &&
+        gy < bottom      && gy + gh > n.y) return true;
+  }
+  return false;
+}
+
+// ── Placement mode ────────────────────────────────────────────
+function _startSubprojectPlaceMode(data, importedNodes, ghostW, ghostH, srcMinX, srcMinY) {
+  if (_spPlaceActive) return;
+  _spPlaceActive = true;
+
+  const area  = document.getElementById('canvas-area');
+  const root  = document.getElementById('canvas-root');
+
+  // Ghost element
+  const ghost = document.createElement('div');
+  ghost.id = 'sp-ghost';
+  ghost.style.cssText = `
+    position:absolute; pointer-events:none; z-index:200;
+    width:${ghostW}px; height:${ghostH}px;
+    border:2px dashed rgba(0,176,240,0.9);
+    background:rgba(0,176,240,0.35);
+    border-radius:6px; box-sizing:border-box;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .1s, border-color .1s;
+  `;
+  const ghostLabel = document.createElement('span');
+  ghostLabel.id = 'sp-ghost-label';
+  ghostLabel.style.cssText = 'font-family:monospace;font-size:12px;letter-spacing:1px;color:rgba(0,176,240,0.9);pointer-events:none;text-align:center;padding:4px';
+  ghostLabel.textContent = data.meta?.title || 'Import';
+  ghost.appendChild(ghostLabel);
+  root.appendChild(ghost);
+
+  // Banner
+  let banner = document.getElementById('cable-add-banner');
+  if (!banner) { banner = document.createElement('div'); banner.id = 'cable-add-banner'; document.body.appendChild(banner); }
+  banner.innerHTML = t('sp_place_banner') + ' <strong>' + escapeHtml(data.meta?.title || 'project') + '</strong> &nbsp;'
+    + `<button class="cab-cancel-btn" id="sp-cancel-btn">✕ ${t('cancel')}</button>`;
+  banner.classList.add('visible');
+  document.getElementById('sp-cancel-btn')?.addEventListener('click', _cancelSubprojectPlace);
+
+  area.style.cursor = 'crosshair';
+  const _sidebar = document.getElementById('sidebar-left');
+  if (_sidebar) _sidebar.style.pointerEvents = 'none';
+
+  let _canPlace = false;
+  let _ghostX = 0, _ghostY = 0;
+  let _mouseClientX = 0, _mouseClientY = 0;
+  let _edgePanRafId = null;
+
+  const EDGE_ZONE  = 80;   // px depuis le bord pour déclencher le pan
+  const BASE_SPEED = 5;    // px/frame à pleine vitesse
+  const SLOW_RATIO = 0.12; // ratio quand le ghost est bleu
+
+  const _updateGhost = () => {
+    const pos = screenToCanvas(_mouseClientX, _mouseClientY);
+    _ghostX = pos.x - ghostW / 2;
+    _ghostY = pos.y - ghostH / 2;
+    ghost.style.left = _ghostX + 'px';
+    ghost.style.top  = _ghostY + 'px';
+
+    _canPlace = !_ghostCollides(_ghostX, _ghostY, ghostW, ghostH);
+
+    if (_canPlace) {
+      ghost.style.borderColor = 'rgba(0,176,240,0.9)';
+      ghost.style.background  = 'rgba(0,176,240,0.35)';
+      ghostLabel.style.color  = 'rgba(0,176,240,0.9)';
+      area.style.cursor = 'crosshair';
+    } else {
+      ghost.style.borderColor = 'rgba(255,60,60,0.9)';
+      ghost.style.background  = 'rgba(255,60,60,0.35)';
+      ghostLabel.style.color  = 'rgba(255,60,60,0.9)';
+      area.style.cursor = 'not-allowed';
+    }
+  };
+
+  const _edgePanLoop = () => {
+    if (!_spPlaceActive) return;
+    _edgePanRafId = requestAnimationFrame(_edgePanLoop);
+
+    const rect = area.getBoundingClientRect();
+    const mx = _mouseClientX - rect.left;
+    const my = _mouseClientY - rect.top;
+    const W  = rect.width;
+    const H  = rect.height;
+
+    let dx = 0, dy = 0;
+    if (mx < EDGE_ZONE)       dx = -(1 - mx / EDGE_ZONE)       * BASE_SPEED;
+    if (mx > W - EDGE_ZONE)   dx =  (1 - (W - mx) / EDGE_ZONE) * BASE_SPEED;
+    if (my < EDGE_ZONE)       dy = -(1 - my / EDGE_ZONE)       * BASE_SPEED;
+    if (my > H - EDGE_ZONE)   dy =  (1 - (H - my) / EDGE_ZONE) * BASE_SPEED;
+
+    if (dx === 0 && dy === 0) return;
+
+    const speed = _canPlace ? SLOW_RATIO : 1;
+    APP.view.panX -= dx * speed;
+    APP.view.panY -= dy * speed;
+    applyT();
+    _updateGhost();
+  };
+
+  const onMove = e => {
+    _mouseClientX = e.clientX;
+    _mouseClientY = e.clientY;
+    _updateGhost();
+  };
+
+  const onDown = e => {
+    if (e.button !== 0) return;
+    if (!_canPlace) return;
+    e.stopPropagation();
+
+    const offsetX = _ghostX + 60 - srcMinX;  // 60 = PAD
+    const offsetY = _ghostY + 60 - srcMinY;
+
+    _cleanup();
+    _placeSubproject(data, importedNodes, offsetX, offsetY);
+  };
+
+  const onKey = e => { if (e.key === 'Escape') _cancelSubprojectPlace(); };
+
+  const _cleanup = () => {
+    _spPlaceActive = false;
+    ghost.remove();
+    if (_edgePanRafId) { cancelAnimationFrame(_edgePanRafId); _edgePanRafId = null; }
+    area.removeEventListener('pointermove', onMove);
+    area.removeEventListener('pointerdown', onDown, true);
+    document.removeEventListener('keydown', onKey);
+    area.style.cursor = '';
+    if (_sidebar) _sidebar.style.pointerEvents = '';
+    const b = document.getElementById('cable-add-banner');
+    if (b) b.classList.remove('visible');
+  };
+
+  window._cancelSubprojectPlace = _cleanup;
+
+  area.addEventListener('pointermove', onMove);
+  area.addEventListener('pointerdown', onDown, true);
+  document.addEventListener('keydown', onKey);
+
+  _edgePanRafId = requestAnimationFrame(_edgePanLoop);
+}
+
+function _cancelSubprojectPlace() {
+  if (typeof window._cancelSubprojectPlace === 'function') {
+    window._cancelSubprojectPlace();
+    window._cancelSubprojectPlace = null;
+  }
+}
+
+// ── Place the imported content at the chosen position ─────────
+function _placeSubproject(data, importedNodes, offsetX, offsetY) {
+  const spId = 'sp-' + Date.now();
+
+  pushUndo();
+
+  // Map old node IDs → new IDs
+  const nodeIdMap = {};
+  for (const n of importedNodes) {
+    const newId = uuid();
+    nodeIdMap[n.id] = newId;
+    const nx = n.x + offsetX;
+    const ny = n.y + offsetY;
+    APP.nodes[newId] = {
+      ...n, id: newId,
+      x: nx, y: ny,
+      cx: nx + n.w / 2, cy: ny + n.h / 2,
+      subproject_id: spId,
+    };
+  }
+
+  // Import cables (only internal ones) — build cableIdMap for route remapping
+  const cableIdMap = {};
+  for (const c of (data.cables || [])) {
+    const newFrom = nodeIdMap[c.from];
+    const newTo   = nodeIdMap[c.to];
+    if (!newFrom || !newTo) continue;
+    const newCableId = _nextCableId++;
+    cableIdMap[c.id] = newCableId;
+    APP.cables.push({
+      ...c, id: newCableId,
+      from: newFrom, to: newTo,
+      subproject_id: spId,
+    });
+  }
+
+  // Import signal routes — remap cableIds in segments and paths
+  const _remapSegs = segs => (segs || [])
+    .filter(s => cableIdMap[s.cableId] !== undefined)
+    .map(s => ({ ...s, cableId: cableIdMap[s.cableId] }));
+
+  const _remapPaths = function remap(paths) {
+    return (paths || []).map(p => ({
+      ...p, id: uuid(),
+      segments: _remapSegs(p.segments),
+      paths: remap(p.paths),
+    }));
+  };
+
+  for (const ch of (data.chains || [])) {
+    const remappedSegs = _remapSegs(ch.segments);
+    if (!remappedSegs.length) continue;
+    APP.chains.push({
+      ...ch, id: uuid(),
+      segments: remappedSegs,
+      paths: _remapPaths(ch.paths),
+      subproject_id: spId,
+    });
+  }
+
+  // Import sub-zones
+  for (const z of Object.values(data.zones || {})) {
+    const newZid = _newZoneId();
+    APP.zones[newZid] = {
+      ...z, id: newZid,
+      x: z.x + offsetX, y: z.y + offsetY,
+      subproject_id: spId,
+    };
+  }
+
+  // Bounding box of placed nodes → super-zone
+  const addedNodes = Object.values(APP.nodes).filter(n => n.subproject_id === spId);
+  const PAD  = 60;
+  const minX = Math.min(...addedNodes.map(n => n.x)) - PAD;
+  const minY = Math.min(...addedNodes.map(n => n.y)) - PAD;
+  const maxX = Math.max(...addedNodes.map(n => n.x + n.w)) + PAD;
+  const maxY = Math.max(...addedNodes.map(n => n.y + n.h)) + PAD;
+
+  const superZoneId = _newZoneId();
+  const maxZIdx = Object.values(APP.zones).reduce((m, z) => Math.max(m, z.zIndex || 1), 0);
+  APP.zones[superZoneId] = {
+    id: superZoneId,
+    x: minX, y: minY,
+    width:  maxX - minX,
+    height: maxY - minY,
+    name:   data.meta?.title || 'Imported project',
+    color:  '#00b0f0',
+    opacity: 0.3,
+    labelSize: 96,
+    hidden: false,
+    zIndex: maxZIdx + 1,
+    isSubproject: true,
+    subproject_id: spId,
+  };
+
+  renderNodes();
+  rebuildCM();
+  renderCables();
+  renderAllZones();
+  if (typeof renderRoutesList === 'function') renderRoutesList();
+  refreshSidebar();
+  setDirty();
+  requestAnimationFrame(() => fitView());
+}

@@ -1,1 +1,544 @@
-const COLOR_SWATCHES=["#ff4444","#ff8800","#ffcc00","#44dd44","#00cccc","#4488ff","#9966ff","#ff44bb","#888888","#ffffff"];let _colorsSnapshot=null;function _refreshCablePanel(e){if(!APP.selCable)return;const t=APP.cables.find(e=>e.id===APP.selCable);t&&t.type===e&&"function"==typeof openCablePanel&&openCablePanel(APP.selCable)}function openColorsPopup(){_colorsSnapshot=captureState(),_renderColorsPopup();const e=document.getElementById("modal-colors");e&&e.classList.add("open");const t=document.getElementById("colors-apply-btn"),n=document.getElementById("colors-cancel-btn");t&&(t.onclick=()=>e.classList.remove("open")),n&&(n.onclick=()=>{e.classList.remove("open"),_colorsSnapshot&&applyState(_colorsSnapshot)})}function _dashGradient(e,t){return"long"===t?`repeating-linear-gradient(90deg,${e} 0,${e} 10px,transparent 10px,transparent 16px)`:t&&"solid"!==t?`repeating-linear-gradient(90deg,${e} 0,${e} 4px,transparent 4px,transparent 8px)`:e}function _isDash(e){return e&&"solid"!==e}function _renderColorsPopup(){const e=document.getElementById("colors-popup-body");if(!e)return;function n(e,n,o){const r=document.createElement("div");r.style.cssText="flex:1;display:flex;flex-direction:column;overflow:hidden;"+(o?"":"border-right:1px solid #1e2d45;");const a=document.createElement("div");a.style.cssText="padding:11px 14px;font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--textdim);border-bottom:1px solid #1e2d45;background:#070c18;flex-shrink:0;text-transform:uppercase;",a.setAttribute("data-i18n",e),a.textContent=t(e),r.appendChild(a);const l=document.createElement("div");if(l.style.cssText="flex:1;overflow-y:auto;",!n.length){const e=document.createElement("div");return e.style.cssText="padding:18px 14px;color:var(--textdim);font-size:10px;font-family:var(--mono);text-align:center;",e.setAttribute("data-i18n","col_empty"),e.textContent=t("col_empty"),l.appendChild(e),r.appendChild(l),r}let s=null,d=null;return n.forEach(e=>{const n=document.createElement("div"),o=document.createElement("div");o.style.cssText="display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;border-bottom:1px solid #0d1424;transition:background .1s;user-select:none;",o.addEventListener("mouseenter",()=>{d!==o&&(o.style.background="#0d1628")}),o.addEventListener("mouseleave",()=>{d!==o&&(o.style.background="")});const r=document.createElement("div");void 0!==e.borderColor?r.style.cssText=`width:14px;height:14px;border-radius:3px;background:${e.color};flex-shrink:0;border:2px solid ${e.borderColor};`:r.style.cssText=`width:14px;height:14px;border-radius:3px;background:${e.color};flex-shrink:0;border:1px solid rgba(255,255,255,.18);`;const a=document.createElement("span");if(a.style.cssText="font-family:var(--mono);font-size:11px;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;",a.textContent=tType(e.label),o.appendChild(r),o.appendChild(a),void 0!==e.dashStyle){const t=document.createElement("div");t.style.cssText="width:24px;height:2px;flex-shrink:0;";const n=(e,n)=>{"long"===n?t.style.background=`repeating-linear-gradient(90deg,${e} 0,${e} 10px,transparent 10px,transparent 16px)`:_isDash(n)?t.style.background=`repeating-linear-gradient(90deg,${e} 0,${e} 4px,transparent 4px,transparent 8px)`:t.style.background=e};n(e.lineColor??e.color,e.dashStyle),e._lineEl=t,e._updateLine=n,o.appendChild(t)}e._swatchEl=r,o.addEventListener("click",()=>{if(s){s.remove(),s=null;const e=d===o;if(d&&(d.style.background=""),d=null,e)return}d=o,o.style.background="#111e35";const a=void 0!==e.dashStyle?{current:e.dashStyle,onChange:t=>{e.dashStyle=t,e._updateLine&&e._updateLine(e.lineColor??e.color,t),e.onDashChange(t)}}:null;let l;l=void 0!==e.borderColor?function(e,n,o,r,a){const l=document.createElement("div");l.style.cssText="padding:10px 14px 12px;background:#070c18;border-top:1px solid #1e2d45;";let s="interior",d=e,i=o,c=!1;const p=document.createElement("div");p.style.cssText="display:flex;gap:4px;margin-bottom:10px;";const u=(e,t)=>{e.style.cssText=`flex:1;padding:5px 0;font-family:var(--mono);font-size:10px;border-radius:4px;cursor:pointer;border:1px solid ${t?"#4a8fff":"#1e2d45"};background:${t?"#111e35":"transparent"};color:${t?"#fff":"var(--textdim)"};transition:all .15s;`},h=document.createElement("button");h.textContent=t("colors_interior");const x=document.createElement("button");x.textContent=t("colors_border"),u(h,!0),u(x,!1),p.appendChild(h),p.appendChild(x),l.appendChild(p);const f=document.createElement("div");f.style.cssText="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;";const b=document.createElement("input");b.type="color",b.style.cssText="width:34px;height:26px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px;outline:none;";const y=()=>"interior"===s?d:i,m=e=>{"interior"===s?(d=e,n(e)):(i=e,r(e))},g=e=>{f.querySelectorAll("button").forEach(t=>{t.style.borderColor=t.title.toLowerCase()===e.toLowerCase()?"#fff":"transparent"})};COLOR_SWATCHES.forEach(e=>{const t=document.createElement("button");t.style.cssText=`width:22px;height:22px;border-radius:4px;background:${e};border:2px solid transparent;cursor:pointer;transition:border-color .15s;flex-shrink:0;`,t.title=e,t.addEventListener("click",()=>{try{pushUndo()}catch(e){}g(e),b.value=e,m(e)}),f.appendChild(t)}),l.appendChild(f);const C=document.createElement("div");C.style.cssText="display:flex;align-items:center;gap:8px;margin-bottom:"+(a?"12px":"0")+";",b.value=y(),b.addEventListener("input",()=>{if(!c){try{pushUndo()}catch(e){}c=!0}f.querySelectorAll("button").forEach(e=>e.style.borderColor="transparent"),m(b.value)}),b.addEventListener("change",()=>{c=!1});const E=document.createElement("span");E.style.cssText="font-family:var(--mono);font-size:10px;color:var(--textdim);user-select:none;",E.textContent=t("color_wheel_hint"),C.appendChild(b),C.appendChild(E),l.appendChild(C);let v=null;if(a){v=document.createElement("div"),v.style.display="none";const e=document.createElement("div");e.style.cssText="height:1px;background:#1e2d45;margin-bottom:10px;",v.appendChild(e);const n=document.createElement("div");n.style.cssText="display:flex;align-items:center;gap:6px;";const o=document.createElement("span");o.style.cssText="font-family:var(--mono);font-size:10px;color:var(--textdim);margin-right:4px;user-select:none;flex-shrink:0;",o.textContent=t("dash_style_label"),n.appendChild(o);const r=[{key:"solid",i18n:"dash_solid",css:"background:#aec6e8;height:2px;width:28px;border-radius:1px;"},{key:"short",i18n:"dash_short",css:"background:repeating-linear-gradient(90deg,#aec6e8 0,#aec6e8 4px,transparent 4px,transparent 8px);height:2px;width:28px;"},{key:"long",i18n:"dash_long",css:"background:repeating-linear-gradient(90deg,#aec6e8 0,#aec6e8 10px,transparent 10px,transparent 16px);height:2px;width:28px;"}];let s=a.current;const d={};r.forEach(e=>{const o=document.createElement("button");o.title=t(e.i18n);const r=s===e.key;o.style.cssText=`display:flex;align-items:center;justify-content:center;width:46px;height:26px;border-radius:4px;border:2px solid ${r?"#4a8fff":"#1e2d45"};background:${r?"#111e35":"transparent"};cursor:pointer;transition:border-color .15s,background .15s;`;const l=document.createElement("div");l.style.cssText=e.css,o.appendChild(l),o.addEventListener("click",()=>{if(s!==e.key){try{pushUndo()}catch(e){}s=e.key,Object.entries(d).forEach(([t,n])=>{n.style.borderColor=t===e.key?"#4a8fff":"#1e2d45",n.style.background=t===e.key?"#111e35":"transparent"}),a.onChange(e.key)}}),d[e.key]=o,n.appendChild(o)}),v.appendChild(n),l.appendChild(v)}const _=e=>{s=e,u(h,"interior"===e),u(x,"border"===e),b.value=y(),g(y()),v&&(v.style.display="border"===e?"block":"none")};return h.addEventListener("click",()=>_("interior")),x.addEventListener("click",()=>_("border")),l}(e.color,t=>{e.color=t,r.style.background=t,e.onColorChange(t)},e.borderColor,t=>{e.borderColor=t,e.lineColor=t,r.style.borderColor=t,e._updateLine&&e._updateLine(t,e.dashStyle),e.onBorderColorChange(t)},a):function(e,n,o,r){const a=document.createElement("div");if(a.style.cssText="padding:10px 14px 12px;background:#070c18;border-top:1px solid #1e2d45;",r){const e=document.createElement("div");e.style.cssText="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--textdim);text-transform:uppercase;margin-bottom:8px;user-select:none;",e.textContent=r,a.appendChild(e)}const l=document.createElement("div");l.style.cssText="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;";const s=e=>{l.querySelectorAll("button").forEach(t=>{t.style.borderColor=t.title.toLowerCase()===e.toLowerCase()?"#fff":"transparent"})};COLOR_SWATCHES.forEach(t=>{const o=document.createElement("button");o.style.cssText=`width:22px;height:22px;border-radius:4px;background:${t};border:2px solid ${t.toLowerCase()===e.toLowerCase()?"#fff":"transparent"};cursor:pointer;transition:border-color .15s;flex-shrink:0;`,o.title=t,o.addEventListener("click",()=>{try{pushUndo()}catch(e){console.warn("colors pushUndo",e)}s(t),i.value=t,n(t)}),l.appendChild(o)}),a.appendChild(l);const d=document.createElement("div");d.style.cssText="display:flex;align-items:center;gap:8px;margin-bottom:"+(o?"12px":"0")+";";const i=document.createElement("input");i.type="color",i.value=e,i.style.cssText="width:34px;height:26px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px;outline:none;";let c=!1;i.addEventListener("input",()=>{if(!c){try{pushUndo()}catch(e){console.warn("colors pushUndo wheel",e)}c=!0}s(i.value),l.querySelectorAll("button").forEach(e=>{e.style.borderColor="transparent"}),n(i.value)}),i.addEventListener("change",()=>{c=!1});const p=document.createElement("span");if(p.style.cssText="font-family:var(--mono);font-size:10px;color:var(--textdim);user-select:none;",p.setAttribute("data-i18n","color_wheel_hint"),p.textContent=t("color_wheel_hint"),d.appendChild(i),d.appendChild(p),a.appendChild(d),o){const e=document.createElement("div");e.style.cssText="height:1px;background:#1e2d45;margin-bottom:10px;",a.appendChild(e);const n=document.createElement("div");n.style.cssText="display:flex;align-items:center;gap:6px;";const r=document.createElement("span");r.style.cssText="font-family:var(--mono);font-size:10px;color:var(--textdim);margin-right:4px;user-select:none;flex-shrink:0;",r.setAttribute("data-i18n","dash_style_label"),r.textContent=t("dash_style_label"),n.appendChild(r);const l=[{key:"solid",i18n:"dash_solid",css:"background:#aec6e8;height:2px;width:28px;border-radius:1px;"},{key:"short",i18n:"dash_short",css:"background:repeating-linear-gradient(90deg,#aec6e8 0,#aec6e8 4px,transparent 4px,transparent 8px);height:2px;width:28px;"},{key:"long",i18n:"dash_long",css:"background:repeating-linear-gradient(90deg,#aec6e8 0,#aec6e8 10px,transparent 10px,transparent 16px);height:2px;width:28px;"}];let s=o.current;const d={};l.forEach(e=>{const r=document.createElement("button");r.title=t(e.i18n);const a=s===e.key;r.style.cssText=`display:flex;align-items:center;justify-content:center;width:46px;height:26px;border-radius:4px;border:2px solid ${a?"#4a8fff":"#1e2d45"};background:${a?"#111e35":"transparent"};cursor:pointer;transition:border-color .15s,background .15s;`;const l=document.createElement("div");l.style.cssText=e.css,r.appendChild(l),r.addEventListener("click",()=>{if(s!==e.key){try{pushUndo()}catch(e){console.warn("colors pushUndo dash",e)}s=e.key,Object.entries(d).forEach(([t,n])=>{n.style.borderColor=t===e.key?"#4a8fff":"#1e2d45",n.style.background=t===e.key?"#111e35":"transparent"}),o.onChange(e.key)}}),d[e.key]=r,n.appendChild(r)}),a.appendChild(n)}return a}(e.color,t=>{e.color=t,r.style.background=t,e._updateLine&&e._updateLine(t,e.dashStyle),e.onColorChange(t)},a),s=l,n.appendChild(l)}),n.appendChild(o),l.appendChild(n)}),r.appendChild(l),r}e.innerHTML="";const o=APP.categories.filter(e=>!e.virtual).map(e=>({label:getCat(e.id).label,color:e.color||"#888888",dashStyle:void 0,onColorChange:t=>{e.color=t,e.label_key&&(NATIVE_CAT_COLOR_OVERRIDES[e.id]=t),saveUserCats(),"function"==typeof renderSidebarCats&&renderSidebarCats(),"function"==typeof renderNodes&&renderNodes()},onDashChange:null}));e.appendChild(n("col_categories",o,!1));const r=e=>APP.cables.find(t=>t.type===e),a=[...Object.entries(CABLE_META).map(([e,t])=>{const n=getCableMeta(e),o=r(e),a=void 0!==USER_CABLE_DASH_OVERRIDES[e]?USER_CABLE_DASH_OVERRIDES[e]:o?_normDash(o.dashed):n.dashed;return{label:e,color:USER_CABLE_COLOR_OVERRIDES[e]||(o?o.color:n.color),dashStyle:a,isCustom:!1}}),...USER_CABLE_TYPES.map(e=>{const t=r(e.id),n=e.dash||(t?_normDash(t.dashed):"solid"),o=t?t.color:e.color;return{label:e.id,color:o,dashStyle:n,isCustom:!0}})].map(e=>({...e,onColorChange:t=>{USER_CABLE_COLOR_OVERRIDES[e.label]=t;const n=USER_CABLE_TYPES.find(t=>t.id===e.label);n&&(n.color=t),APP.cables.forEach(n=>{n.type===e.label&&(n.color=t)}),saveUserCats(),"function"==typeof redrawOnlyCables&&redrawOnlyCables(),"function"==typeof renderSidebarCables&&renderSidebarCables(),_refreshCablePanel(e.label)},onDashChange:t=>{USER_CABLE_DASH_OVERRIDES[e.label]=t;const n=USER_CABLE_TYPES.find(t=>t.id===e.label);n&&(n.dash=t),APP.cables.forEach(n=>{n.type===e.label&&(n.dashed=t)}),saveUserCats(),"function"==typeof redrawOnlyCables&&redrawOnlyCables(),"function"==typeof renderSidebarCables&&renderSidebarCables(),_refreshCablePanel(e.label)}}));e.appendChild(n("col_cables",a,!1));const l=Object.values(APP.zones||{}).map(e=>{const n=e.color||"#00d4ff",o=e.borderColor||n,r=()=>{const t=document.getElementById(`zone-${e.id}`);t&&"function"==typeof _applyZoneStyles&&_applyZoneStyles(e.id,t),APP.selZone===e.id&&"function"==typeof openZonePanel&&openZonePanel(e.id),setDirty()};return{label:e.name||t("untitled"),color:n,borderColor:o,lineColor:o,dashStyle:e.dash||"solid",onColorChange:t=>{e.color=t,r()},onBorderColorChange:t=>{e.borderColor=t,r()},onDashChange:t=>{e.dash=t,r()}}});e.appendChild(n("col_zones",l,!0))}
+// ── Colors Popup ──────────────────────────────────────────────
+
+const COLOR_SWATCHES = [
+  '#ff4444', '#ff8800', '#ffcc00', '#44dd44',
+  '#00cccc', '#4488ff', '#9966ff', '#ff44bb',
+  '#888888', '#ffffff',
+];
+
+let _colorsSnapshot = null; // snapshot pris à l'ouverture (pour Annuler)
+
+// Rafraîchit le panneau droit si le câble sélectionné est du type modifié
+function _refreshCablePanel(type) {
+  if (!APP.selCable) return;
+  const sel = APP.cables.find(c => c.id === APP.selCable);
+  if (sel && sel.type === type && typeof openCablePanel === 'function') {
+    openCablePanel(APP.selCable);
+  }
+}
+
+function openColorsPopup() {
+  _colorsSnapshot = captureState(); // état AVANT toute modif couleur
+  _renderColorsPopup();
+
+  const modal = document.getElementById('modal-colors');
+  if (modal) modal.classList.add('open');
+
+  // Câblage boutons footer
+  const applyBtn  = document.getElementById('colors-apply-btn');
+  const cancelBtn = document.getElementById('colors-cancel-btn');
+  if (applyBtn)  applyBtn.onclick  = () => modal.classList.remove('open');
+  if (cancelBtn) cancelBtn.onclick = () => {
+    modal.classList.remove('open');
+    if (_colorsSnapshot) applyState(_colorsSnapshot);
+  };
+}
+
+// ── CSS gradient selon l'état dash ───────────────────────────
+function _dashGradient(color, dash) {
+  if (dash === 'long')
+    return `repeating-linear-gradient(90deg,${color} 0,${color} 10px,transparent 10px,transparent 16px)`;
+  if (dash && dash !== 'solid')
+    return `repeating-linear-gradient(90deg,${color} 0,${color} 4px,transparent 4px,transparent 8px)`;
+  return color;
+}
+
+function _isDash(d) { return d && d !== 'solid'; }
+
+function _renderColorsPopup() {
+  const body = document.getElementById('colors-popup-body');
+  if (!body) return;
+  body.innerHTML = '';
+
+  // ── Picker couleur + (optionnel) sélecteur trait ──────────
+  function _makePicker(currentColor, onColorChange, dashOpts, sectionTitle) {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'padding:10px 14px 12px;background:#070c18;border-top:1px solid #1e2d45;';
+
+    if (sectionTitle) {
+      const titleEl = document.createElement('div');
+      titleEl.style.cssText = 'font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--textdim);text-transform:uppercase;margin-bottom:8px;user-select:none;';
+      titleEl.textContent = sectionTitle;
+      wrap.appendChild(titleEl);
+    }
+
+    // ── Swatches ──────────────────────────────────────────────
+    const swRow = document.createElement('div');
+    swRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;';
+
+    const _highlightSwatch = (c) => {
+      swRow.querySelectorAll('button').forEach(b => {
+        b.style.borderColor = b.title.toLowerCase() === c.toLowerCase() ? '#fff' : 'transparent';
+      });
+    };
+
+    COLOR_SWATCHES.forEach(c => {
+      const s = document.createElement('button');
+      s.style.cssText = `width:22px;height:22px;border-radius:4px;background:${c};border:2px solid ${c.toLowerCase() === currentColor.toLowerCase() ? '#fff' : 'transparent'};cursor:pointer;transition:border-color .15s;flex-shrink:0;`;
+      s.title = c;
+      s.addEventListener('click', () => {
+        try { pushUndo(); } catch(e) { console.warn('colors pushUndo', e); } // undo avant chaque swatch
+        _highlightSwatch(c);
+        colorIn.value = c;
+        onColorChange(c);
+      });
+      swRow.appendChild(s);
+    });
+    wrap.appendChild(swRow);
+
+    // ── Roue couleur ──────────────────────────────────────────
+    const wheelRow = document.createElement('div');
+    wheelRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:' + (dashOpts ? '12px' : '0') + ';';
+
+    const colorIn = document.createElement('input');
+    colorIn.type  = 'color';
+    colorIn.value = currentColor;
+    colorIn.style.cssText = 'width:34px;height:26px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px;outline:none;';
+
+    // pushUndo une seule fois par session de drag (pas à chaque pixel)
+    let _wheelUndoPushed = false;
+    colorIn.addEventListener('input', () => {
+      if (!_wheelUndoPushed) {
+        try { pushUndo(); } catch(e) { console.warn('colors pushUndo wheel', e); }
+        _wheelUndoPushed = true;
+      }
+      _highlightSwatch(colorIn.value); // désactive les swatches si roue
+      swRow.querySelectorAll('button').forEach(b => { b.style.borderColor = 'transparent'; });
+      onColorChange(colorIn.value);
+    });
+    colorIn.addEventListener('change', () => {
+      _wheelUndoPushed = false; // reset pour la prochaine session de drag
+    });
+
+    const hint = document.createElement('span');
+    hint.style.cssText = 'font-family:var(--mono);font-size:10px;color:var(--textdim);user-select:none;';
+    hint.setAttribute('data-i18n', 'color_wheel_hint');
+    hint.textContent = t('color_wheel_hint');
+    wheelRow.appendChild(colorIn);
+    wheelRow.appendChild(hint);
+    wrap.appendChild(wheelRow);
+
+    // ── Sélecteur de trait (câbles seulement) ─────────────────
+    if (dashOpts) {
+      const sep = document.createElement('div');
+      sep.style.cssText = 'height:1px;background:#1e2d45;margin-bottom:10px;';
+      wrap.appendChild(sep);
+
+      const dashRow = document.createElement('div');
+      dashRow.style.cssText = 'display:flex;align-items:center;gap:6px;';
+
+      const lbl = document.createElement('span');
+      lbl.style.cssText = 'font-family:var(--mono);font-size:10px;color:var(--textdim);margin-right:4px;user-select:none;flex-shrink:0;';
+      lbl.setAttribute('data-i18n', 'dash_style_label');
+      lbl.textContent = t('dash_style_label');
+      dashRow.appendChild(lbl);
+
+      const DASH_OPTIONS = [
+        { key: 'solid', i18n: 'dash_solid',
+          css: 'background:#aec6e8;height:2px;width:28px;border-radius:1px;' },
+        { key: 'short', i18n: 'dash_short',
+          css: 'background:repeating-linear-gradient(90deg,#aec6e8 0,#aec6e8 4px,transparent 4px,transparent 8px);height:2px;width:28px;' },
+        { key: 'long',  i18n: 'dash_long',
+          css: 'background:repeating-linear-gradient(90deg,#aec6e8 0,#aec6e8 10px,transparent 10px,transparent 16px);height:2px;width:28px;' },
+      ];
+
+      let _activeDash = dashOpts.current;
+      const dashBtns  = {};
+
+      DASH_OPTIONS.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.title = t(opt.i18n);
+        const isActive = _activeDash === opt.key;
+        btn.style.cssText = `display:flex;align-items:center;justify-content:center;width:46px;height:26px;border-radius:4px;border:2px solid ${isActive ? '#4a8fff' : '#1e2d45'};background:${isActive ? '#111e35' : 'transparent'};cursor:pointer;transition:border-color .15s,background .15s;`;
+        const preview = document.createElement('div');
+        preview.style.cssText = opt.css;
+        btn.appendChild(preview);
+        btn.addEventListener('click', () => {
+          if (_activeDash === opt.key) return; // pas de changement, pas d'undo
+          try { pushUndo(); } catch(e) { console.warn('colors pushUndo dash', e); }
+          _activeDash = opt.key;
+          Object.entries(dashBtns).forEach(([k, b]) => {
+            b.style.borderColor = k === opt.key ? '#4a8fff' : '#1e2d45';
+            b.style.background  = k === opt.key ? '#111e35' : 'transparent';
+          });
+          dashOpts.onChange(opt.key);
+        });
+        dashBtns[opt.key] = btn;
+        dashRow.appendChild(btn);
+      });
+
+      wrap.appendChild(dashRow);
+    }
+
+    return wrap;
+  }
+
+  // Picker zone : toggle Intérieur / Bordure → un seul picker partagé
+  function _makeZonePicker(fillColor, onFillChange, borderColor, onBorderChange, dashOpts) {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'padding:10px 14px 12px;background:#070c18;border-top:1px solid #1e2d45;';
+
+    let activeTab = 'interior';
+    let _fill = fillColor, _border = borderColor;
+    let _wheelUndoPushed = false;
+
+    // ── Toggle ──────────────────────────────────────────────
+    const toggleRow = document.createElement('div');
+    toggleRow.style.cssText = 'display:flex;gap:4px;margin-bottom:10px;';
+
+    const _styleTab = (btn, active) => {
+      btn.style.cssText = `flex:1;padding:5px 0;font-family:var(--mono);font-size:10px;border-radius:4px;cursor:pointer;border:1px solid ${active ? '#4a8fff' : '#1e2d45'};background:${active ? '#111e35' : 'transparent'};color:${active ? '#fff' : 'var(--textdim)'};transition:all .15s;`;
+    };
+    const btnIn = document.createElement('button');
+    btnIn.textContent = t('colors_interior');
+    const btnBd = document.createElement('button');
+    btnBd.textContent = t('colors_border');
+    _styleTab(btnIn, true);
+    _styleTab(btnBd, false);
+    toggleRow.appendChild(btnIn);
+    toggleRow.appendChild(btnBd);
+    wrap.appendChild(toggleRow);
+
+    // ── Swatches ────────────────────────────────────────────
+    const swRow = document.createElement('div');
+    swRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;';
+
+    const colorIn = document.createElement('input');
+    colorIn.type = 'color';
+    colorIn.style.cssText = 'width:34px;height:26px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px;outline:none;';
+
+    const _curColor  = () => activeTab === 'interior' ? _fill : _border;
+    const _applyColor = (c) => {
+      if (activeTab === 'interior') { _fill   = c; onFillChange(c);   }
+      else                          { _border = c; onBorderChange(c); }
+    };
+    const _highlightSwatch = (c) => {
+      swRow.querySelectorAll('button').forEach(b => {
+        b.style.borderColor = b.title.toLowerCase() === c.toLowerCase() ? '#fff' : 'transparent';
+      });
+    };
+
+    COLOR_SWATCHES.forEach(c => {
+      const s = document.createElement('button');
+      s.style.cssText = `width:22px;height:22px;border-radius:4px;background:${c};border:2px solid transparent;cursor:pointer;transition:border-color .15s;flex-shrink:0;`;
+      s.title = c;
+      s.addEventListener('click', () => {
+        try { pushUndo(); } catch(e) {}
+        _highlightSwatch(c);
+        colorIn.value = c;
+        _applyColor(c);
+      });
+      swRow.appendChild(s);
+    });
+    wrap.appendChild(swRow);
+
+    // ── Color wheel ─────────────────────────────────────────
+    const wheelRow = document.createElement('div');
+    wheelRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:' + (dashOpts ? '12px' : '0') + ';';
+    colorIn.value = _curColor();
+    colorIn.addEventListener('input', () => {
+      if (!_wheelUndoPushed) { try { pushUndo(); } catch(e) {} _wheelUndoPushed = true; }
+      swRow.querySelectorAll('button').forEach(b => b.style.borderColor = 'transparent');
+      _applyColor(colorIn.value);
+    });
+    colorIn.addEventListener('change', () => { _wheelUndoPushed = false; });
+    const hint = document.createElement('span');
+    hint.style.cssText = 'font-family:var(--mono);font-size:10px;color:var(--textdim);user-select:none;';
+    hint.textContent = t('color_wheel_hint');
+    wheelRow.appendChild(colorIn);
+    wheelRow.appendChild(hint);
+    wrap.appendChild(wheelRow);
+
+    // ── Dash (bordure uniquement, caché par défaut) ──────────
+    let dashSection = null;
+    if (dashOpts) {
+      dashSection = document.createElement('div');
+      dashSection.style.display = 'none';
+
+      const sep = document.createElement('div');
+      sep.style.cssText = 'height:1px;background:#1e2d45;margin-bottom:10px;';
+      dashSection.appendChild(sep);
+
+      const dashRow = document.createElement('div');
+      dashRow.style.cssText = 'display:flex;align-items:center;gap:6px;';
+      const lbl = document.createElement('span');
+      lbl.style.cssText = 'font-family:var(--mono);font-size:10px;color:var(--textdim);margin-right:4px;user-select:none;flex-shrink:0;';
+      lbl.textContent = t('dash_style_label');
+      dashRow.appendChild(lbl);
+
+      const DASH_OPTS = [
+        { key: 'solid', i18n: 'dash_solid', css: 'background:#aec6e8;height:2px;width:28px;border-radius:1px;' },
+        { key: 'short', i18n: 'dash_short', css: 'background:repeating-linear-gradient(90deg,#aec6e8 0,#aec6e8 4px,transparent 4px,transparent 8px);height:2px;width:28px;' },
+        { key: 'long',  i18n: 'dash_long',  css: 'background:repeating-linear-gradient(90deg,#aec6e8 0,#aec6e8 10px,transparent 10px,transparent 16px);height:2px;width:28px;' },
+      ];
+      let _activeDash = dashOpts.current;
+      const dashBtns  = {};
+      DASH_OPTS.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.title = t(opt.i18n);
+        const active = _activeDash === opt.key;
+        btn.style.cssText = `display:flex;align-items:center;justify-content:center;width:46px;height:26px;border-radius:4px;border:2px solid ${active ? '#4a8fff' : '#1e2d45'};background:${active ? '#111e35' : 'transparent'};cursor:pointer;transition:border-color .15s,background .15s;`;
+        const preview = document.createElement('div');
+        preview.style.cssText = opt.css;
+        btn.appendChild(preview);
+        btn.addEventListener('click', () => {
+          if (_activeDash === opt.key) return;
+          try { pushUndo(); } catch(e) {}
+          _activeDash = opt.key;
+          Object.entries(dashBtns).forEach(([k, b]) => {
+            b.style.borderColor = k === opt.key ? '#4a8fff' : '#1e2d45';
+            b.style.background  = k === opt.key ? '#111e35' : 'transparent';
+          });
+          dashOpts.onChange(opt.key);
+        });
+        dashBtns[opt.key] = btn;
+        dashRow.appendChild(btn);
+      });
+      dashSection.appendChild(dashRow);
+      wrap.appendChild(dashSection);
+    }
+
+    // ── Switch tab ──────────────────────────────────────────
+    const _switchTab = (tab) => {
+      activeTab = tab;
+      _styleTab(btnIn, tab === 'interior');
+      _styleTab(btnBd, tab === 'border');
+      colorIn.value = _curColor();
+      _highlightSwatch(_curColor());
+      if (dashSection) dashSection.style.display = tab === 'border' ? 'block' : 'none';
+    };
+    btnIn.addEventListener('click', () => _switchTab('interior'));
+    btnBd.addEventListener('click', () => _switchTab('border'));
+
+    return wrap;
+  }
+
+  // ── Colonne ───────────────────────────────────────────────
+  function _makeColumn(i18nKey, items, isLast) {
+    const col = document.createElement('div');
+    col.style.cssText = `flex:1;display:flex;flex-direction:column;overflow:hidden;${isLast ? '' : 'border-right:1px solid #1e2d45;'}`;
+
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'padding:11px 14px;font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--textdim);border-bottom:1px solid #1e2d45;background:#070c18;flex-shrink:0;text-transform:uppercase;';
+    hdr.setAttribute('data-i18n', i18nKey);
+    hdr.textContent = t(i18nKey);
+    col.appendChild(hdr);
+
+    const list = document.createElement('div');
+    list.style.cssText = 'flex:1;overflow-y:auto;';
+
+    if (!items.length) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'padding:18px 14px;color:var(--textdim);font-size:10px;font-family:var(--mono);text-align:center;';
+      empty.setAttribute('data-i18n', 'col_empty');
+      empty.textContent = t('col_empty');
+      list.appendChild(empty);
+      col.appendChild(list);
+      return col;
+    }
+
+    let openPicker = null;
+    let openRow    = null;
+
+    items.forEach(item => {
+      const rowWrap = document.createElement('div');
+
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;border-bottom:1px solid #0d1424;transition:background .1s;user-select:none;';
+      row.addEventListener('mouseenter', () => { if (openRow !== row) row.style.background = '#0d1628'; });
+      row.addEventListener('mouseleave', () => { if (openRow !== row) row.style.background = ''; });
+
+      const swatch = document.createElement('div');
+      if (item.borderColor !== undefined) {
+        // Zone : swatch bicolore (fond + bordure distincte)
+        swatch.style.cssText = `width:14px;height:14px;border-radius:3px;background:${item.color};flex-shrink:0;border:2px solid ${item.borderColor};`;
+      } else {
+        swatch.style.cssText = `width:14px;height:14px;border-radius:3px;background:${item.color};flex-shrink:0;border:1px solid rgba(255,255,255,.18);`;
+      }
+
+      const label = document.createElement('span');
+      label.style.cssText = 'font-family:var(--mono);font-size:11px;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+      label.textContent = tType(item.label);
+
+      row.appendChild(swatch);
+      row.appendChild(label);
+
+      // Indicateur ligne (si dashStyle défini)
+      if (item.dashStyle !== undefined) {
+        const lineEl = document.createElement('div');
+        lineEl.style.cssText = 'width:24px;height:2px;flex-shrink:0;';
+        const updateLine = (color, dash) => {
+          if (dash === 'long')
+            lineEl.style.background = `repeating-linear-gradient(90deg,${color} 0,${color} 10px,transparent 10px,transparent 16px)`;
+          else if (_isDash(dash))
+            lineEl.style.background = `repeating-linear-gradient(90deg,${color} 0,${color} 4px,transparent 4px,transparent 8px)`;
+          else
+            lineEl.style.background = color;
+        };
+        updateLine(item.lineColor ?? item.color, item.dashStyle);
+        item._lineEl     = lineEl;
+        item._updateLine = updateLine;
+        row.appendChild(lineEl);
+      }
+
+      item._swatchEl = swatch;
+
+      row.addEventListener('click', () => {
+        if (openPicker) {
+          openPicker.remove();
+          openPicker = null;
+          const wasThis = openRow === row;
+          if (openRow) openRow.style.background = '';
+          openRow = null;
+          if (wasThis) return;
+        }
+        openRow = row;
+        row.style.background = '#111e35';
+
+        const dashOpts = item.dashStyle !== undefined ? {
+          current:  item.dashStyle,
+          onChange: (newDash) => {
+            item.dashStyle = newDash;
+            if (item._updateLine) item._updateLine(item.lineColor ?? item.color, newDash);
+            item.onDashChange(newDash);
+          },
+        } : null;
+
+        let picker;
+        if (item.borderColor !== undefined) {
+          // Zone : picker deux sections (intérieur + bordure)
+          picker = _makeZonePicker(
+            item.color,
+            (newFill) => {
+              item.color = newFill;
+              swatch.style.background = newFill;
+              item.onColorChange(newFill);
+            },
+            item.borderColor,
+            (newBorder) => {
+              item.borderColor = newBorder;
+              item.lineColor   = newBorder;
+              swatch.style.borderColor = newBorder;
+              if (item._updateLine) item._updateLine(newBorder, item.dashStyle);
+              item.onBorderColorChange(newBorder);
+            },
+            dashOpts,
+          );
+        } else {
+          picker = _makePicker(item.color, (newColor) => {
+            item.color = newColor;
+            swatch.style.background = newColor;
+            if (item._updateLine) item._updateLine(newColor, item.dashStyle);
+            item.onColorChange(newColor);
+          }, dashOpts);
+        }
+
+        openPicker = picker;
+        rowWrap.appendChild(picker);
+      });
+
+      rowWrap.appendChild(row);
+      list.appendChild(rowWrap);
+    });
+
+    col.appendChild(list);
+    return col;
+  }
+
+  // ── Catégories ────────────────────────────────────────────
+  const catItems = APP.categories
+    .filter(c => !c.virtual)
+    .map(cat => ({
+      label: getCat(cat.id).label,
+      color: cat.color || '#888888',
+      dashStyle: undefined,
+      onColorChange: (newColor) => {
+        cat.color = newColor;
+        if (cat.label_key) NATIVE_CAT_COLOR_OVERRIDES[cat.id] = newColor;
+        saveUserCats();
+        if (typeof renderSidebarCats === 'function') renderSidebarCats();
+        if (typeof renderNodes       === 'function') renderNodes();
+      },
+      onDashChange: null,
+    }));
+  body.appendChild(_makeColumn('col_categories', catItems, false));
+
+  // ── Câbles ────────────────────────────────────────────────
+  // Source de vérité : les câbles réels en APP.cables (évite les incohérences
+  // si un override n'a pas été sauvegardé proprement)
+  const _firstCableOf = (type) => APP.cables.find(c => c.type === type);
+
+  const nativeEntries = Object.entries(CABLE_META).map(([type, meta]) => {
+    const m = getCableMeta(type);
+    const actual = _firstCableOf(type);
+    // Priorité : override stocké → câble réel → méta par défaut
+    const dashStyle = USER_CABLE_DASH_OVERRIDES[type] !== undefined
+      ? USER_CABLE_DASH_OVERRIDES[type]
+      : actual ? _normDash(actual.dashed) : m.dashed;
+    const color = USER_CABLE_COLOR_OVERRIDES[type] || (actual ? actual.color : m.color);
+    return { label: type, color, dashStyle, isCustom: false };
+  });
+  const customEntries = USER_CABLE_TYPES.map(ct => {
+    const actual = _firstCableOf(ct.id);
+    const dashStyle = ct.dash || (actual ? _normDash(actual.dashed) : 'solid');
+    const color = actual ? actual.color : ct.color;
+    return { label: ct.id, color, dashStyle, isCustom: true };
+  });
+
+  const cableItems = [...nativeEntries, ...customEntries].map(entry => ({
+    ...entry,
+    onColorChange: (newColor) => {
+      USER_CABLE_COLOR_OVERRIDES[entry.label] = newColor;
+      const uc = USER_CABLE_TYPES.find(t => t.id === entry.label);
+      if (uc) uc.color = newColor;
+      APP.cables.forEach(c => { if (c.type === entry.label) c.color = newColor; });
+      saveUserCats();
+      if (typeof redrawOnlyCables    === 'function') redrawOnlyCables();
+      if (typeof renderSidebarCables === 'function') renderSidebarCables();
+      _refreshCablePanel(entry.label);
+    },
+    onDashChange: (newDash) => {
+      USER_CABLE_DASH_OVERRIDES[entry.label] = newDash;
+      const uc = USER_CABLE_TYPES.find(t => t.id === entry.label);
+      if (uc) uc.dash = newDash;
+      APP.cables.forEach(c => { if (c.type === entry.label) c.dashed = newDash; });
+      saveUserCats();
+      if (typeof redrawOnlyCables    === 'function') redrawOnlyCables();
+      if (typeof renderSidebarCables === 'function') renderSidebarCables();
+      _refreshCablePanel(entry.label);
+    },
+  }));
+  body.appendChild(_makeColumn('col_cables', cableItems, false));
+
+  // ── Zones ─────────────────────────────────────────────────
+  const zoneItems = Object.values(APP.zones || {}).map(zone => {
+    const fillColor   = zone.color       || '#00d4ff';
+    const borderColor = zone.borderColor || fillColor;
+    const _applyZone  = () => {
+      const el = document.getElementById(`zone-${zone.id}`);
+      if (el && typeof _applyZoneStyles === 'function') _applyZoneStyles(zone.id, el);
+      if (APP.selZone === zone.id && typeof openZonePanel === 'function') openZonePanel(zone.id);
+      setDirty();
+    };
+    return {
+      label:       zone.name || t('untitled'),
+      color:       fillColor,
+      borderColor,
+      lineColor:   borderColor,
+      dashStyle:   zone.dash || 'solid',
+      onColorChange: (newColor) => {
+        zone.color = newColor;
+        _applyZone();
+      },
+      onBorderColorChange: (newColor) => {
+        zone.borderColor = newColor;
+        _applyZone();
+      },
+      onDashChange: (newDash) => {
+        zone.dash = newDash;
+        _applyZone();
+      },
+    };
+  });
+  body.appendChild(_makeColumn('col_zones', zoneItems, true));
+}

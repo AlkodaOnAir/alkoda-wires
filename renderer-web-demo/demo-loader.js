@@ -36,7 +36,19 @@ const _realSetLang=setLang;
 setLang=function(e){_realSetLang("en")};
 const LICENSE={init:async()=>({isPro:!0,hasKey:!0,isExpired:!1}),initUI:()=>{},isPro:()=>!0,gate:(e,t)=>t(),showGate:()=>{},showPaywall:()=>{},getStatus:()=>({isPro:!0,hasKey:!0,isExpired:!1})};
 
-// --- stubs démo web : modules about-ui.js / export.js omis du bundle ---
-// (sans ça, app.js bootstrap plante sur ABOUT.init()/initExportDialog() avant initFileIO)
+// --- stubs démo web : modules about-ui.js / export.js / update.js omis du bundle ---
+// (sans ça, app.js bootstrap plante sur ABOUT.init()/initExportDialog() avant initFileIO,
+// ou sur _checkForUpdate() juste après — un appel non gardé, contrairement à
+// initExportMenu() qui teste déjà typeof avant de s'exécuter)
 const ABOUT={init:()=>{}};
 function initExportDialog(){}
+function _checkForUpdate(){}
+
+// locales.js donne des chemins relatifs à l'app réelle (assets/search/...) ;
+// cette page vit un niveau plus bas (renderer-web-demo/), d'où le préfixe.
+// Patché ici plutôt que dans locales.js : fichier partagé avec Search/Wires,
+// jamais touché pour un besoin propre à cette démo.
+for(const lang of ['en','fr','es']){
+  const l=WIRES_LOCALES.renderer[lang];
+  if(l&&l.search_logo_src) l.search_logo_src='../renderer/'+l.search_logo_src;
+}

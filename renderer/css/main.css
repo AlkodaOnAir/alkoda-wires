@@ -379,6 +379,11 @@ html, body {
 .node.lit .node-box { border-color: rgba(255,200,0,.5); box-shadow: 0 0 0 1px rgba(255,200,0,.15), 0 6px 24px rgba(0,0,0,.7); }
 .node.dim .node-box { opacity: .12; transform: none; }
 .node.route-dim .node-box { opacity: .08; }
+/* Hors route pendant une animation : réellement inerte, pas juste estompé — sinon
+   le curseur change et l'appareil reste cliquable/déplaçable, ce qui n'a pas de sens
+   pendant qu'une route anime. Le point sans fil garde sa propre règle pointer-events:
+   auto (plus haut, .port-dot-node.port-wireless), qui l'emporte grâce à sa spécificité. */
+.node.route-dim { pointer-events: none; }
 /* Calque de lueur — copie de la boîte posée derrière l'appareil, invisible au repos :
    seule son ombre portée dépasse et forme le halo (voir _glowNode dans routes.js).
    Le z-index négatif est indispensable : un enfant positionné se peint APRÈS le contenu
@@ -627,8 +632,11 @@ html, body {
 #mm-canvas { width: 100%; height: 100%; display: block; }
 
 /* Zoom controls */
-#zoom-controls {
+#canvas-bottom-controls {
   position: absolute; bottom: 10px; right: 10px; z-index: 20;
+  display: flex; align-items: center; gap: 8px;
+}
+#zoom-controls {
   display: flex; align-items: center; gap: 4px;
   background: var(--bg2); border: 1px solid var(--border2); border-radius: 4px;
   padding: 3px 6px;
@@ -638,6 +646,12 @@ html, body {
   cursor: pointer; padding: 2px 6px; transition: color .15s; font-family: var(--mono);
 }
 .zoom-btn:hover { color: var(--text); }
+.zoom-btn.active { color: var(--accent); }
+.zoom-cursor-btn {
+  background: var(--bg2); border: 1px solid var(--border2); border-radius: 4px;
+  width: 28px; height: 28px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+}
 #zoom-val { font-family: var(--mono); font-size: 10px; color: var(--textdim); min-width: 38px; text-align: center; }
 
 /* Corners */
@@ -819,6 +833,79 @@ html, body {
 }
 .confirm-btn-ok.danger:hover { background: rgba(255,60,60,.25); }
 
+#relink-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 300000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+#relink-overlay.visible { display: flex; }
+.relink-modal {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 24px 28px 20px;
+  min-width: 320px;
+  max-width: 460px;
+  box-shadow: 0 12px 48px rgba(0,0,0,.6);
+}
+.relink-logo { display: block; height: 24px; width: auto; margin: 0 0 16px; }
+.relink-title {
+  font-family: var(--body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 8px;
+}
+.relink-msg {
+  font-family: var(--body);
+  font-size: 13px;
+  color: var(--textdim);
+  margin: 0 0 20px;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+.relink-notfound {
+  font-family: var(--body);
+  font-size: 12px;
+  color: #ff8888;
+  margin: -8px 0 20px;
+  line-height: 1.5;
+}
+.relink-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+#relink-cancel {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 5px;
+  padding: 7px 18px;
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 13px;
+  cursor: pointer;
+}
+#relink-cancel:hover { background: rgba(255,255,255,.13); }
+.relink-btn-ok {
+  background: rgba(0,212,255,.15);
+  border: 1px solid rgba(0,212,255,.5);
+  border-radius: 5px;
+  padding: 7px 20px;
+  color: var(--accent);
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.relink-btn-ok:hover { background: rgba(0,212,255,.25); }
+.relink-btn-ok:disabled { opacity: .4; cursor: not-allowed; }
+
 .ip-btn {
   width: 100%; padding: 7px; background: var(--accent); border: none; border-radius: 4px;
   color: #000; font-family: var(--mono); font-size: 11px; font-weight: 700;
@@ -862,6 +949,13 @@ html, body {
 .route-info { flex: 1; min-width: 0; }
 .route-title { font-family: var(--body); font-size: 13px; font-weight: 600; color: var(--text); }
 .route-badge { font-family: var(--mono); font-size: 11px; color: var(--textdim); margin-top: 2px; }
+.route-type-chip { display: inline-block; padding: 1px 5px; border: 1px solid rgba(255,255,255,.2); border-radius: 4px; }
+.route-type-del {
+  position: absolute; top: -6px; right: -6px; width: 14px; height: 14px; border-radius: 50%;
+  background: #1a2540; border: 1px solid rgba(255,255,255,.3); color: var(--textdim);
+  font-size: 10px; line-height: 12px; text-align: center; cursor: pointer;
+}
+.route-type-del:hover { background: rgba(255,60,60,.25); border-color: #ff5555; color: #fff; }
 .route-cables-list { padding: 0 16px 10px 28px; display: flex; flex-direction: column; gap: 4px; }
 .route-cable-row { display: flex; align-items: center; gap: 4px; }
 .route-cable-row.rcc-new { box-shadow: 0 0 0 1px rgba(255,217,61,.7); border-radius: 3px; background: rgba(255,217,61,.07); }
@@ -914,6 +1008,10 @@ html, body {
 .modal-overlay.open { opacity: 1; pointer-events: none; }
 .modal-overlay.open .modal-box { pointer-events: all; }
 #modal-pick-image.open { z-index: 10010; }
+/* Ouverte DEPUIS #modal-pick-image (10010), qui se masque le temps de la
+   recherche — les deux ne devraient donc jamais être visibles ensemble.
+   Garde-fou : si ça arrivait un jour, c'est celle-ci qui doit gagner. */
+#modal-device-search.open { z-index: 10020; }
 #export-big-preview.open { z-index: 10010; }
 .modal-box {
   background: var(--panel); border: 1px solid var(--border2); border-radius: 10px;
@@ -1054,6 +1152,9 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 }
 .rm-bg-btn:hover:not(:disabled) { background: rgba(0,212,255,.08); border-color: rgba(0,212,255,.5); }
 .rm-bg-btn:disabled { opacity: .5; cursor: not-allowed; }
+/* Aucun autre appareil ne partage cette image : la numérotation ne veut rien
+   dire, le champ reste en place (pas de saut des champs voisins) mais grisé. */
+#an-number:disabled { opacity: .4; cursor: not-allowed; border-color: var(--border) !important; color: var(--textdim) !important; }
 
 /* Port dots sur les nœuds canvas — cachés par défaut, visibles au drag câble */
 .port-dot-node {
@@ -1117,6 +1218,21 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 
 /* Tous les dots visibles en mode câble */
 .cable-add-mode .port-dot-node { opacity: 1; }
+
+/* Nom du type de port : élément FRÈRE du point (portsLayer), pas enfant — le point
+   applique clip-path:circle() (règle .cab-clickable/.cab-free ci-dessous) qui
+   rognerait tout contenu enfant. Visibilité pilotée uniquement par ses PROPRES
+   classes, posées depuis newcable.js : lbl-available (_refreshPortDotState — port
+   cible disponible) et label-crowded (_refreshPortLabelCrowding — voisin affiché
+   trop proche à l'écran). Jamais affiché sur un port déjà utilisé ou de type
+   incompatible, même si son point reste visible (estompé). */
+.port-dot-type-lbl { display: none; }
+.cable-add-mode .port-dot-type-lbl.lbl-available {
+  display: block;
+}
+.cable-add-mode .port-dot-type-lbl.lbl-available.label-crowded {
+  display: none;
+}
 
 /* Port libre et compatible → cliquable */
 .cable-add-mode .port-dot-node.cab-clickable,
@@ -1343,9 +1459,19 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 .port-list-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
 .port-list-del { margin-left:auto; background:none; border:none; color:var(--textdim); cursor:pointer; font-size:12px; padding:0 2px; }
 .port-list-del:hover { color:#ff4444; }
+.port-name-dup-blink { animation: port-name-dup-blink 1s ease-in-out infinite; }
+@keyframes port-name-dup-blink {
+  0%, 100% { border-color:#3a4d6d; }
+  50%      { border-color:#ff4444; }
+}
+.pdot-dup-blink { animation: pdot-dup-blink 1s ease-in-out infinite; }
+@keyframes pdot-dup-blink {
+  0%, 100% { border-color:#fff; }
+  50%      { border-color:#ff2222; }
+}
 
 /* Crop overlay */
-.crop-dim { position:absolute; background:rgba(0,0,0,.55); pointer-events:none; }
+.crop-dim { position:absolute; background:rgba(0,0,0,.80); pointer-events:none; }
 .crop-handle {
   position:absolute; width:10px; height:10px;
   background:#fff; border:1.5px solid #000; border-radius:2px;
@@ -1604,6 +1730,20 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 .export-preset-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.mini-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(184,204,236,.25);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  vertical-align: middle;
+  animation: mini-spin .6s linear infinite;
+}
+@keyframes mini-spin {
+  to { transform: rotate(360deg); }
 }
 
 .export-dpi-row {
@@ -2091,6 +2231,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   cursor: pointer; transition: all .15s;
 }
 .license-dev-btn:hover { background: rgba(255,200,0,.18); border-color: #ffc107; }
+/* /DEV_ONLY */
 
 /* ── HTML Export Progress Overlay ───────────────────────────── */
 #html-ep-overlay {
@@ -2138,4 +2279,3 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   font-family: var(--body); font-size: 11px; color: var(--textdim);
   line-height: 1.5; min-height: 16px;
 }
-/* /DEV_ONLY */

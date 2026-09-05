@@ -3,22 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex, nofollow, noarchive">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'self';">
+  <!-- ⚠️ CSP propre à CETTE démo web (diverge volontairement de celle de l'app
+       Electron, index.html — jamais l'inverse, ce fichier n'est jamais recopié
+       vers l'app réelle) :
+       - frame-src 'none' : ni <webview> Google (assistant débranché dans la
+         démo, voir browser-demo-entry.tsx) ni aperçu Pack List (module exclu
+         de cette démo) — rien ne charge de cadre ici.
+       - connect-src limité au seul projet Supabase de la démo : le renderer
+         de l'app réelle ne fait aucune requête réseau (tout passe par IPC),
+         mais cette démo, elle, appelle Supabase en fetch() direct depuis le
+         navigateur (browser-demo-entry.tsx) — en lecture seule, sans identité
+         ni session (audit du 2026-09-05). Les PHOTOS du catalogue restent
+         hébergées chez chaque fabricant/revendeur d'origine (adresses
+         imprévisibles) mais ne sont plus jamais demandées directement par le
+         navigateur : la fonction image-relay les récupère côté serveur et
+         nous les renvoie depuis CE MÊME projet Supabase — d'où cette règle
+         resserrée (conçue avec Codex le 2026-09-05, remplace la version
+         élargie à tout hôte HTTPS testée plus tôt le même jour). -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; media-src 'self' data: blob:; font-src 'self' https://fonts.gstatic.com; frame-src 'none'; connect-src https://isputddtxoaxmjdxuxlt.supabase.co;">
   <title>Wires</title>
   <link rel="stylesheet" href="../renderer/css/main.css">
+  <!-- Recherche d'images. Feuille entièrement cadrée sous .searchImagesRoot :
+       aucune règle globale, elle ne peut donc pas atteindre le canevas, l'en-tête
+       ni les modales de Wires. Chargée APRÈS main.css pour que, à spécificité
+       égale, ce soit malgré tout Wires qui garde la main sur ses propres classes. -->
+  <link rel="stylesheet" href="../renderer/search-ui/search.css">
   <style>
-    /* No CSS scaling here — sizing for embedding is handled by the outer
-       <iframe> in embed.html instead (see that file for why). */
-    html, body { background: #05070f; }
-    /* No language switching in the demo — English only */
+    /* Pas de changement de langue dans la démo — anglais uniquement. Retrouvé
+       le 2026-09-05 en comparant à la vraie version déjà en ligne : sans cette
+       règle, ce bouton en trop poussait Annuler/Rétablir hors de la boîte
+       réduite que la page du site donne à la démo (overflow:hidden côté site,
+       jamais corrigé ici). */
     #lang-toggle { display: none !important; }
   </style>
 </head>
 <body>
 
 <!-- ── Écran de démarrage ───────────────────────────────────── -->
-<div id="demo-frame">
 <div id="startup-screen" class="hidden">
   <div id="startup-inner">
     <div id="startup-logo">
@@ -48,6 +69,10 @@
     <!-- Nom du projet -->
     <div class="h-project-name" id="h-project-name" data-i18n-title="rename_title" title="Click to rename project">
       <span id="h-project-label">Untitled</span>
+      <!-- Marqueur « modifications non enregistrées ». Élément séparé du libellé, qui
+           est remplacé par un champ de saisie pendant le renommage : l'étoile ne peut
+           donc jamais être sélectionnée, effacée, ni enregistrée dans le nom. -->
+      <span class="h-project-star" id="h-project-star" hidden>*</span>
       <span class="h-project-edit-icon">✎</span>
     </div>
 
@@ -114,10 +139,30 @@
     <div class="corner br"></div>
 
     <div id="canvas-root">
+      <!-- z-index en CSS (pas ici) : il doit pouvoir être surélevé au-dessus des
+           étiquettes quand un câble est sélectionné — voir #cables-svg.cable-on-top -->
       <svg id="cables-svg"
-           style="position:absolute;top:0;left:0;overflow:visible;width:6008px;height:3172px;pointer-events:none;z-index:15">
+           style="position:absolute;top:0;left:0;overflow:visible;width:6008px;height:3172px;pointer-events:none">
         <defs>
           <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+      </svg>
+      <!-- Calque des points lumineux (voir _flowSvg dans routes.js). Séparé du SVG des
+           câbles : le navigateur réexamine l'inventaire COMPLET d'une couche dès qu'un
+           seul élément y bouge, et le canevas en contient des milliers. Isolés ici, les
+           points n'entraînent plus que le réexamen de ce calque-ci.
+           Même géométrie que #cables-svg et pas plus de viewBox que lui : les coordonnées
+           renvoyées par les tracés de câbles y sont valables telles quelles.
+           Transparent à la souris comme le SVG des câbles — rien ici n'est cliquable.
+           Son filtre est une copie de #glow sous un autre identifiant, pour qu'il ne
+           dépende d'aucun élément extérieur. -->
+      <svg id="flow-svg"
+           style="position:absolute;top:0;left:0;overflow:visible;width:6008px;height:3172px;pointer-events:none">
+        <defs>
+          <filter id="glow-flow" x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="3" result="blur"/>
             <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
@@ -136,10 +181,13 @@
       <canvas id="mm-canvas" width="160" height="90"></canvas>
     </div>
 
-    <div id="zoom-controls">
-      <button class="zoom-btn" id="btn-zoom-out">−</button>
-      <span id="zoom-val">100%</span>
-      <button class="zoom-btn" id="btn-zoom-in">+</button>
+    <div id="canvas-bottom-controls">
+      <button class="zoom-btn zoom-cursor-btn" id="btn-zoom-cursor" data-i18n-title="zoom_on_cursor_title" title="Zoom on cursor position"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/></svg></button>
+      <div id="zoom-controls">
+        <button class="zoom-btn" id="btn-zoom-out">−</button>
+        <span id="zoom-val">100%</span>
+        <button class="zoom-btn" id="btn-zoom-in">+</button>
+      </div>
     </div>
   </main>
 
@@ -276,7 +324,7 @@
 <!-- ROUTES PANEL -->
 <aside id="routes-panel">
   <div class="rp-header">
-    <span class="rp-title" data-i18n="routes">SIGNAL ROUTES</span>
+    <span class="rp-title" data-i18n="routes" data-i18n-title="trace_all_routes">SIGNAL ROUTES</span>
     <button id="btn-routes-close">✕</button>
   </div>
   <div class="rp-body" id="routes-list"></div>
@@ -312,10 +360,17 @@
       <div class="form-field">
         <label class="form-label" data-i18n="image_label">Image (PNG / JPG / WebP — optional)</label>
         <div id="an-img-preview" class="img-drop-zone" style="display:flex;gap:0;padding:0;overflow:hidden;min-height:120px;position:relative">
-          <!-- Gauche : importer une image -->
-          <div id="an-img-import" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;padding:12px;border-right:1px solid var(--border2);transition:background .15s">
-            <span style="font-size:24px;opacity:.5">📁</span>
-            <span style="font-family:var(--mono);font-size:10px;color:var(--textdim);letter-spacing:1px;text-align:center" data-i18n="import_image_title">IMPORT IMAGE</span>
+          <!-- Gauche : importer une image — scindée en deux dès qu'une image/forme
+               est choisie : le déclencheur d'import (#an-img-import) reste toujours
+               accessible à côté de l'aperçu (#an-prev-overlay), jamais recouvert. -->
+          <div style="flex:1;display:flex;gap:0;min-width:0">
+            <div id="an-img-import" style="flex:1;min-width:0;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;padding:12px;border-right:1px solid var(--border2);transition:background .15s;user-select:none;-webkit-user-select:none">
+              <span style="font-size:24px;opacity:.5">📁</span>
+              <span style="font-family:var(--mono);font-size:10px;color:var(--textdim);letter-spacing:1px;text-align:center" data-i18n="import_image_title">IMPORT IMAGE</span>
+            </div>
+            <div id="an-prev-overlay" style="display:none;flex:1;min-width:0;position:relative;border-right:1px solid var(--border2);background:var(--bg2);cursor:pointer" title="">
+              <img id="an-prev-img" style="width:100%;height:100%;object-fit:contain;display:block">
+            </div>
           </div>
           <!-- Droite : formes génériques -->
           <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px">
@@ -336,12 +391,7 @@
               <span style="font-size:9px;color:var(--textdim);font-family:var(--mono)" data-i18n="shape_triangle">Triangle</span>
             </button>
           </div>
-          <!-- Overlay image choisie — s'affiche par-dessus les deux colonnes -->
-          <div id="an-prev-overlay" style="display:none;position:absolute;inset:0;background:var(--bg2)">
-            <img id="an-prev-img" style="width:100%;height:100%;object-fit:contain;display:block">
-          </div>
         </div>
-        <input type="file" id="an-img-file" accept="image/*" style="display:none">
       </div>
 
     </div>
@@ -358,7 +408,7 @@
 <div id="img-group-popup" style="display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;cursor:pointer">
   <div style="background:#12202a;border:1.5px solid var(--accent);border-radius:8px;padding:16px 20px;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.6);display:flex;gap:12px;align-items:flex-start">
     <span style="font-size:20px;flex:none">🔗</span>
-    <span id="img-group-popup-text" style="font-size:13px;line-height:1.5;color:var(--text)"></span>
+    <span id="img-group-popup-text" style="font-size:13px;line-height:1.5;color:var(--text);white-space:pre-line"></span>
   </div>
 </div>
 
@@ -380,44 +430,61 @@
 <!-- BG REMOVAL MODAL -->
 <!-- Mini-dialog : choisir image ou forme générique -->
 <div class="modal-overlay" id="modal-pick-image">
-  <div class="modal-box" style="width:520px;max-width:96vw">
+  <div class="modal-box" style="width:560px;max-width:96vw">
     <div class="modal-header">
       <span class="modal-title" data-i18n="pick_image_title">⚙ IMAGE</span>
       <button class="modal-close" id="pick-image-cancel">✕</button>
     </div>
-    <div style="display:flex;gap:12px;padding:16px">
-      <!-- Gauche : importer -->
-      <div style="flex:1;display:flex;flex-direction:column;gap:8px">
-        <div style="font-family:var(--mono);font-size:11px;color:var(--textdim);letter-spacing:1px" data-i18n="import_image_title">IMPORT IMAGE</div>
-        <button id="pick-image-import" style="flex:1;min-height:120px;background:var(--bg3);border:1px dashed var(--border2);border-radius:6px;color:var(--text);font-size:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
-          <span style="font-size:28px">📁</span>
+    <div id="pick-image-body" style="display:flex;gap:12px;padding:16px">
+      <!-- Gauche : rechercher en ligne (haut) + importer en local (bas) -->
+      <div style="flex:1.25;display:flex;flex-direction:column;gap:12px">
+        <button id="pick-image-search" data-i18n-title="pick_image_search" title="Search for a device image" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:14px 10px;cursor:pointer;display:flex;align-items:center;justify-content:center">
+          <img id="pick-image-search-logo" data-i18n-src="search_logo_src" src="../renderer/assets/search/search_image-en.png" alt="" style="width:100%;max-width:250px;height:auto;display:block">
+        </button>
+        <button id="pick-image-import" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4BA3E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
           <span data-i18n="browse_ellipsis">Browse…</span>
         </button>
-        <input type="file" id="pick-image-file" accept="image/png,image/jpeg,image/webp" style="display:none">
       </div>
       <!-- Droite : formes génériques -->
       <div style="flex:1;display:flex;flex-direction:column;gap:8px">
-        <div style="font-family:var(--mono);font-size:11px;color:var(--textdim);letter-spacing:1px" data-i18n="generic_shape_title">GENERIC SHAPE</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1">
           <button class="pick-shape-btn" data-shape="rectangle" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px">
-            <svg width="44" height="28" viewBox="0 0 44 28"><rect x="2" y="2" width="40" height="24" rx="3" fill="none" stroke="var(--textdim)" stroke-width="2"/></svg>
+            <svg width="44" height="28" viewBox="0 0 44 28"><rect x="2" y="2" width="40" height="24" rx="3" fill="none" stroke="#4BA3E5" stroke-width="2"/></svg>
             <span style="font-size:11px;color:var(--textdim)" data-i18n="shape_rectangle">Rectangle</span>
           </button>
           <button class="pick-shape-btn" data-shape="square" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px">
-            <svg width="32" height="32" viewBox="0 0 32 32"><rect x="2" y="2" width="28" height="28" rx="3" fill="none" stroke="var(--textdim)" stroke-width="2"/></svg>
+            <svg width="32" height="32" viewBox="0 0 32 32"><rect x="2" y="2" width="28" height="28" rx="3" fill="none" stroke="#4BA3E5" stroke-width="2"/></svg>
             <span style="font-size:11px;color:var(--textdim)" data-i18n="shape_square">Square</span>
           </button>
           <button class="pick-shape-btn" data-shape="circle" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px">
-            <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="none" stroke="var(--textdim)" stroke-width="2"/></svg>
+            <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="none" stroke="#4BA3E5" stroke-width="2"/></svg>
             <span style="font-size:11px;color:var(--textdim)" data-i18n="shape_circle">Circle</span>
           </button>
           <button class="pick-shape-btn" data-shape="triangle" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px">
-            <svg width="32" height="32" viewBox="0 0 32 32"><polygon points="16,3 30,29 2,29" fill="none" stroke="var(--textdim)" stroke-width="2"/></svg>
+            <svg width="32" height="32" viewBox="0 0 32 32"><polygon points="16,3 30,29 2,29" fill="none" stroke="#4BA3E5" stroke-width="2"/></svg>
             <span style="font-size:11px;color:var(--textdim)" data-i18n="shape_triangle">Triangle</span>
           </button>
         </div>
       </div>
     </div>
+    <div id="pick-image-restore-internet" style="display:none;margin-top:-10px;padding:0 16px 16px;text-align:center">
+      <button class="ip-btn" id="pick-image-restore-internet-btn" style="width:auto;background:rgba(255,60,60,.15);color:#ff5555;border:1px solid rgba(255,60,60,.3);padding-left:20px;padding-right:20px" data-i18n="restore_internet">⟳ Restore Internet icon</button>
+    </div>
+  </div>
+</div>
+
+<!-- Recherche d'image en ligne — conteneur d'accueil de Search Images.
+     #search-images-root est volontairement VIDE : le jour de l'intégration,
+     le renderer React de Search Images s'y monte, et rien d'autre ne bouge
+     ici (voir _openDeviceSearch dans library.js pour le contrat d'échange). -->
+<div class="modal-overlay" id="modal-device-search">
+  <div class="modal-box" style="width:1100px;max-width:98vw;height:80vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <span class="modal-title" data-i18n="device_search_title">⚙ IMAGE SEARCH</span>
+      <button class="modal-close" id="device-search-cancel">✕</button>
+    </div>
+    <div id="search-images-root" style="flex:1;min-height:0;overflow:auto"></div>
   </div>
 </div>
 
@@ -437,18 +504,18 @@
         <div id="rmbg-original" style="height:130px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:4px;background:var(--bg3)">
           <img id="rmbg-orig-img" style="max-width:100%;max-height:100%;object-fit:contain">
         </div>
-        <div class="rmbg-slider-row">
-          <label class="rmbg-label"><span data-i18n="tolerance">Tolerance</span> <span id="rmbg-tol-val" class="rmbg-val">38</span></label>
-          <input type="range" id="rmbg-tol" class="rmbg-slider" min="0" max="120" value="38" step="1">
+        <div class="rmbg-slider-row" id="rmbg-tol-row">
+          <label class="rmbg-label"><span data-i18n="tolerance">Tolerance</span> <span id="rmbg-tol-val" class="rmbg-val">19</span></label>
+          <input type="range" id="rmbg-tol" class="rmbg-slider" min="0" max="100" value="19" step="1">
         </div>
         <div style="display:flex;align-items:center;gap:8px">
-          <button class="rm-bg-btn" id="rmbg-reset" style="width:auto;padding:4px 10px" data-i18n="reset">↺ Reset</button>
           <span id="rmbg-status" style="font-family:var(--mono);font-size:11px;color:var(--textdim)"></span>
         </div>
 
         <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--textdim)" data-i18n="preview_crop">PREVIEW — drag handles to crop</div>
         <div id="rmbg-preview" style="height:130px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:4px;background-image:repeating-conic-gradient(#1a2235 0% 25%,#0c1020 0% 50%);background-size:16px 16px;position:relative;flex-shrink:0">
           <img id="rmbg-prev-img" style="max-width:100%;max-height:100%;object-fit:contain;display:block">
+          <button id="rmbg-crop-expand" data-i18n-title="rmbg_crop_expand" title="Enlarge" style="position:absolute;top:6px;right:6px;z-index:30;width:24px;height:24px;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.55);color:#e6ecf5;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:all">⛶</button>
           <div id="crop-overlay" style="display:none;position:absolute;inset:0;pointer-events:none">
             <div id="crop-dim-top"    class="crop-dim"></div>
             <div id="crop-dim-bottom" class="crop-dim"></div>
@@ -488,6 +555,7 @@
         </div>
         <div id="rmbg-ports-zone" style="position:relative;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;cursor:crosshair;height:260px;flex-shrink:0;overflow:hidden">
           <img id="rmbg-ports-img" style="width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none;display:block">
+          <button id="rmbg-ports-expand" data-i18n-title="rmbg_ports_expand" title="Enlarge" style="position:absolute;top:6px;right:6px;z-index:30;width:24px;height:24px;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.55);color:#e6ecf5;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:all">⛶</button>
         </div>
         <!-- Shape color picker — visible only in shape mode -->
         <div id="rmbg-shape-color" style="display:none;padding:4px 0 2px">
@@ -506,11 +574,15 @@
           </div>
         </div>
         <div id="rmbg-ports-list" style="display:flex;flex-direction:column;gap:3px;overflow-y:auto;height:120px;min-height:120px;max-height:120px;flex-shrink:0"></div>
-        <div style="border-top:1px solid var(--border);padding-top:6px;display:flex;flex-direction:column;gap:5px">
+        <div id="rmbg-ports-footer" style="border-top:1px solid var(--border);padding-top:6px;display:flex;flex-direction:column;gap:5px">
           <div style="display:flex;gap:6px">
             <button id="rmbg-align-h" class="rm-bg-btn" disabled style="width:auto;padding:3px 10px;opacity:0.4" data-i18n="align_h">Align H</button>
             <button id="rmbg-align-v" class="rm-bg-btn" disabled style="width:auto;padding:3px 10px;opacity:0.4" data-i18n="align_v">Align V</button>
           </div>
+          <label id="rmbg-grid-toggle-row" style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--textdim);cursor:pointer;user-select:none">
+            <input type="checkbox" id="rmbg-grid-toggle">
+            <span data-i18n="rmbg_grid_snap">Grid</span>
+          </label>
           <div style="font-family:var(--mono);font-size:12px;color:var(--textdim);line-height:1.7">
             <div data-i18n="click_inst">Click → place · Shift+click → select · Drag → select area</div>
             <div data-i18n="align_inst">Align H = same row · Align V = same column</div>
@@ -527,8 +599,8 @@
   </div>
 </div>
 
-<div id="ctt"></div>
 
+<div id="ctt"></div>
 
 <script src="web-stub.js"></script>
 <script src="../renderer/js/logger.js"></script>
@@ -553,8 +625,15 @@
 <script src="../renderer/js/zones.js"></script>
 <script src="../renderer/js/subproject.js"></script>
 <script src="../renderer/js/colors.js"></script>
+<!-- Recherche d'images : publie window.SearchImages (mount/unmount) au chargement.
+     Placé en dernier — library.js teste sa présence au moment du clic, pas au
+     chargement, donc l'ordre n'a pas d'importance pour lui ; et si ce bundle
+     venait à manquer (oubli de `npm run build:search`), tout le reste de Wires
+     est déjà en place et la modale affiche un repli explicite. -->
+<script src="../renderer/search-ui/search.js"></script>
 <script src="demo-data.js"></script>
 <script src="demo-loader.js"></script>
+
 
 <!-- ── Keyboard Shortcuts dialog ─────────────────────────────── -->
 <div id="shortcuts-overlay" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.65);align-items:center;justify-content:center">
@@ -569,6 +648,7 @@
         <div class="sc-row"><kbd>Ctrl</kbd>+<kbd>O</kbd><span data-i18n="menu_open">Open</span></div>
         <div class="sc-row"><kbd>Ctrl</kbd>+<kbd>S</kbd><span data-i18n="menu_save">Save</span></div>
         <div class="sc-row"><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd><span data-i18n="menu_save_as">Save as</span></div>
+        <div class="sc-row"><kbd>Ctrl</kbd>+<kbd>E</kbd><span data-i18n="sc_export_pdf">Export PDF</span></div>
         <div style="font-size:10px;letter-spacing:.1em;color:var(--textdim);margin-bottom:8px;margin-top:14px" data-i18n="sc_edition">EDIT</div>
         <div class="sc-row"><kbd>Ctrl</kbd>+<kbd>Z</kbd><span data-i18n="menu_undo">Undo</span></div>
         <div class="sc-row"><kbd>Ctrl</kbd>+<kbd>C</kbd><span data-i18n="menu_copy">Copy</span></div>
@@ -594,6 +674,8 @@
   </div>
 </div>
 
+
+
 <!-- Custom confirm dialog -->
 <div id="confirm-overlay">
   <div class="confirm-modal">
@@ -605,7 +687,9 @@
   </div>
 </div>
 
-</div>
+<!-- Reliaison d'un projet récent introuvable (fichier déplacé/renommé) -->
+
+<!-- ── Welcome Pro popup ── -->
 
 </body>
 </html>
