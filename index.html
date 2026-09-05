@@ -19,6 +19,26 @@ lang_es_href: "es/index.html"
 <html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (() => {
+      if (location.pathname !== "/" && location.pathname !== "/index.html") return;
+
+      let language;
+      try {
+        language = localStorage.getItem("wires_lang");
+      } catch (error) {}
+
+      if (!["en", "fr", "es"].includes(language)) {
+        const browserLanguage = (navigator.language || "en").toLowerCase();
+        language = browserLanguage.startsWith("fr") ? "fr" :
+          browserLanguage.startsWith("es") ? "es" : "en";
+      }
+
+      if (language === "fr" || language === "es") {
+        location.replace(`/${language}/${location.search}${location.hash}`);
+      }
+    })();
+  </script>
   <title>Wires | AV Signal Flow Diagram Software</title>
   <meta name="description" content="Wires is AV signal flow diagram software for clear AV wiring diagrams and audiovisual system documentation with real devices, routes and exports.">
   <meta name="robots" content="index, follow, max-image-preview:large">
