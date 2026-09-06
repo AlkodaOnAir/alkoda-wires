@@ -127,7 +127,10 @@
     if (value === "accepted") enableAnalytics();
     else disableAnalytics();
     closeBanner();
-    settingsButton.focus();
+    // { preventScroll: true } : ce bouton vit dans le pied de page — sans cette
+    // option, lui donner le focus fait défiler toute la page jusqu'en bas à
+    // chaque choix (accepter ou refuser), juste pour amener ce bouton à l'écran.
+    settingsButton.focus({ preventScroll: true });
   }
 
   function addStyles() {
@@ -187,8 +190,8 @@
       <strong id="cookie-consent-title" data-cookie-title></strong>
       <p data-cookie-text></p>
       <div class="cookie-consent-actions">
-        <button type="button" class="cookie-choice" data-cookie-accept></button>
         <button type="button" class="cookie-choice" data-cookie-refuse></button>
+        <button type="button" class="cookie-choice" data-cookie-accept></button>
       </div>
     `;
     banner.querySelector("[data-cookie-accept]").addEventListener("click", () => choose("accepted"));

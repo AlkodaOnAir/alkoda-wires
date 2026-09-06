@@ -178,6 +178,24 @@ function initDemoLoaders() {
       cleanup();
       wrapper.classList.remove("is-loading");
       wrapper.classList.add("is-ready");
+
+      // Un clic à l'intérieur d'une <iframe> ne lui donne pas le focus clavier tout
+      // seul (comportement normal des iframes, pas un bug de Wires) : sans ça, la
+      // barre d'Espace (pause d'une animation dans la démo) est captée par CETTE
+      // page à la place — au mieux sans effet, au pire elle fait défiler la page
+      // (comportement par défaut du navigateur) ou réactive un bouton qui aurait
+      // gardé le focus (ex: le bouton plein écran). Focus donné dès que la démo est
+      // prête, et redonné à chaque clic à l'intérieur — même origine (allow-same-
+      // origin), donc contentDocument est atteignable directement, comme le fait déjà
+      // hasRenderedDemo() plus haut.
+      iframe.focus();
+      try {
+        iframe.contentDocument?.addEventListener("mousedown", () => iframe.focus());
+      } catch (error) {
+        // Repli silencieux : au pire le focus initial ci-dessus suffit pour la
+        // première interaction, sans ça la démo reste utilisable, juste moins
+        // robuste après un clic ailleurs sur la page.
+      }
     };
 
     const hasRenderedDemo = () => {
@@ -257,6 +275,14 @@ function initDemoFullscreen() {
       } catch (error) {
         console.warn("Wires demo full screen unavailable", error);
       }
+    });
+    // Un bouton natif active son clic sur la barre d'Espace — normalement utile,
+    // mais l'Espace sert aussi à mettre en pause une animation DANS la démo : si ce
+    // bouton a le focus pour une raison quelconque (constaté sans même l'avoir
+    // cliqué), Espace ouvre/ferme le plein écran au lieu d'atteindre la démo. Un
+    // clic à la souris reste le seul moyen d'activer ce bouton.
+    button.addEventListener("keydown", (event) => {
+      if (event.code === "Space") event.preventDefault();
     });
   });
 
