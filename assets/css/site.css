@@ -653,6 +653,9 @@ h3{color:#fff}
   border:0;
   background:#000;
 }
+.youtube-modal-dialog .video-modal-close{
+  top:52px;
+}
 
 .try-hero{padding-bottom:42px}
 .try-hero + .contact{padding-top:42px}
