@@ -1,6 +1,7 @@
 en:
   nav_home: "Home"
   nav_features: "Features"
+  nav_tutorials: "Tutorials"
   nav_try: "Try Wires"
   nav_help: "Help"
   nav_contact: "Contact"
@@ -16,6 +17,7 @@ en:
 fr:
   nav_home: "Accueil"
   nav_features: "Fonctions"
+  nav_tutorials: "Tutoriels"
   nav_try: "Tester Wires"
   nav_help: "Aide"
   nav_contact: "Contact"
@@ -31,6 +33,7 @@ fr:
 es:
   nav_home: "Inicio"
   nav_features: "Funciones"
+  nav_tutorials: "Tutoriales"
   nav_try: "Probar Wires"
   nav_help: "Ayuda"
   nav_contact: "Contacto"

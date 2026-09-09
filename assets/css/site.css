@@ -71,6 +71,7 @@ section{padding:88px max(22px,calc((100vw - var(--max)) / 2))}
   border-bottom:1px solid var(--line-soft);
   backdrop-filter:blur(18px);
 }
+.brand{flex:0 0 auto}
 .brand img{height:36px;width:auto}
 .site-nav{display:flex;align-items:center;gap:22px;color:var(--muted);font-size:14px;font-weight:700}
 .site-nav a{white-space:nowrap}
@@ -561,6 +562,97 @@ h3{color:#fff}
 .story-row img,.story-row video{width:100%;height:360px;display:block}
 .story-row img{object-fit:cover}
 .story-row video{object-fit:contain}
+
+.tutorials-hero{padding-bottom:42px}
+.page-hero.tutorials-hero>p.tutorials-languages{font-size:12px;margin-top:-14px}
+.tutorials-list{
+  display:grid;
+  gap:28px;
+  padding-top:30px;
+  padding-bottom:42px;
+}
+.tutorial-row{grid-template-columns:1.05fr .95fr;align-items:start}
+.tutorial-row figure{line-height:0}
+.tutorial-copy h2{font-size:clamp(24px,2.4vw,36px);line-height:1.12}
+.tutorial-copy p:not(.kicker){margin-bottom:0}
+.tutorial-copy p:not(.kicker)+p:not(.kicker){margin-top:6px}
+.tutorial-video-button{
+  position:relative;
+  display:block;
+  width:100%;
+  padding:0;
+  overflow:hidden;
+  border:0;
+  background:#050910;
+  color:#fff;
+  cursor:pointer;
+}
+.story-row .tutorial-video-button img{
+  width:100%;
+  height:auto;
+  aspect-ratio:16/9;
+  object-fit:cover;
+  display:block;
+  transition:transform .24s ease,filter .24s ease;
+}
+.tutorial-video-button::before{
+  content:"";
+  position:absolute;
+  z-index:1;
+  top:50%;
+  left:50%;
+  width:68px;
+  height:68px;
+  border:1px solid rgba(0,210,255,.72);
+  border-radius:50%;
+  background:rgba(4,8,14,.82);
+  box-shadow:0 0 34px rgba(0,210,255,.22);
+  transform:translate(-50%,-50%);
+  transition:background .2s ease,transform .2s ease;
+}
+.tutorial-play{
+  position:absolute;
+  z-index:2;
+  top:50%;
+  left:calc(50% + 3px);
+  width:0;
+  height:0;
+  border-top:12px solid transparent;
+  border-bottom:12px solid transparent;
+  border-left:19px solid var(--accent);
+  transform:translate(-50%,-50%);
+}
+.tutorial-watch-label{
+  position:absolute;
+  z-index:2;
+  right:14px;
+  bottom:14px;
+  padding:7px 10px;
+  border:1px solid rgba(142,158,181,.32);
+  border-radius:999px;
+  background:rgba(4,8,14,.8);
+  color:#fff;
+  font-family:"Share Tech Mono",monospace;
+  font-size:11px;
+  line-height:1;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.tutorial-video-button:hover img{transform:scale(1.018);filter:brightness(1.08)}
+.tutorial-video-button:hover::before{background:rgba(0,210,255,.16);transform:translate(-50%,-50%) scale(1.06)}
+.tutorial-video-button:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+.youtube-modal-dialog{
+  width:min(1120px,calc(100vw - 48px),calc((100vh - 48px) * 1.7778));
+  height:auto;
+  aspect-ratio:16/9;
+}
+.youtube-modal-dialog iframe{
+  width:100%;
+  height:100%;
+  display:block;
+  border:0;
+  background:#000;
+}
 
 .try-hero{padding-bottom:42px}
 .try-hero + .contact{padding-top:42px}
@@ -1237,6 +1329,10 @@ h3{color:#fff}
 @media(max-width:1050px){
   .downloads-layout{grid-template-columns:1fr}
   .example-download{min-height:220px}
+}
+@media(min-width:761px) and (max-width:1100px){
+  .site-header{height:auto;min-height:72px;padding-top:10px;padding-bottom:10px}
+  .site-nav{flex:1 1 auto;max-width:calc(100vw - 220px);flex-wrap:wrap;justify-content:flex-end;column-gap:18px;row-gap:6px}
 }
 @media(max-width:760px){
   section{padding:68px 18px}
