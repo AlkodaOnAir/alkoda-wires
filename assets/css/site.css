@@ -1123,6 +1123,24 @@ h3{color:#fff}
 .download-version{color:var(--muted);font-weight:800;white-space:nowrap}
 .download-row .btn{color:#fff;white-space:nowrap}
 .download-row .btn:hover{background:rgba(255,255,255,.05);color:var(--accent);transform:none}
+.download-signup-open{overflow:hidden}
+.download-signup-modal{position:fixed;inset:0;z-index:240;display:none;align-items:center;justify-content:center;padding:24px}
+.download-signup-modal.open{display:flex}
+.download-signup-backdrop{position:absolute;inset:0;background:rgba(1,5,10,.84);backdrop-filter:blur(10px)}
+.download-signup-dialog{position:relative;z-index:1;width:min(560px,calc(100vw - 48px));max-height:calc(100vh - 48px);padding:42px 40px 36px;border:1px solid rgba(0,210,255,.42);border-radius:18px;background:linear-gradient(155deg,rgba(16,30,50,.98),rgba(7,12,22,.99));box-shadow:0 28px 90px rgba(0,0,0,.68);overflow:auto;text-align:center}
+.download-signup-logo{display:block;width:112px;height:112px;object-fit:contain;margin:0 auto 14px}
+.download-signup-dialog h2{max-width:460px;margin:0 auto 14px;color:var(--text);font-size:30px;line-height:1.18}
+.download-signup-intro{margin:0 0 28px;color:var(--muted);font-size:17px;line-height:1.55}
+.download-signup-close{position:absolute;top:14px;right:14px;width:38px;height:38px;border:1px solid rgba(142,158,181,.34);border-radius:50%;background:rgba(4,8,14,.72);color:var(--text);font-size:24px;line-height:1;cursor:pointer}
+.download-signup-close:hover{border-color:rgba(0,210,255,.72);color:var(--accent)}
+.download-signup-dialog form{display:grid;gap:12px}
+.download-signup-dialog label{color:var(--text);font-size:14px;font-weight:800}
+.download-signup-dialog label span{color:var(--muted);font-weight:600}
+.download-signup-dialog input{width:100%;min-height:54px;padding:0 16px;border:1px solid rgba(142,158,181,.34);border-radius:10px;background:rgba(3,9,17,.72);color:var(--text);font:inherit;outline:none;text-align:center}
+.download-signup-dialog input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,210,255,.12)}
+.download-signup-consent{margin:0 0 6px;color:var(--muted);font-size:12px;line-height:1.5}
+.download-signup-dialog .btn{justify-content:center;width:100%;margin-top:2px}
+.download-signup-status{margin:2px 0 0;color:var(--accent);font-size:13px;line-height:1.45;text-align:center}
 .example-download{padding:30px 28px;display:flex;align-items:stretch;justify-content:center;flex-direction:column;gap:28px;border:1px solid rgba(0,212,255,.45);border-radius:20px;background:linear-gradient(160deg,rgba(0,212,255,.16),rgba(17,29,50,.82));box-shadow:var(--shadow)}
 .example-download h2{margin:0 0 8px;color:var(--text);font-size:24px}
 .example-download p{margin:0;color:var(--muted);font-size:16px;line-height:1.6}
@@ -1374,6 +1392,11 @@ h3{color:#fff}
   .download-row{grid-template-columns:1fr}
   .download-version{white-space:normal}
   .download-row .btn{justify-content:center;width:100%}
+  .download-signup-modal{padding:14px}
+  .download-signup-dialog{width:100%;max-height:calc(100vh - 28px);padding:38px 22px 26px}
+  .download-signup-logo{width:92px;height:92px}
+  .download-signup-dialog h2{font-size:25px}
+  .download-signup-intro{font-size:15px}
   .example-download{min-height:0;padding:24px}
   .example-download .btn{justify-content:center;width:100%}
   .install-grid{grid-template-columns:1fr}

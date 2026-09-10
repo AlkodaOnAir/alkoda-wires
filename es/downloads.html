@@ -172,6 +172,24 @@ lang_es_href: "downloads.html"
         </a>
       </div>
     </section>
+
+    <div class="download-signup-modal" id="download-signup-modal" aria-hidden="true">
+      <div class="download-signup-backdrop"></div>
+      <div class="download-signup-dialog" role="dialog" aria-modal="true" aria-labelledby="download-signup-title">
+        <button class="download-signup-close" type="button" data-download-signup-close="" aria-label="Cerrar">×</button>
+        <img class="download-signup-logo" src="../Logos/Logo-Downloads-carré-transparent.png" alt="">
+        <h2 id="download-signup-title">No te pierdas las próximas novedades de Wires.</h2>
+        <!-- TODO: Verify that new YouTube tutorials can be linked to Brevo mailings. -->
+        <p class="download-signup-intro">Recibe las nuevas versiones y los nuevos tutoriales directamente por correo electrónico.</p>
+        <form data-download-signup-form="" data-download-started="Descarga iniciada." data-signup-submitted="Descarga iniciada. Tu solicitud de suscripción ha sido enviada." data-brevo-action="https://d22e7af1.sibforms.com/serve/MUIFAILEjM4ZnUaHKyI90oihwmeujmGadK4hZCJkuK4r65y39XRmdauqbjJzvtdGxHLTrg40n3VqReW1QWz8lDs3cc6KgQ7qeSjuqdVe7r7SK0ZnrTPkUq9TOwKuKhKGeOD8KruGpY9eOIoydMtc4VN7M2ZlS8otqqmHbJy_IJtC9GbUQL8NP1Tqvmr6PHFiKhzzrUNd8kmlWs-dyw==" data-brevo-locale="es">
+          <label for="download-signup-email">Correo electrónico <span>(opcional)</span></label>
+          <input id="download-signup-email" name="EMAIL" type="email" inputmode="email" autocomplete="email" placeholder="tu@ejemplo.com" data-download-signup-email="">
+          <p class="download-signup-consent">Introduce tu dirección de correo electrónico para aceptar recibir las novedades de Wires por correo electrónico. Puedes darte de baja en cualquier momento.</p>
+          <button class="btn btn-primary" type="submit">Descargar Wires</button>
+          <p class="download-signup-status" data-download-signup-status="" role="status" hidden></p>
+        </form>
+      </div>
+    </div>
   </main>
 
   {% include footer-downloads.html %}

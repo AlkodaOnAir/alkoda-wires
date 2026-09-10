@@ -569,17 +569,55 @@ document.addEventListener("click", (event) => {
     });
 });
 
-document.addEventListener("click", (event) => {
-  const downloadButton = event.target.closest("a[data-download-url]");
-  if (!downloadButton) return;
-  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+let pendingDownload = null;
+let downloadSignupReturnFocus = null;
 
-  const guideHref = downloadButton.dataset.guideTarget || "";
-  const downloadUrl = downloadButton.getAttribute("href") || downloadButton.dataset.downloadUrl;
-  if (!downloadUrl) return;
+function closeDownloadSignupModal() {
+  const modal = document.getElementById("download-signup-modal");
+  if (!modal) return;
 
-  event.preventDefault();
-  trackFileDownload(downloadButton, downloadUrl);
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("download-signup-open");
+  pendingDownload = null;
+
+  if (downloadSignupReturnFocus?.isConnected) downloadSignupReturnFocus.focus();
+  downloadSignupReturnFocus = null;
+}
+
+function openDownloadSignupModal(downloadButton, downloadUrl) {
+  const modal = document.getElementById("download-signup-modal");
+  if (!modal) return false;
+
+  pendingDownload = {
+    button: downloadButton,
+    url: downloadUrl,
+    filename: downloadButton.dataset.downloadFilename || "",
+    guideHref: downloadButton.dataset.guideTarget || ""
+  };
+  downloadSignupReturnFocus = downloadButton;
+
+  const form = modal.querySelector("[data-download-signup-form]");
+  const input = modal.querySelector("[data-download-signup-email]");
+  const status = modal.querySelector("[data-download-signup-status]");
+  if (form) form.reset();
+  if (status) {
+    status.hidden = true;
+    status.textContent = "";
+  }
+
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("download-signup-open");
+  window.requestAnimationFrame(() => input?.focus());
+  return true;
+}
+
+function startPendingDownload() {
+  if (!pendingDownload) return;
+
+  const { button, url, filename, guideHref } = pendingDownload;
+  trackFileDownload(button, url);
 
   if (guideHref.startsWith("#")) {
     const guideUrl = new URL(guideHref, location.href);
@@ -590,12 +628,94 @@ document.addEventListener("click", (event) => {
   }
 
   const fileLink = document.createElement("a");
-  fileLink.href = downloadUrl;
-  fileLink.download = downloadButton.dataset.downloadFilename || "";
+  fileLink.href = url;
+  fileLink.download = filename;
   fileLink.hidden = true;
   document.body.appendChild(fileLink);
   fileLink.click();
   fileLink.remove();
+}
+
+function submitDownloadSignup(form, email) {
+  const action = form.dataset.brevoAction;
+  if (!action || !email) return false;
+
+  const targetName = "brevo-download-signup-target";
+  let target = document.querySelector(`iframe[name="${targetName}"]`);
+  if (!target) {
+    target = document.createElement("iframe");
+    target.name = targetName;
+    target.title = "";
+    target.hidden = true;
+    document.body.appendChild(target);
+  }
+
+  const submission = document.createElement("form");
+  submission.method = "POST";
+  submission.action = action;
+  submission.target = targetName;
+  submission.hidden = true;
+
+  const fields = {
+    EMAIL: email,
+    email_address_check: "",
+    locale: form.dataset.brevoLocale || document.documentElement.lang || "en"
+  };
+
+  Object.entries(fields).forEach(([name, value]) => {
+    const field = document.createElement("input");
+    field.type = "hidden";
+    field.name = name;
+    field.value = value;
+    submission.appendChild(field);
+  });
+
+  document.body.appendChild(submission);
+  submission.submit();
+  submission.remove();
+  return true;
+}
+
+document.addEventListener("click", (event) => {
+  const closeButton = event.target.closest("[data-download-signup-close]");
+  if (closeButton) {
+    closeDownloadSignupModal();
+    return;
+  }
+
+  const downloadButton = event.target.closest("a[data-download-url]");
+  if (!downloadButton) return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+  const downloadUrl = downloadButton.getAttribute("href") || downloadButton.dataset.downloadUrl;
+  if (!downloadUrl) return;
+
+  event.preventDefault();
+  if (!openDownloadSignupModal(downloadButton, downloadUrl)) {
+    window.location.assign(downloadUrl);
+  }
+});
+
+document.addEventListener("submit", (event) => {
+  const form = event.target.closest("[data-download-signup-form]");
+  if (!form) return;
+
+  event.preventDefault();
+  const input = form.querySelector("[data-download-signup-email]");
+  const status = form.querySelector("[data-download-signup-status]");
+  const hasEmail = Boolean(input?.value.trim());
+
+  if (hasEmail && !input.checkValidity()) {
+    input.reportValidity();
+    return;
+  }
+
+  if (hasEmail) submitDownloadSignup(form, input.value.trim());
+  startPendingDownload();
+  if (status) {
+    status.textContent = hasEmail ? form.dataset.signupSubmitted : form.dataset.downloadStarted;
+    status.hidden = false;
+  }
 });
 
 document.addEventListener("click", (event) => {
@@ -632,4 +752,3 @@ window.WiresSiteRuntime = {
   },
   refreshPageContent
 };
-
