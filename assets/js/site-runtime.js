@@ -704,6 +704,7 @@ document.addEventListener("submit", (event) => {
   const input = form.querySelector("[data-download-signup-email]");
   const status = form.querySelector("[data-download-signup-status]");
   const hasEmail = Boolean(input?.value.trim());
+  const testMode = form.dataset.brevoLocale === "fr" && new URLSearchParams(location.search).get("brevo-test") === "1";
 
   if (hasEmail && !input.checkValidity()) {
     input.reportValidity();
@@ -711,9 +712,13 @@ document.addEventListener("submit", (event) => {
   }
 
   if (hasEmail) submitDownloadSignup(form, input.value.trim());
-  startPendingDownload();
+  if (!testMode) startPendingDownload();
   if (status) {
-    status.textContent = hasEmail ? form.dataset.signupSubmitted : form.dataset.downloadStarted;
+    if (testMode) {
+      status.textContent = hasEmail ? form.dataset.signupTest : form.dataset.signupTestEmpty;
+    } else {
+      status.textContent = hasEmail ? form.dataset.signupSubmitted : form.dataset.downloadStarted;
+    }
     status.hidden = false;
   }
 });
