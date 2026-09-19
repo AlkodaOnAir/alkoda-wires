@@ -12,6 +12,7 @@ const CABLE_TO_ROUTE_TYPE = {
   'HDMI': 'VIDEO',   'SDI': 'VIDEO',   'SDI-F': 'VIDEO',   'DisplayPort': 'VIDEO',
   'Audio': 'AUDIO',  'Dante': 'AUDIO', 'Jack 3.5': 'AUDIO', 'Jack 6.35': 'AUDIO',
   'MADI': 'AUDIO',   'RCA/Cinch': 'AUDIO',   'Speakon': 'AUDIO',  'XLR': 'AUDIO',
+  'Combo XLR/Jack': 'AUDIO',
   'RJ45': 'NETWORK',
   'USB': 'USB',      'USB-A': 'USB',   'USB-C': 'USB',
   'USB-DC': 'POWER', 'DC': 'POWER',
@@ -143,6 +144,91 @@ function _collapseAutoExpandedOne(kind, id) {
   renderRoutesList();
 }
 
+// ── Segment déposé entre deux routes → nouvelle route ─────────
+// Pendant le glisser d'un segment : bord haut d'un en-tête de route, ou vide sous la dernière route.
+// Ligne « + Nouvelle route » en surimpression dans #routes-panel (la liste ne bouge pas).
+// Sécu de régression : window._xSegDropNewRoute = false (console) → désactivé.
+const _SEG_NEW_ROUTE_ZONE = 0.35; // part haute de l'en-tête qui vise « entre deux routes »
+
+function _segNewRouteAllowed(e) {
+  return window._xSegDropNewRoute !== false && e.dataTransfer.types.includes('wires/seg') && !_routeStepPending();
+}
+
+function _segNewRouteZone(e, header) {
+  const r = header.getBoundingClientRect();
+  return (e.clientY - r.top) < r.height * _SEG_NEW_ROUTE_ZONE;
+}
+
+function _showNewRouteDropLine(clientY) {
+  const panel = document.getElementById('routes-panel');
+  if (!panel) return;
+  let line = document.getElementById('route-newroute-drop-line');
+  if (!line) {
+    line = document.createElement('div');
+    line.id = 'route-newroute-drop-line';
+    line.style.cssText = 'position:absolute;left:8px;right:8px;height:0;border-top:2px dashed var(--accent);pointer-events:none;z-index:5';
+    const lbl = document.createElement('span');
+    lbl.style.cssText = 'position:absolute;left:50%;top:-1px;transform:translate(-50%,-50%);padding:1px 8px;background:#0d1526;border:1px solid var(--accent);border-radius:10px;font-family:var(--mono);font-size:10px;color:var(--accent);white-space:nowrap';
+    line.appendChild(lbl);
+    panel.appendChild(line);
+  }
+  line.firstChild.textContent = '+ ' + t('new_route');
+  line.style.top = (clientY - panel.getBoundingClientRect().top) + 'px';
+  line.style.display = '';
+}
+
+function _hideNewRouteDropLine() {
+  const line = document.getElementById('route-newroute-drop-line');
+  if (line) line.style.display = 'none';
+}
+
+// Confirmation ouverte par une action dans le panneau Routes : un clic dans la fenêtre
+// (un de ses boutons ou son fond) ne doit pas refermer le panneau (voir le mousedown dans initRoutes).
+let _routesPanelConfirmOpen = false;
+function _routesPanelConfirm(msg, opts) {
+  _routesPanelConfirmOpen = true;
+  return showConfirm(msg, opts).finally(() => { _routesPanelConfirmOpen = false; });
+}
+
+function _dropSegAsNewRoute(src) {
+  const srcSegs  = _getSegsForPath(src.chainId, src.pathId);
+  const seg      = srcSegs?.[src.segIdx];
+  const srcChain = APP.chains.find(c => c.id === src.chainId);
+  if (!seg || !srcChain) return;
+  if (_allChainSegments(srcChain).length <= 1) return; // seul segment de sa route : on recréerait la même route
+  const cable = APP.cables.find(c => c.id === seg.cableId);
+  const chain = {
+    id: uuid(), title: '', color: '', types: [_routeTypeForCable(cable?.type) || 'VIDEO'],
+    segments: [seg], cables: [], paths: [], hidden: false,
+  };
+  // Nom tel qu'il apparaîtra dans la liste (lettre de doublon comprise) : dépôt simulé le temps du calcul, puis rétabli.
+  let name;
+  srcSegs.splice(src.segIdx, 1);
+  APP.chains.push(chain);
+  try { name = _routeDisplayTitle(chain); }
+  finally { APP.chains.pop(); srcSegs.splice(src.segIdx, 0, seg); }
+
+  _routesPanelConfirm(t('seg_new_route_confirm').replace('$name', () => name), { ok: t('confirm'), cancel: t('cancel') }).then(ok => {
+    if (!ok) return;
+    const segsNow = _getSegsForPath(src.chainId, src.pathId);
+    if (!segsNow || segsNow[src.segIdx] !== seg) return; // projet modifié pendant la confirmation : ne rien faire
+    pushUndo(); // avant le splice — sinon l'instantané perd le segment
+    segsNow.splice(src.segIdx, 1);
+    _pruneEmptyPaths(APP.chains.find(c => c.id === src.chainId));
+    chain.color = _nextRouteColor();
+    chain.title = _autoTitleFromChain(chain);
+    APP.chains.push(chain);
+    wLog('ROUTE_CREATE', { id: chain.id, title: chain.title, types: chain.types, from: 'segment-drop' });
+    setDirty();
+    // Ouverte comme après un simple clic sur son titre (voir le clic de l'en-tête dans renderRoutesList),
+    // sa ligne de titre centrée dans le panneau (visible même si la route dépliée dépasse la hauteur du panneau).
+    _expandedRoutes.add(chain.id);
+    renderRoutesList();
+    document.querySelector(`.route-item[data-chain-id="${chain.id}"] .route-item-header`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (_activeRoutes.has(src.chainId)) _restartAnimation();
+  });
+}
+
 function _cancelPendingCable() {
   if (_pendingCableId == null) return;
   const cid = _pendingCableId;
@@ -152,6 +238,45 @@ function _cancelPendingCable() {
   renderCables();
   updateUndoRedoBtns();
   setDirty();
+}
+
+// Câble tracé pas encore rattaché à une route ni supprimé (l'étape se referme seule si ce câble a disparu) : menu + bloqué.
+function _routeStepPending() {
+  if (_pendingCableId != null && !APP.cables.some(c => c.id === _pendingCableId)) _closeRouteStep();
+  return _pendingCableId != null;
+}
+
+// Formulaire « Créer une nouvelle route » ouvert pour ce câble en attente (un formulaire d'édition porte data-chain-id).
+function _routeStepFormOpen() {
+  return _routeStepPending() && !!document.querySelector('#routes-list .route-create-form:not([data-chain-id])');
+}
+
+// Referme tout ce qui attend encore la route du câble en attente, sans toucher au câble lui-même.
+function _closeRouteStep() {
+  _pendingCableId = null;
+  document.getElementById('route-assign-prompt')?.remove();
+  document.getElementById('route-insert-picker')?.remove();
+  document.querySelector('#routes-list .route-create-form:not([data-chain-id])')?.remove();
+  document.getElementById('cables-svg')?.classList.remove('cables-route-hovering');
+}
+
+// Une annulation qui ramène à un état sans le câble en attente met fin à son étape « route ».
+function _undoEndsRouteStep(state) {
+  return _pendingCableId != null && !(state?.cables || []).some(c => c.id === _pendingCableId);
+}
+
+// Sortie indirecte pendant le formulaire de route : avertir que le câble sera supprimé, onLeave() seulement si confirmé.
+function _confirmLeaveRouteStep(onLeave) {
+  if (!_routeStepFormOpen()) { onLeave(); return; }
+  const c  = APP.cables.find(x => x.id === _pendingCableId);
+  const nn = id => APP.nodes[id]?.short || APP.nodes[id]?.name || '?';
+  const msg = t('route_step_leave_confirm').replace('$from', nn(c?.from)).replace('$to', nn(c?.to));
+  showConfirm(msg, { ok: t('delete_cable_btn'), danger: true, cancel: t('back_to_route') }).then(ok => {
+    if (!ok) return;
+    document.querySelector('#routes-list .route-create-form:not([data-chain-id])')?.remove();
+    _cancelPendingCable();
+    onLeave();
+  });
 }
 
 const N_RELAY     = 3;
@@ -179,12 +304,19 @@ function _deleteUserRouteColor(color) {
 function _nodePortLabel(node, portId, side) {
   const name = node?.short || node?.name || '?';
   if (!portId || !node) return name;
-  const ports = node.ports || [];
-  const idx = ports.findIndex(p => p.id === portId);
+  // Les DEUX faces : un port de la vue Arrière restait introuvable ici, et le panneau
+  // Routes comme son PDF n'affichaient alors que le nom de l'appareil — deux segments
+  // arrivant sur deux prises arrière différentes devenaient indiscernables (2026-09-19).
+  const all = [...(node.ports || []), ...(node.portsRear || [])];
+  const idx = all.findIndex(p => p.id === portId);
   if (idx === -1) return name;
-  // Le numéro de port n'a d'intérêt que si l'appareil en a plusieurs — sur un
-  // appareil à port unique (ex: récepteur sans fil), "(1)" n'apporte rien.
-  const numStr  = ports.length > 1 ? String(idx + 1) : '';
+  // Numéro = le nom du port tel que l'utilisateur l'a vu dans Configuration image
+  // (numérotation valable sur tout l'appareil, faces confondues). La position dans la
+  // liste ne sert que de secours pour un projet ancien dont les ports n'ont pas de nom.
+  // Le numéro n'a d'intérêt que si l'appareil a plusieurs ports : sur un récepteur sans
+  // fil à port unique, « (1) » n'apporte rien.
+  const label   = String(all[idx].label || '').trim();
+  const numStr  = all.length > 1 ? (label || String(idx + 1)) : '';
   const sideStr = side ? side.toUpperCase() : '';
   const inner   = [numStr, sideStr].filter(Boolean).join(' ');
   return inner ? `${name} (${inner})` : name;
@@ -734,11 +866,12 @@ function _renderSegList(container, segs, chain, pathId) {
             const fromName = APP.nodes[c.from]?.short || APP.nodes[c.from]?.name || '?';
             const toName   = APP.nodes[c.to]?.short   || APP.nodes[c.to]?.name   || '?';
             const msg = t('orphan_cable_confirm').replace('$from', fromName).replace('$to', toName);
-            showConfirm(msg, { ok: t('delete_cable_btn'), danger: true, cancel: t('cancel') })
+            _routesPanelConfirm(msg, { ok: t('delete_cable_btn'), danger: true, cancel: t('cancel') })
             .then(ok => {
               clearHL();
               if (!ok) return;
-              deleteConn(cid, { skipRouteCheck: true });
+              // Le panneau reste ouvert (voir _routesPanelConfirm) : reconstruire la liste, sinon la ligne supprimée resterait affichée.
+              Promise.resolve(deleteConn(cid, { skipRouteCheck: true })).then(() => renderRoutesList());
             });
           } else {
             pushUndo();
@@ -1065,7 +1198,7 @@ function renderRoutesList() {
         const msg = orphanedCids.length === 1
           ? t('delete_route_cable_1')
           : t('delete_route_cables_n').replace('$n', orphanedCids.length);
-        showConfirm(msg, { ok: t('delete_route_cables_btn'), danger: true }).then(ok => { if (ok) doDelete(); });
+        _routesPanelConfirm(msg, { ok: t('delete_route_cables_btn'), danger: true }).then(ok => { if (ok) doDelete(); });
       } else {
         doDelete();
       }
@@ -1153,6 +1286,13 @@ function renderRoutesList() {
         e.preventDefault(); e.dataTransfer.dropEffect = 'move';
         header.style.boxShadow = `inset 0 -3px 0 ${chain.color}`;
       }
+      // Segment sur le bord haut : « entre deux routes » → nouvelle route (voir _dropSegAsNewRoute), sans déplier celle-ci.
+      if (isSeg && _segNewRouteAllowed(e) && _segNewRouteZone(e, header)) {
+        e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+        _showNewRouteDropLine(item.getBoundingClientRect().top);
+        if (_chainDragHoverKey === 'route:' + chain.id) { clearTimeout(_chainDragHoverTimer); _chainDragHoverTimer = null; _chainDragHoverKey = null; }
+        return;
+      }
       _armChainHoverExpand('route', chain.id, isExpanded);
     });
     header.addEventListener('dragleave', e => {
@@ -1166,6 +1306,11 @@ function renderRoutesList() {
     header.addEventListener('drop', e => {
       e.preventDefault(); e.stopPropagation();
       header.style.boxShadow = '';
+      if (e.dataTransfer.types.includes('wires/seg')) {
+        _hideNewRouteDropLine();
+        if (_segNewRouteAllowed(e) && _segNewRouteZone(e, header)) _dropSegAsNewRoute(JSON.parse(e.dataTransfer.getData('wires/seg')));
+        return;
+      }
       if (e.dataTransfer.types.includes('wires/chain')) {
         const { chainId: srcCid } = JSON.parse(e.dataTransfer.getData('wires/chain'));
         _mergeChainIntoPath(srcCid, chain.id, null);
@@ -1727,11 +1872,16 @@ function _resolveSegsForAnim(chain, segs, svg) {
     // donc plus longtemps qu'entre appareils proches, comme un câble long vs court).
     if (cable && typeof WIRELESS_TYPES !== 'undefined' && WIRELESS_TYPES.has(cable.type)) {
       const fromNode = APP.nodes[cable.from], toNode = APP.nodes[cable.to];
-      const fromPort = fromNode?.ports?.find(p => p.id === cable.from_port);
-      const toPort   = toNode?.ports?.find(p => p.id === cable.to_port);
+      // Les DEUX faces, et le côté transmis à edgePtFixed : un port sans fil posé sur la
+      // vue Arrière restait introuvable, le tronçon était écarté en silence et l'animation
+      // du lien ne faisait rien du tout. Sans le côté, la position était calculée dans le
+      // repère de l'image Avant, donc fausse dès que les deux images diffèrent (2026-09-19).
+      const from = typeof _findPortById === 'function' ? _findPortById(fromNode, cable.from_port) : null;
+      const to   = typeof _findPortById === 'function' ? _findPortById(toNode,   cable.to_port)   : null;
+      const fromPort = from?.port, toPort = to?.port;
       if (!fromNode || !toNode || !fromPort || !toPort) return null;
-      const [fx, fy] = edgePtFixed(fromNode, fromPort.nx, fromPort.ny);
-      const [tx, ty] = edgePtFixed(toNode, toPort.nx, toPort.ny);
+      const [fx, fy] = edgePtFixed(fromNode, fromPort.nx, fromPort.ny, from.side);
+      const [tx, ty] = edgePtFixed(toNode, toPort.nx, toPort.ny, to.side);
       const length = Math.max(1, Math.hypot(tx - fx, ty - fy));
       return {
         seg, path: null, cableId: cable.id, length, dir: seg.dir, color,
@@ -1741,10 +1891,20 @@ function _resolveSegsForAnim(chain, segs, svg) {
       };
     }
     const path = svg.querySelector(`.cable-visual[data-cid="${seg.cableId}"]`);
-    let length = 0;
-    try { if (path) length = path.getTotalLength(); } catch {}
+    let pathLen = 0;
+    try { if (path) pathLen = path.getTotalLength(); } catch {}
+    // Seule la partie VISIBLE du câble est parcourue : un bout branché sur la vue non affichée
+    // de son appareil est caché derrière lui (occlusion, voir drawCable dans cables.js, qui pose
+    // data-vis-start/data-vis-end). Le point apparaît donc là où le câble sort de derrière
+    // l'appareil de départ, et l'arrivée s'allume quand il passe derrière l'appareil d'arrivée.
+    // window._xAnimVisibleOnly = false en console : ancien comportement (tracé entier).
+    let pathStart = 0, length = pathLen;
+    if (window._xAnimVisibleOnly !== false && path && path.dataset.visStart != null && path.dataset.visEnd != null) {
+      const a = Math.max(0, +path.dataset.visStart), b = Math.min(pathLen, +path.dataset.visEnd);
+      if (Number.isFinite(a) && Number.isFinite(b) && b > a) { pathStart = a; length = b - a; }
+    }
     return {
-      seg, path, cableId: seg.cableId, length, dir: seg.dir, color,
+      seg, path, cableId: seg.cableId, length, pathStart, pathLen, dir: seg.dir, color,
       fromId: cable?.from ?? null, toId: cable?.to ?? null, wireless: false,
       fromPortId: cable?.from_port ?? null, toPortId: cable?.to_port ?? null,
     };
@@ -1853,7 +2013,7 @@ function _toggleSegAnimation(seg, chain) {
   const flow = _flowSvg();                            // où on POSE le point lumineux
   const rt  = _resolveSegsForAnim(chain, [seg], svg);
   if (!rt || !rt.resolved.length) return;
-  const r  = rt.resolved[0];
+  let r  = rt.resolved[0]; // relu à chaque tour (voir tick) : la partie visible peut changer
   const { cabIds, nodeIds, portIds } = _segsToIds([seg]);
   _applyCanvasDim(cabIds, nodeIds, portIds);
   const el = _makeParticleEl(flow);
@@ -1890,16 +2050,27 @@ function _toggleSegAnimation(seg, chain) {
       _segAnim._pauseRef = null;
     }
     if (_segAnim.startTs == null) _segAnim.startTs = ts;
-    const d = ((ts - _segAnim.startTs) * RELAY_SPEED) % _segAnim.total;
-    if (d < _segAnim.lastD && dstNid) _glowNode(dstNid, r.color); // boucle terminée : arrivée
+    let d = ((ts - _segAnim.startTs) * RELAY_SPEED) % _segAnim.total;
+    if (d < _segAnim.lastD) {
+      if (dstNid) _glowNode(dstNid, r.color); // boucle terminée : arrivée
+      // Tour suivant : relire la partie visible du câble (↻ Avant/Arrière ou câble redessiné entre-temps).
+      if (window._xAnimVisibleOnly !== false) {
+        const rt2 = _resolveSegsForAnim(chain, [seg], svg);
+        if (rt2 && rt2.resolved.length) {
+          r = rt2.resolved[0]; _segAnim.r = r; _segAnim.total = rt2.total;
+          _segAnim.startTs = ts; d = 0;
+        }
+      }
+    }
     _segAnim.lastD = d;
     if (r.wireless) {
       _moveParticle(el, -9999, -9999);
       _updateWavePos(_segAnim.waveEl, srcPt[0], srcPt[1], dstPt[0], dstPt[1], _segAnim.total > 0 ? d / _segAnim.total : 0);
     } else {
-      const dOnPath = r.dir === 'fwd' ? d : r.length - d;
+      // Distance sur le tracé : la partie parcourue commence à r.pathStart (voir _resolveSegsForAnim).
+      const dOnPath = (r.pathStart || 0) + (r.dir === 'fwd' ? d : r.length - d);
       try {
-        const pt = r.path.getPointAtLength(Math.max(0, Math.min(r.length, dOnPath)));
+        const pt = r.path.getPointAtLength(Math.max(0, Math.min(r.pathLen ?? r.length, dOnPath)));
         _moveParticle(el, pt.x, pt.y);
         // La couleur ne change qu'au passage d'un câble à l'autre : la réécrire à chaque
         // image redemanderait un redessin pour rien.
@@ -2158,7 +2329,7 @@ function startFlowAnimation(chains) {
     return flatSegs.map(segs => {
       const rt = _resolveSegsForAnim(chain, segs, svg);
       if (!rt) return null;
-      return { ...rt, el: _makeParticleEl(flow), chainId: chain.id, startOffset: 0, _segIdx: -1, _litSeg: null, _litRow: null, _waveEl: null };
+      return { ...rt, el: _makeParticleEl(flow), chainId: chain.id, startOffset: 0, _segIdx: -1, _litSeg: null, _litRow: null, _waveEl: null, _chain: chain, _segs: segs };
     }).filter(Boolean);
   });
 
@@ -2179,7 +2350,7 @@ function startFlowAnimation(chains) {
     // lui : une route réduite à sa seule fin de route n'a personne pour allumer son
     // premier appareil, elle doit le faire elle-même comme n'importe quel train.
     const before = chainMaxTotal[chain.id] || 0;
-    trains.push({ ...rt, el: _makeParticleEl(flow), chainId: chain.id, startOffset: before, skipStartGlow: before > 0, _segIdx: -1, _litSeg: null, _litRow: null, _waveEl: null });
+    trains.push({ ...rt, el: _makeParticleEl(flow), chainId: chain.id, startOffset: before, skipStartGlow: before > 0, _segIdx: -1, _litSeg: null, _litRow: null, _waveEl: null, _chain: chain, _segs: epiSegs, _epilogue: true });
   });
 
   if (!trains.length) return;
@@ -2189,7 +2360,21 @@ function startFlowAnimation(chains) {
 
   const SPEED  = RELAY_SPEED; // vitesse originale
   // Restart quand le train le plus long (épilogue inclus, décalé par son startOffset) est terminé
-  const doneAt = Math.max(...trains.map(t => (t.startOffset || 0) + t.total));
+  let doneAt = Math.max(...trains.map(t => (t.startOffset || 0) + t.total));
+
+  // Tour suivant : relire la partie visible de chaque câble (↻ Avant/Arrière ou câbles redessinés
+  // pendant l'animation), puis recaler le départ des fins de route et la fin du cycle.
+  function _refreshTrains() {
+    for (const tr of trains) {
+      const rt = _resolveSegsForAnim(tr._chain, tr._segs, svg);
+      if (!rt) continue; // plus rien d'animable : garder l'ancien tracé plutôt que de casser le train
+      tr.resolved = rt.resolved; tr.cumuls = rt.cumuls; tr.total = rt.total;
+    }
+    const maxTotal = {};
+    trains.forEach(tr => { if (!tr._epilogue) maxTotal[tr.chainId] = Math.max(maxTotal[tr.chainId] || 0, tr.total); });
+    trains.forEach(tr => { if (tr._epilogue) { tr.startOffset = maxTotal[tr.chainId] || 0; tr.skipStartGlow = tr.startOffset > 0; } });
+    doneAt = Math.max(...trains.map(t => (t.startOffset || 0) + t.total));
+  }
 
   let globalD = 0;
   let last    = 0;
@@ -2234,6 +2419,7 @@ function startFlowAnimation(chains) {
       }
       holdUntil = 0;
       globalD   = 0;
+      if (window._xAnimVisibleOnly !== false) _refreshTrains();
     }
 
     globalD += SPEED * dt;
@@ -2274,10 +2460,11 @@ function startFlowAnimation(chains) {
       }
       const r      = train.resolved[segIdx];
       const dSeg   = d - train.cumuls[segIdx];
-      const dOnPth = r.dir === 'fwd' ? dSeg : r.length - dSeg;
+      // Distance sur le tracé : la partie parcourue commence à r.pathStart (voir _resolveSegsForAnim).
+      const dOnPth = (r.pathStart || 0) + (r.dir === 'fwd' ? dSeg : r.length - dSeg);
       let pt = null;
       if (!r.wireless) {
-        try { pt = r.path.getPointAtLength(Math.max(0, Math.min(r.length, dOnPth))); } catch {}
+        try { pt = r.path.getPointAtLength(Math.max(0, Math.min(r.pathLen ?? r.length, dOnPth))); } catch {}
       }
       frame.push({ train, d, segIdx, r, dSeg, pt });
     }
@@ -2404,7 +2591,33 @@ function initRoutes() {
   // valide (abandonné, touche Echap...), replier toute route ouverte temporairement
   // par le survol — le dragend de l'en-tête lui-même le fait déjà, ceci couvre aussi
   // le cas où le drop a lieu hors de tout en-tête/chemin.
-  document.addEventListener('dragend', () => _collapseAutoExpanded());
+  document.addEventListener('dragend', () => { _collapseAutoExpanded(); _hideNewRouteDropLine(); });
+
+  // Ligne « + Nouvelle route » (voir _dropSegAsNewRoute) : masquée à chaque survol de la liste AVANT les
+  // gestionnaires des lignes (phase de capture), qui la réaffichent seulement sur une zone qui la vise.
+  // Vide sous la dernière route : même dépôt qu'entre deux routes.
+  const routesList = document.getElementById('routes-list');
+  if (routesList) {
+    const _lastRouteIfBelow = e => {
+      const last = [...routesList.children].filter(el => el.classList.contains('route-item')).pop();
+      return e.target === routesList && last && e.clientY >= last.getBoundingClientRect().bottom ? last : null;
+    };
+    routesList.addEventListener('dragover', () => _hideNewRouteDropLine(), true);
+    routesList.addEventListener('dragover', e => {
+      if (!_segNewRouteAllowed(e)) return;
+      const last = _lastRouteIfBelow(e);
+      if (!last) return;
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      _showNewRouteDropLine(last.getBoundingClientRect().bottom);
+    });
+    routesList.addEventListener('dragleave', e => { if (!routesList.contains(e.relatedTarget)) _hideNewRouteDropLine(); });
+    routesList.addEventListener('drop', e => {
+      if (!e.dataTransfer.types.includes('wires/seg') || !_lastRouteIfBelow(e)) return;
+      e.preventDefault();
+      _hideNewRouteDropLine();
+      if (_segNewRouteAllowed(e)) _dropSegAsNewRoute(JSON.parse(e.dataTransfer.getData('wires/seg')));
+    });
+  }
 
   // Espace → pause/reprend l'animation en cours (route, chemin ou segment isolé).
   // Écouteur indépendant de celui de canvas.js (Espace+glisser = pan) : les deux
@@ -2423,6 +2636,7 @@ function initRoutes() {
     // (tour.js/_tourStop) — un clic hors du prompt/panneau ne doit ni
     // annuler le câble en attente ni refermer le panneau Routes tout seul.
     if (typeof APP !== 'undefined' && APP.meta?.tourInProgress) return;
+    _routeStepPending(); // referme l'étape « route » si son câble a disparu, avant que ce clic n'atteigne Créer
     const prompt = document.getElementById('route-assign-prompt');
     if (prompt && !prompt.contains(e.target)) {
       prompt.remove();
@@ -2431,6 +2645,11 @@ function initRoutes() {
     const panel = document.getElementById('routes-panel');
     if (!panel.classList.contains('open')) return;
     if (panel.contains(e.target)) return;
+    // Confirmation ouverte depuis le panneau (voir _routesPanelConfirm) : cliquer dedans ne le referme pas.
+    // Sécu de régression : window._xRoutesPanelConfirmKeepOpen = false (console) → ancien comportement.
+    if (window._xRoutesPanelConfirmKeepOpen !== false && _routesPanelConfirmOpen && e.target.closest('#confirm-overlay')) return;
+    // Câble en attente de sa route : le panneau Routes reste ouvert, on n'en sort que par Créer ou Annuler.
+    if (_routeStepPending()) return;
     // Annuler/Rétablir et la sidebar gauche (filtre de câbles, catégories...) doivent
     // rester utilisables à travers le panneau Routes ouvert — ne pas le fermer sur ce clic.
     if (e.target.closest('#btn-routes, [data-action="routes"], .route-assign-prompt, #route-assign-prompt, #route-insert-picker, #_seg-ctx-menu, #btn-undo, #btn-redo, #sidebar-left')) return;
@@ -2634,7 +2853,12 @@ function _refreshPathTitles(paths) {
 
 function _openCreateRouteModal(prefillCid, editChain = null) {
   const list = document.getElementById('routes-list');
-  if (list.querySelector('.route-create-form')) return;
+  const _existingForm = list.querySelector('.route-create-form');
+  if (_existingForm) {
+    // Le câble qu'on vient de tracer doit toujours pouvoir ouvrir son formulaire, sinon il restait sans route en silence.
+    if (prefillCid != null && editChain == null) _existingForm.remove();
+    else return;
+  }
   const isEdit = editChain != null;
   const defaultName = isEdit ? editChain.title : _autoRouteName(prefillCid);
 
@@ -2846,8 +3070,9 @@ function _openCreateRouteModal(prefillCid, editChain = null) {
         segments: prefillCid != null ? [{ cableId: prefillCid, dir: 'fwd', junction: 'passthrough' }] : [],
         cables: [], paths: [], hidden: false,
       };
+      // Route créée pour le câble qu'on vient de tracer : pas d'étape d'annulation à part, un seul Ctrl+Z retire câble et route.
+      if (!(prefillCid != null && prefillCid === _pendingCableId)) pushUndo();
       _pendingCableId = null;
-      pushUndo();
       APP.chains.push(chain);
       wLog('ROUTE_CREATE', { id: chain.id, title: chain.title, types: chain.types });
       setDirty(); form.remove();

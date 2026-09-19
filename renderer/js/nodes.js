@@ -4,6 +4,73 @@
 
 const MIN_W = 40, MIN_H = 30;
 
+// Doit rester synchro avec le scale(1.7) de .cab-clickable:hover/.cab-free:hover
+// (main.css) — le nom du type de port (.port-dot-type-lbl) n'est jamais visible en
+// dehors du survol de son point (voir main.css :has(+ .cab-free:hover)), donc son
+// décalage vertical doit dégager le point dans sa taille AGRANDIE par ce survol,
+// jamais sa taille de repos (dotSize seul), sous peine de le faire chevaucher le
+// point une fois réellement affiché.
+const PORT_LBL_HOVER_SCALE = 1.7;
+
+// ── Taille des points de connexion ───────────────────────────────────────────
+// Un point est une CIBLE À CLIQUER : il vise donc un diamètre constant À L'ÉCRAN,
+// quel que soit le zoom — d'abord le zoom, les limites ensuite (règle posée par
+// l'utilisateur le 2026-09-18). L'ancienne formule (9 % du plus petit côté de
+// l'image rendue) donnait des tailles incohérentes d'un appareil à l'autre, non
+// pas selon ses prises mais selon la PROPORTION de sa photo : 48 px sur un
+// moniteur presque carré, 10 px sur un ATEM dont l'image fait 866 × 111, 5 px sur
+// un switch. Recadrer la même photo avec plus de marge changeait la taille.
+//
+// Limite unique, valable pour TOUT le projet (les points doivent rester de la même
+// taille d'un appareil à l'autre) : 70 % du plus petit écart entre deux prises d'un
+// même appareil, toutes faces confondues — deux points ne peuvent donc jamais se
+// toucher, sur aucun appareil. Ce plafond ne joue qu'en dézoomant fort.
+// Sécurité anti-régression : window._xPortDotFixedScreen = false → ancienne formule.
+const PORT_DOT_SCREEN     = 14;    // diamètre visé à l'écran, en pixels
+const PORT_DOT_SCREEN_MIN = 8;     // en dessous, un point devient invisible en dézoomant
+const PORT_DOT_WL_RATIO   = 1.27;  // port sans fil : cible plus généreuse (voir _placeDots)
+const PORT_DOT_GAP_RATIO  = 0.7;   // part de l'écart entre deux prises qu'un point peut occuper
+let _portDotCap = Infinity;        // plafond du projet, en unités canevas
+
+// Diamètres à utiliser pour le zoom courant, en unités canevas.
+// Ordre voulu par l'utilisateur : le zoom d'abord, les limites ensuite — d'abord la
+// taille à l'écran, puis le plafond « ne jamais se toucher », puis le plancher « rester
+// visible ». Le plancher l'emporte volontairement sur le plafond : en dessous d'environ
+// 57 % de zoom on ne vise plus une prise, on veut seulement voir qu'il y en a — mieux
+// vaut des points qui se frôlent que des points invisibles (décision du 2026-09-18).
+function portDotSizes(zoom) {
+  const z    = zoom || 1;
+  const base = PORT_DOT_SCREEN / z;
+  const floor = PORT_DOT_SCREEN_MIN / z;
+  return {
+    normal:   Math.max(Math.min(base, _portDotCap), floor),
+    wireless: Math.max(Math.min(base * PORT_DOT_WL_RATIO, _portDotCap), floor),
+  };
+}
+
+// Recalcule le plafond du projet. À rappeler dès que des ports changent (chargement,
+// ajout/suppression d'appareil, modification des points, import).
+function refreshPortDotCap() {
+  let minGap = Infinity;
+  for (const s of Object.values(APP.nodes || {})) {
+    for (const [key, side] of [['ports', 'front'], ['portsRear', 'rear']]) {
+      const ps = s[key];
+      if (!ps || ps.length < 2) continue;
+      const r = _nodeImgRect(s, side);
+      const rW = r ? r.rW : s.w, rH = r ? r.rH : s.h;
+      for (let i = 0; i < ps.length; i++) {
+        for (let j = i + 1; j < ps.length; j++) {
+          const dx = (ps[i].nx - ps[j].nx) * rW, dy = (ps[i].ny - ps[j].ny) * rH;
+          const d = Math.hypot(dx, dy);
+          if (d > 0 && d < minGap) minGap = d;
+        }
+      }
+    }
+  }
+  _portDotCap = minGap === Infinity ? Infinity : minGap * PORT_DOT_GAP_RATIO;
+  if (typeof applyT === 'function') applyT();   // réécrit les variables CSS
+}
+
 // Sécurité anti-régression du correctif de redimensionnement (patch en place des câbles
 // connectés plutôt que réinitialisation totale du cache de tracé, voir setupResizeHandle) :
 // window._resizePatchCables = false dans la console repasse instantanément à l'ancien
@@ -111,6 +178,24 @@ function createNode(equipment, canvasX, canvasY) {
     shapeColor: equipment.shapeColor || null,
     zindex: 1,
   };
+  // Vue Arrière, si l'équipement en a une (configurée pendant sa création — voir
+  // _anFinalizeConfirm, library.js) — jamais forcée à null pour les appareils qui
+  // n'en ont pas, mêmes conventions que les champs Avant ci-dessus.
+  if (equipment.imgRear) {
+    node.imgRear          = equipment.imgRear;
+    node.imgRear_original = equipment.imgRear_original || null;
+    node.rmbg_tolRear      = equipment.rmbg_tolRear ?? null;
+    node.rmbg_cropRear     = equipment.rmbg_cropRear || null;
+    node.portsRear         = equipment.portsRear ? equipment.portsRear.map(p => ({ ...p })) : [];
+    node.shapeRear         = equipment.shapeRear || null;
+    node.shapeColorRear    = equipment.shapeColorRear || null;
+  }
+  // Produit trouvé par la recherche d'images (voir _searchProductOfNode, library.js) : sert à
+  // pré-remplir la recherche d'une image ajoutée ou remplacée plus tard.
+  if (equipment.searchBrand || equipment.searchModel) {
+    node.searchBrand = equipment.searchBrand || '';
+    node.searchModel = equipment.searchModel || '';
+  }
   node.cx = node.x + node.w / 2;
   node.cy = node.y + node.h / 2;
 
@@ -134,6 +219,159 @@ function renderNodes() {
   for (const id of Object.keys(APP.nodes)) {
     renderOneNode(id);
   }
+  refreshPortDotCap();   // les prises du projet ont pu changer (ouverture, import, annulation)
+}
+
+// ── Bascule Avant/Arrière (aperçu d'affichage, PAS un état de projet) ──
+// Volontairement PAS sur le nœud (jamais s.activeView) : un simple aperçu,
+// jamais enregistré dans le .wires, jamais dans l'historique Annuler/Refaire,
+// remis à zéro à chaque (ré)ouverture de projet (voir loadState/fileIO.js et
+// newProject/ui.js). Changer quelle image est affichée ne doit pas demander
+// à l'utilisateur de sauvegarder — ports/câbles restent basés sur l'Avant
+// (voir le commentaire sur _rearActive dans renderOneNode).
+let _previewView = {}; // { [nodeId]: 'front'|'rear' }, absent = 'front'
+
+function toggleNodeActiveView(sid) {
+  const s = APP.nodes[sid];
+  if (!s || !s.imgRear) return; // rien à basculer
+  _previewView[sid] = (_previewView[sid] === 'rear') ? 'front' : 'rear';
+  renderOneNode(sid);
+  // L'occlusion dépend de la vue active : redessiner les câbles AVANT la resélection, qui pose leur mise en évidence.
+  if (typeof redrawOnlyCables === 'function') redrawOnlyCables();
+  // renderOneNode reconstruit le DOM du nœud à neuf (perd la classe .sel) —
+  // même technique que _applyEditToNode (library.js) pour la réappliquer :
+  // reselectNode (select.js) vide APP.sel puis rappelle selectNode(), sans le fondu des câbles.
+  if (APP.sel === sid && typeof reselectNode === 'function') reselectNode(sid);
+  if (APP.sel === sid && typeof openInfoPanel === 'function') openInfoPanel(sid);
+  // Idem pour l'état interactif des points en mode ajout de câble : renderOneNode
+  // recrée les points à neuf, sans leurs classes cab-* (disponible/utilisé/
+  // incompatible) — ils restent visibles (opacity:1 de .cable-add-mode) mais non
+  // cliquables et non survolables tant que ce calcul n'est pas rappelé (bug relevé
+  // le 2026-09-12).
+  if (typeof _cableAddMode !== 'undefined' && _cableAddMode && typeof _refreshPortDotState === 'function') {
+    _refreshPortDotState();
+    _refreshFlipBtnMarks(); // la marque du ↻ est aussi perdue à la reconstruction
+  }
+}
+
+// Câbles connectés à ce nœud dont le tracé en cache dépend d'une mesure/d'un
+// scan qui vient de changer (dimensions Arrière, pixels alpha) : invalidé sans
+// distinction (peu coûteux, ne se produit qu'une fois par image distincte) puis
+// re-rendu pour qu'ils se replacent avec les nouvelles données.
+function _invalidateCablesForNode(sid) {
+  let needRedraw = false;
+  for (const c of (APP?.cables || [])) {
+    if (c.from !== sid && c.to !== sid) continue;
+    delete cableOverrides[c.id];
+    needRedraw = true;
+  }
+  if (needRedraw && typeof renderCables === 'function') renderCables();
+}
+
+// Pixels relus ou taille Arrière remesurée : redessine les câbles du nœud sans effacer leur tracé enregistré.
+// Sécu de régression : window._xRearImageSync = false (console) → ancien comportement (tracés effacés puis retracés, taille Arrière jamais remesurée).
+function _refreshCablesAfterImageRead(sid) {
+  if (window._xRearImageSync === false) { _invalidateCablesForNode(sid); return; }
+  if ((APP?.cables || []).some(c => c.from === sid || c.to === sid) && typeof renderCables === 'function') renderCables();
+}
+
+// Mesure les dimensions naturelles de l'image Arrière (s._imgWRear/HRear) via
+// une image HORS DOM, jamais affichée — indépendamment de la vue cosmétique
+// actuellement active (voir l'appel dans renderOneNode). Sans ça, un port
+// Arrière ne serait positionné correctement (_nodeImgRect(s,'rear')) qu'APRÈS
+// qu'un humain ait cliqué ↻ au moins une fois cette session, alors qu'un câble
+// peut très bien être ancré côté Arrière sans que personne n'ait jamais prévisualisé
+// cette vue (ex: après un échange ⇄ Avant/Arrière). Mesurée une seule fois,
+// jamais réinitialisée tant que l'image Arrière ne change pas (comme s._imgW
+// pour l'Avant, mesuré au premier rendu réel). Profite du même chargement hors
+// DOM pour mettre en cache les pixels alpha de l'Arrière (voir _alphaPixelsCache
+// plus bas) — sert à l'occlusion précise dans cables.js.
+function _ensureRearDims(sid, s) {
+  if (!s.imgRear) return;
+  if (window._xRearImageSync === false) {
+    if (s._imgWRear && s._imgHRear) return;
+    const img = new Image();
+    img.onload = () => {
+      if (s._imgWRear && s._imgHRear) return; // déjà mesuré entre-temps
+      s._imgWRear = img.naturalWidth;
+      s._imgHRear = img.naturalHeight;
+      if (_cacheAlphaPixels(sid, 'rear', s.imgRear, img)) _invalidateCablesForNode(sid);
+    };
+    img.src = s.imgRear;
+    return;
+  }
+  // Relue dès que l'image Arrière n'est plus celle déjà lue (⇄, nouvelle image, recadrage) ou pas encore lue depuis le lancement.
+  const src = s.imgRear;
+  const cached = _alphaPixelsCache[sid]?.rear;
+  if (cached && cached.src === src) {
+    // Déjà lue : vérifier seulement la taille retenue (ex. projet rouvert avec une taille fausse enregistrée).
+    if (s._imgWRear !== cached.data.width || s._imgHRear !== cached.data.height) {
+      Promise.resolve().then(() => { if (_applyRearSize(sid, src, cached.data.width, cached.data.height)) _refreshCablesAfterImageRead(sid); });
+    }
+    return;
+  }
+  if (_rearReadPending[sid] === src) return;
+  _rearReadPending[sid] = src;
+  const img = new Image();
+  img.onload = () => {
+    if (_rearReadPending[sid] === src) delete _rearReadPending[sid];
+    if (APP.nodes[sid]?.imgRear !== src) return; // image remplacée entre-temps : le rendu suivant relance la lecture
+    const sizeChanged = _applyRearSize(sid, src, img.naturalWidth, img.naturalHeight);
+    if (_cacheAlphaPixels(sid, 'rear', src, img) || sizeChanged) _refreshCablesAfterImageRead(sid);
+  };
+  img.onerror = () => { if (_rearReadPending[sid] === src) delete _rearReadPending[sid]; };
+  img.src = src;
+}
+
+// Applique la taille réelle de l'image Arrière. Si elle a changé, recale seulement les bouts de câble
+// branchés sur l'appareil (comme un port déplacé), sans retracer. Renvoie true si la taille a changé.
+function _applyRearSize(sid, src, w, h) {
+  const node = APP.nodes[sid];
+  if (!node || node.imgRear !== src) return false;
+  if (node._imgWRear === w && node._imgHRear === h) return false;
+  node._imgWRear = w;
+  node._imgHRear = h;
+  if (typeof _patchCablesForPortMove === 'function') _patchCablesForPortMove(sid);
+  return true;
+}
+
+// ── Occlusion Avant/Arrière — pixels alpha mis en cache ────────
+// Jamais sur le nœud, jamais sauvegardé (comme _previewView/_ensureRearDims) :
+// juste les pixels décodés d'une image, par appareil+côté, pour que cables.js
+// sache "combien de pixels transparents avant un pixel opaque" le long de
+// l'axe d'un câble (voir cables.js::_occlusionEraseLength). Ne sert qu'aux
+// appareils ayant une Arrière — jamais construit sinon.
+let _alphaPixelsCache = {}; // { [sid]: { front: {src, data}, rear: {src, data} } }
+let _rearReadPending = {}; // { [sid]: src } — lecture hors DOM de l'image Arrière en cours (voir _ensureRearDims)
+
+// Renvoie true si le cache vient d'être construit : à l'appelant de redessiner les câbles.
+function _cacheAlphaPixels(sid, side, src, imgEl) {
+  const slot = (_alphaPixelsCache[sid] || (_alphaPixelsCache[sid] = {}));
+  if (slot[side] && slot[side].src === src) return false; // déjà à jour pour CETTE image
+  try {
+    const cv = document.createElement('canvas');
+    cv.width  = imgEl.naturalWidth;
+    cv.height = imgEl.naturalHeight;
+    const ctx = cv.getContext('2d');
+    ctx.drawImage(imgEl, 0, 0);
+    slot[side] = { src, data: ctx.getImageData(0, 0, cv.width, cv.height) };
+    // Nouveau cache prêt : un câble a pu essayer de l'utiliser avant qu'il
+    // n'existe (retourné 0, voir _occlusionEraseLength dans cables.js) — sans le
+    // réveil fait par l'appelant, il ne serait jamais redessiné avec la bonne donnée.
+    return true;
+  } catch (e) {
+    // Pixels illisibles : pas de cache, le câble reste simplement entier (aucune occlusion).
+    return false;
+  }
+}
+
+// Assure que les pixels Avant sont en cache pour l'occlusion — seulement utile
+// si cet appareil a une Arrière (sinon aucun câble n'a jamais besoin d'être
+// masqué contre l'Avant). Réutilise l'<img> DÉJÀ chargée par renderOneNode
+// (imgEl), aucun chargement supplémentaire.
+function _ensureFrontAlphaPixels(sid, s, imgEl) {
+  if (!s.imgRear || !s.img) return;
+  if (_cacheAlphaPixels(sid, 'front', s.img, imgEl)) _refreshCablesAfterImageRead(sid);
 }
 
 // ── Rendu d'UN nœud ──────────────────────────────────────────
@@ -145,6 +383,28 @@ function renderOneNode(sid) {
   s.cy = s.y + s.h / 2;
 
   const cat = getCat(s.cat);
+
+  // Vue active (Avant/Arrière) — l'image ET les ports affichés suivent la vue
+  // active ; le cadre d'obstacle (s.bb/s.bbAuto) et l'ajustement automatique de
+  // hauteur, eux, restent volontairement basés sur l'Avant SEUL (voir le "if
+  // (!_rearActive)" dans le callback de chargement d'image plus bas) — la boîte
+  // du nœud ne doit pas changer de taille selon la vue affichée. Chaque vue a
+  // son propre couple de dimensions naturelles (s._imgW/H pour l'Avant,
+  // s._imgWRear/HRear pour l'Arrière, voir _nodeImgRect dans routing.js) : les
+  // ports Arrière sont donc positionnés par rapport à LEUR rect, jamais celui
+  // de l'Avant, même si le ratio des deux images diffère.
+  const _rearActive = _previewView[sid] === 'rear' && !!s.imgRear;
+  const _dispImg   = _rearActive ? s.imgRear : s.img;
+  const _dispPorts = _rearActive ? (s.portsRear || []) : (s.ports || []);
+
+  // Un câble peut être ancré sur un port Arrière (portsRear) alors que l'Avant
+  // est la vue affichée — ex. après un échange ⇄ (nodes.js/library.js). Ses
+  // dimensions naturelles doivent donc être connues MÊME si personne n'a jamais
+  // cliqué ↻ pour prévisualiser l'Arrière cette session, sinon _nodeImgRect(s,
+  // 'rear') retombe sur un calcul sans letterboxing tant que ce n'est pas fait —
+  // câble mal positionné/masque d'occlusion faux. Mesure indépendante de la vue
+  // cosmétique active (voir _ensureRearDims plus bas).
+  _ensureRearDims(sid, s);
 
   // Supprimer ancien DOM si existe
   document.getElementById(`n-${sid}`)?.remove();
@@ -168,9 +428,9 @@ function renderOneNode(sid) {
   imgWrap.className = 'node-img-wrap';
   imgWrap.style.cssText = `width:${s.w}px;height:${s.h - 3}px`;
 
-  if (s.img) {
+  if (_dispImg) {
     const img = document.createElement('img');
-    img.src = s.img;
+    img.src = _dispImg;
     img.alt = s.name;
     img.draggable = false;
     imgWrap.appendChild(img);
@@ -219,9 +479,13 @@ function renderOneNode(sid) {
   // Placement différé après chargement image (pour connaître les dimensions naturelles)
   function _placeDots() {
     portsLayer.querySelectorAll('.port-dot-node').forEach(d => d.remove());
-    if (!s.ports || !s.ports.length) return;
-    const r = _nodeImgRect(s);
-    s.ports.forEach(p => {
+    if (!_dispPorts || !_dispPorts.length) return;
+    const r = _nodeImgRect(s, _rearActive ? 'rear' : 'front');
+    // Référence pour la taille des points : le côté rendu le plus petit de l'image,
+    // pas une constante — sinon un point de 30px reste minuscule sur un appareil
+    // agrandi (bug relevé le 2026-09-11) alors que sa POSITION, elle, suit déjà r.rW/rH.
+    const refDim = r ? Math.min(r.rW, r.rH) : Math.min(s.w, s.h);
+    _dispPorts.forEach(p => {
       const _orphan  = !isKnownCableType(p.type);
       const _wireless = !_orphan && WIRELESS_TYPES.has(p.type);
       const color = _orphan ? '#1e2535' : (getCableMeta(p.type).color || '#00d4ff');
@@ -236,15 +500,23 @@ function renderOneNode(sid) {
       // Pas d'anneau IN/OUT sur un port sans fil pour l'instant : sa logique de
       // connexion (double occupant, IN/OUT) n'est pas encore branchée (tâche séparée).
       const dualRing = (_orphan || _wireless) ? 'box-shadow:none;' : (p.dual ? `box-shadow:0 0 0 2px #0a0f1e,0 0 0 4px ${color};` : `box-shadow:0 0 6px ${color}99;`);
-      // Zone cliquable un peu plus large que les ports physiques (30px) : un port sans
-      // fil est le SEUL élément interactif de sa connexion (pas de tracé de câble en
-      // secours à cliquer à côté), une cible plus généreuse est donc justifiée ici.
-      const dotSize = _wireless ? 38 : 30;
+      // Taille à l'échelle de l'appareil (refDim, voir plus haut), jamais fixe — volontairement
+      // sans minimum (un plancher casserait la proportion sur un appareil très réduit,
+      // voir régression relevée le 2026-09-11), juste un plafond pour un très grand appareil.
+      // Zone cliquable un peu plus large que les ports physiques : un port sans fil est
+      // le SEUL élément interactif de sa connexion (pas de tracé de câble en secours à
+      // cliquer à côté), une cible plus généreuse est donc justifiée ici (+27% env.).
+      // Taille : variable CSS réécrite à chaque zoom (voir portDotSizes ci-dessus).
+      // L'ancienne formule reste derrière la sécurité, pour comparaison.
+      const _oldSize = Math.min(60, refDim * (_wireless ? 0.114 : 0.09));
+      const dotSize  = window._xPortDotFixedScreen === false
+        ? `${_oldSize}px`
+        : `var(${_wireless ? '--z-port-dot-w' : '--z-port-dot'})`;
       dot.style.cssText = `
         position:absolute;
         left:${lx}px;
         top:${ly}px;
-        width:${dotSize}px;height:${dotSize}px;
+        width:${dotSize};height:${dotSize};
         background:${color};border:${_orphan ? '1px dashed #555' : 'none'};border-radius:50%;
         transform:translate(-50%,-50%);
         display:flex;align-items:center;justify-content:center;
@@ -260,22 +532,27 @@ function renderOneNode(sid) {
       // .port-dot-node.cab-clickable/cab-free applique clip-path:circle() (cercle de
       // hit-test précis, voir main.css) qui rogne aussi tout contenu enfant, donc un
       // nom imbriqué dans le point est invisible même avec display:block. Toujours
-      // créé ; sa visibilité réelle (port cible disponible ET assez de place à l'écran
-      // par rapport à ses voisins également affichés) est pilotée depuis newcable.js
-      // via les classes lbl-available (_refreshPortDotState) et label-crowded
-      // (_refreshPortLabelCrowding), rappelées à chaque changement d'état câble et à
-      // chaque zoom/déplacement (canvas.js::applyT). Décalage vertical plus grand pour
-      // un port double, pour dégager son anneau (box-shadow, hors gabarit du point).
+      // créé ; sa visibilité réelle est pilotée en pur CSS (main.css) via
+      // :has(+ .port-dot-node.cab-free:hover) — ne s'affiche qu'au survol du point
+      // LUI-MÊME, jamais sur un port utilisé/incompatible (pointer-events:none dessus,
+      // le survol ne peut même pas s'y déclencher). Taille fixe à l'écran quel que
+      // soit le zoom (var(--z-port-lbl), posée dans canvas.js::applyT, même principe
+      // que --z-border). Positionné AU-DESSUS du point (translateY(-100%) : le `top`
+      // calculé ancre le bas du bloc de texte, pas son haut), dégagé de sa taille
+      // AGRANDIE au survol (PORT_LBL_HOVER_SCALE, voir le haut du fichier) — pas
+      // dotSize seul, sous peine de chevauchement une fois le point réellement
+      // grossi par :hover. Décalage plus grand pour un port double, pour dégager
+      // aussi son anneau (box-shadow, hors gabarit du point).
       if (!_orphan) {
         const lbl = document.createElement('div');
         lbl.className = 'port-dot-type-lbl';
         lbl.dataset.portId = p.id;
         lbl.textContent = tType(p.type);
         lbl.style.cssText = `
-          position:absolute;left:${lx}px;top:${ly + dotSize / 2 + (p.dual ? 8 : 3)}px;
-          transform:translateX(-50%);
+          position:absolute;left:${lx}px;top:calc(${ly}px - ${dotSize} * ${PORT_LBL_HOVER_SCALE / 2} - ${p.dual ? 8 : 3}px);
+          transform:translate(-50%,-100%);
           white-space:nowrap;pointer-events:none;
-          font-family:var(--mono);font-size:10px;color:${color};
+          font-family:var(--mono);color:${color};
           z-index:6;
         `;
         portsLayer.appendChild(lbl);
@@ -316,12 +593,23 @@ function renderOneNode(sid) {
     });
   }
 
-  if (s.img) {
+  if (_dispImg) {
     // L'image est déjà dans le DOM (imgWrap) — attendre qu'elle soit chargée
     const imgEl = imgWrap.querySelector('img');
     const _onLoad = () => {
+      let _rearSizeChanged = false; // taille Arrière changée à l'affichage : bouts de câble déjà recalés par _applyRearSize
+      if (_rearActive) {
+        // Vue Arrière : mesurer SES propres dimensions naturelles (pour que ses
+        // ports/câbles soient positionnés via _nodeImgRect(s,'rear'), jamais le
+        // rect de l'Avant) — mais ne jamais toucher au cadre d'obstacle (bb) ni à
+        // l'ajustement de hauteur, qui restent basés sur l'Avant (voir plus haut) :
+        // la boîte du nœud ne doit pas changer de taille selon la vue affichée.
+        if (window._xRearImageSync !== false) _rearSizeChanged = _applyRearSize(sid, s.imgRear, imgEl.naturalWidth, imgEl.naturalHeight);
+        else { s._imgWRear = imgEl.naturalWidth; s._imgHRear = imgEl.naturalHeight; }
+      } else {
       s._imgW = imgEl.naturalWidth;
       s._imgH = imgEl.naturalHeight;
+      _ensureFrontAlphaPixels(sid, s, imgEl);
 
       // Migration ponctuelle du cadre de contenu (bb) : historiquement il valait une
       // constante (PNG entier, ou 2 % de marge) au lieu du contour réellement opaque,
@@ -355,12 +643,24 @@ function renderOneNode(sid) {
           setDirty();
         }
       }
+      } // fin if/else _rearActive
       _placeDots();
+      // Points créés seulement maintenant (image chargée après coup) : réappliquer leur état cliquable en mode câble.
+      if (typeof _cableAddMode !== 'undefined' && _cableAddMode && typeof _refreshPortDotState === 'function') _refreshPortDotState();
       // Recalculate cables whose endpoints have drifted from the now-correct port positions.
       // Delete the whole override (not just snap endpoints) so BFS recomputes a clean path.
-      let needRedraw = false;
+      // Le côté (Avant/Arrière) de CHAQUE câble est résolu individuellement via
+      // _findPortById (cables.js) — ce nœud peut avoir des câbles sur les deux
+      // vues à la fois, indépendamment de laquelle est actuellement affichée.
+      let needRedraw = _rearSizeChanged; // bouts déjà recalés par _applyRearSize : il reste à redessiner
       for (const c of (APP?.cables || [])) {
         if (c.from !== sid && c.to !== sid) continue;
+        // Câble dont une extrémité est en cours de glissement (voir _endDragInProgress, cables.js) : jamais
+        // recalculé ici. Son bout est volontairement sous le curseur, loin de son port, et passait pour décalé :
+        // basculer l'appareil Avant/Arrière au survol du ↻ le rebranchait un instant sur son ancien port (2026-09-15).
+        // Sécurité anti-régression : window._xDragKeepHeldCable = false → recalculé comme avant.
+        if (window._xDragKeepHeldCable !== false && typeof _endDragInProgress !== 'undefined'
+            && _endDragInProgress && _endDragInProgress.cid === c.id) continue;
         const pts = cableOverrides[c.id];
         if (!pts || pts.length < 2) {
           if ((c.from === sid && c.from_nx != null) || (c.to === sid && c.to_nx != null)) {
@@ -371,11 +671,13 @@ function renderOneNode(sid) {
         }
         let stale = false;
         if (c.from === sid && c.from_nx != null) {
-          const ep = edgePtFixed(s, c.from_nx, c.from_ny);
+          const fromSide = c.from_port && typeof _findPortById === 'function' ? _findPortById(s, c.from_port)?.side : undefined;
+          const ep = edgePtFixed(s, c.from_nx, c.from_ny, fromSide);
           if (Math.abs(pts[0][0] - ep[0]) > 1 || Math.abs(pts[0][1] - ep[1]) > 1) stale = true;
         }
         if (c.to === sid && c.to_nx != null) {
-          const ep = edgePtFixed(s, c.to_nx, c.to_ny);
+          const toSide = c.to_port && typeof _findPortById === 'function' ? _findPortById(s, c.to_port)?.side : undefined;
+          const ep = edgePtFixed(s, c.to_nx, c.to_ny, toSide);
           const last = pts.length - 1;
           if (Math.abs(pts[last][0] - ep[0]) > 1 || Math.abs(pts[last][1] - ep[1]) > 1) stale = true;
         }
@@ -392,6 +694,21 @@ function renderOneNode(sid) {
     }
   } else {
     _placeDots(); // pas d'image → fallback immédiat
+    if (typeof _cableAddMode !== 'undefined' && _cableAddMode && typeof _refreshPortDotState === 'function') _refreshPortDotState();
+  }
+
+  // Bouton de bascule Avant/Arrière — seulement si une Arrière est configurée.
+  // Sœur de box (pas enfant) comme portsLayer : .node-box coupe son contenu
+  // au bord (overflow:hidden pour les coins arrondis). Toujours dans le DOM ;
+  // sa visibilité (nœud sélectionné) est gérée en CSS via .node.sel.
+  if (s.imgRear) {
+    const flipBtn = document.createElement('button');
+    flipBtn.className = 'node-flip-btn';
+    flipBtn.title = typeof t === 'function' ? t('toggle_view') : 'Toggle front/rear';
+    flipBtn.textContent = '↻';
+    flipBtn.addEventListener('pointerdown', e => e.stopPropagation());
+    flipBtn.addEventListener('click', e => { e.stopPropagation(); toggleNodeActiveView(sid); });
+    el.appendChild(flipBtn);
   }
 
   el.appendChild(box);
@@ -408,6 +725,7 @@ function renderOneNode(sid) {
   lbl.textContent = s.short || s.name;
   lbl.style.color = cat.color;
   lbl.style.fontSize = (s.lblSize || 48) + 'px';
+  _applyNodeIpLine(sid, lbl);
   _updateLblPos(sid, lbl);
 
   let _lblOld = lbl.textContent;
@@ -473,8 +791,9 @@ function renderOneNode(sid) {
     ['sel','lit','dim','route-dim'].forEach(cls => {
       lbl.classList.toggle(cls, node.classList.contains(cls));
     });
-    // Couleur quand sélectionné
-    if (node.classList.contains('sel')) lbl.style.color = '#fff';
+    // Le nom garde la couleur de sa catégorie, sélectionné ou non : la sélection se voit au cadre de l'appareil.
+    // window._xLblWhiteOnSel = true en console : ancien comportement (nom en blanc tant que l'appareil est sélectionné).
+    if (window._xLblWhiteOnSel === true && node.classList.contains('sel')) lbl.style.color = '#fff';
     else lbl.style.color = getCat(APP.nodes[sid]?.cat).color;
   });
   obs.observe(el, { attributes: true, attributeFilter: ['class'] });
@@ -583,15 +902,83 @@ function _catIcon(cat) {
   return icons[cat] || '📦';
 }
 
+// Ligne « adresse IP » sous le nom : deuxième ligne de l'étiquette via ::after (main.css), donc jamais
+// dans le texte éditable du nom. Texte, visibilité, taille et couleur réglés dans le panneau de droite (panel.js).
+function _applyNodeIpLine(sid, lblEl) {
+  const s   = APP.nodes[sid];
+  const lbl = lblEl || document.getElementById(`nl-${sid}`);
+  if (!s || !lbl) return;
+  const ip = _nodeIpText(s);
+  if (!ip) { delete lbl.dataset.ip; return; }
+  lbl.dataset.ip = ip;
+  lbl.style.setProperty('--ip-fs', (s.ipSize || _defaultIpSize(s)) + 'px');
+  lbl.style.setProperty('--ip-color', s.ipColor || _defaultIpColor());
+}
+
+// Taille de départ de l'adresse IP : dernière taille choisie dans le panneau (gardée en mémoire,
+// y compris après redémarrage), sinon 2/3 du nom.
+function _defaultIpSize(node) {
+  const v = parseInt(localStorage.getItem('wires-ip-size'), 10);
+  return v >= 6 && v <= 400 ? v : Math.round(((node && node.lblSize) || 48) * 2 / 3);
+}
+
+// Couleur de départ de l'adresse IP : dernière couleur choisie dans le panneau (même mémoire), sinon blanc.
+function _defaultIpColor() {
+  const c = localStorage.getItem('wires-ip-color');
+  return /^#[0-9a-f]{6}$/i.test(c || '') ? c : '#ffffff';
+}
+
+// Adresse IP à afficher (canevas et exports) : seulement si complète (4 nombres) et « Visible » cochée, sinon ''.
+function _nodeIpText(node) {
+  const ip = ((node && node.ip) || '').trim();
+  return node && node.ipVisible !== false && /^\d{1,3}(\.\d{1,3}){3}$/.test(ip) ? ip : '';
+}
+
+// Position du nom autour de l'appareil : 'bottom' (défaut historique), 'top', 'left',
+// 'right'. Choisie appareil par appareil dans le panneau de droite, jamais mémorisée
+// comme valeur de départ des suivants (décision de l'utilisateur, 2026-09-19).
+// L'adresse IP est la deuxième ligne de cette même étiquette : elle suit sans rien faire.
+const LBL_GAP = 14;   // écart entre l'appareil et son nom, identique aux 4 positions
+
+function nodeLblPos(s) {
+  const p = s && s.lblPos;
+  return (p === 'top' || p === 'left' || p === 'right') ? p : 'bottom';
+}
+
 function _updateLblPos(sid, lblEl) {
   const s = APP.nodes[sid];
   if (!s) return;
   const lbl = lblEl || document.getElementById(`nl-${sid}`);
   if (!lbl) return;
-  lbl.style.left      = (s.x + s.w / 2) + 'px';
-  lbl.style.top       = (s.y + s.h + 14) + 'px';
-  lbl.style.transform = 'translateX(-50%)';
-  lbl.style.position  = 'absolute';
+  lbl.style.position = 'absolute';
+
+  switch (nodeLblPos(s)) {
+    case 'top':
+      // Ancré par le BAS du texte, pour que l'écart reste le même quel que soit le
+      // nombre de lignes (nom seul ou nom + adresse IP).
+      lbl.style.left      = (s.x + s.w / 2) + 'px';
+      lbl.style.top       = (s.y - LBL_GAP) + 'px';
+      lbl.style.transform = 'translate(-50%, -100%)';
+      lbl.style.textAlign = 'center';
+      break;
+    case 'left':
+      lbl.style.left      = (s.x - LBL_GAP) + 'px';
+      lbl.style.top       = (s.y + s.h / 2) + 'px';
+      lbl.style.transform = 'translate(-100%, -50%)';
+      lbl.style.textAlign = 'right';
+      break;
+    case 'right':
+      lbl.style.left      = (s.x + s.w + LBL_GAP) + 'px';
+      lbl.style.top       = (s.y + s.h / 2) + 'px';
+      lbl.style.transform = 'translateY(-50%)';
+      lbl.style.textAlign = 'left';
+      break;
+    default:
+      lbl.style.left      = (s.x + s.w / 2) + 'px';
+      lbl.style.top       = (s.y + s.h + LBL_GAP) + 'px';
+      lbl.style.transform = 'translateX(-50%)';
+      lbl.style.textAlign = 'center';
+  }
 }
 
 // ── Drag nœud ────────────────────────────────────────────────
@@ -683,12 +1070,30 @@ function setupNodeDrag(el, sid) {
         const mel = document.getElementById(`n-${mid}`);
         if (mel) { mel.style.left = ms.x + 'px'; mel.style.top = ms.y + 'px'; }
         _updateLblPos(mid);
-        redrawCablesMovingNode(mid);
       }
     }
 
-    // Redessiner câbles connectés en live (extrémités suivent le nœud)
-    redrawCablesMovingNode(sid);
+    // Redessiner câbles connectés en live (extrémités suivent le nœud).
+    // Multi-déplacement : UN SEUL redessin pour tout le groupe. Appeler
+    // redrawCablesMovingNode une fois par appareil déplacé faisait repartir chaque
+    // appel de l'instantané de début de geste et défaisait le précédent — les câbles
+    // se détachaient. Le redessin de groupe translate le tracé des câbles dont les
+    // deux bouts bougent et ne reprend que l'extrémité concernée pour les autres.
+    // Sécurité anti-régression : window._xGroupCablePaths = false → ancien
+    // comportement (un appel par appareil, puis tracés effacés au relâchement).
+    if (APP.drag._multiSnap && window._xGroupCablePaths !== false
+        && typeof redrawCablesMovingGroup === 'function') {
+      const gdx = s.x - APP.drag._multiSnap[sid].x;
+      const gdy = s.y - APP.drag._multiSnap[sid].y;
+      redrawCablesMovingGroup(Object.keys(APP.drag._multiSnap), gdx, gdy);
+    } else {
+      if (APP.drag._multiSnap) {
+        for (const mid of Object.keys(APP.drag._multiSnap)) {
+          if (mid !== sid) redrawCablesMovingNode(mid);
+        }
+      }
+      redrawCablesMovingNode(sid);
+    }
   });
 
   el.addEventListener('pointerup', e => {
@@ -698,10 +1103,24 @@ function setupNodeDrag(el, sid) {
     el.releasePointerCapture(e.pointerId);
 
     if (APP.drag.moved && APP.drag._multiSnap) {
-      // Multi-move : recalculer les câbles de tous les nœuds déplacés
-      for (const mid of Object.keys(APP.drag._multiSnap)) {
+      // Multi-move : les tracés sont CONSERVÉS. Ils étaient effacés ici, ce qui
+      // faisait perdre tout cheminement fait à la main dès qu'on déplaçait une
+      // sélection — corrigé le 2026-09-19 avec le redessin de groupe (cables.js).
+      if (window._xGroupCablePaths !== false && typeof redrawCablesMovingGroup === 'function') {
+        const _s = APP.nodes[sid];
+        const gdx = _s ? _s.x - APP.drag._multiSnap[sid].x : 0;
+        const gdy = _s ? _s.y - APP.drag._multiSnap[sid].y : 0;
+        redrawCablesMovingGroup(Object.keys(APP.drag._multiSnap), gdx, gdy);
         for (const c of APP.cables) {
-          if (c.from === mid || c.to === mid) delete cableOverrides[c.id];
+          const pts = cableOverrides[c.id];
+          if (!pts || pts.length < 2) continue;
+          cableOverrides[c.id] = simplify(normalizePts(pts));
+        }
+      } else {
+        for (const mid of Object.keys(APP.drag._multiSnap)) {
+          for (const c of APP.cables) {
+            if (c.from === mid || c.to === mid) delete cableOverrides[c.id];
+          }
         }
       }
       APP.drag._multiSnap = null;
@@ -709,47 +1128,20 @@ function setupNodeDrag(el, sid) {
       setDirty();
       wLog('MULTI_MOVE', { count: APP.selMulti.size });
     } else if (APP.drag.moved) {
-      // Corriger les diagonales introduites par le déplacement du nœud :
-      // normalizePts insère le bon coin, simplify supprime les points redondants.
       // Le tracé lui-même (ancrage + contournement d'un appareil tiers éventuel) est
       // déjà correct à ce stade — calculé en direct à chaque frame par
       // redrawCablesMovingNode, y compris pour le câble connecté au nœud déplacé —
-      // donc jamais recalculé ici, seulement figé/nettoyé.
-      const s = APP.nodes[sid];
+      // donc jamais recalculé ici. On se contente de nettoyer : normalizePts insère le
+      // bon coin, simplify supprime les points redondants.
+      // Avant ce correctif, ce bloc redérivait l'ancre/le stub depuis zéro avec sa
+      // PROPRE logique (touchant elle aussi un 3e point pour éviter une diagonale,
+      // comme l'ancienne _patchCablesForPortMove) — un second calcul, différent et
+      // moins bon que celui du glissé live, qui écrasait silencieusement le bon tracé
+      // sur CHAQUE relâchement, même après un déplacement minime ou un simple clic mal
+      // détecté comme "moved" (régression relevée le 2026-09-11).
       for (const c of APP.cables) {
         const pts = cableOverrides[c.id];
         if (!pts || pts.length < 2) continue;
-        const n = pts.length;
-        const snap = pts.map(p => [...p]);
-        const R = v => Math.round(v);
-        if (c.from === sid && c.from_nx != null) {
-          const newAnc = edgePtFixed(s, c.from_nx, c.from_ny).map(R);
-          const dx = newAnc[0] - snap[0][0], dy = newAnc[1] - snap[0][1];
-          pts[0] = newAnc;
-          if (n >= 3) {
-            pts[1] = c.from_stub_dir
-              ? _stubFromDir(newAnc, c.from_stub_dir)
-              : [R(snap[1][0] + dx), R(snap[1][1] + dy)];
-            if (n > 3) {
-              if (Math.abs(snap[2][1] - snap[1][1]) < 1) pts[2] = [pts[2][0], pts[1][1]];
-              else                                        pts[2] = [pts[1][0], pts[2][1]];
-            }
-          }
-        }
-        if (c.to === sid && c.to_nx != null) {
-          const newAnc = edgePtFixed(s, c.to_nx, c.to_ny).map(R);
-          const dx = newAnc[0] - snap[n-1][0], dy = newAnc[1] - snap[n-1][1];
-          pts[n - 1] = newAnc;
-          if (n >= 3) {
-            pts[n - 2] = c.to_stub_dir
-              ? _stubFromDir(newAnc, c.to_stub_dir)
-              : [R(snap[n-2][0] + dx), R(snap[n-2][1] + dy)];
-            if (n > 3) {
-              if (Math.abs(snap[n-3][1] - snap[n-2][1]) < 1) pts[n-3] = [pts[n-3][0], pts[n-2][1]];
-              else                                             pts[n-3] = [pts[n-2][0], pts[n-3][1]];
-            }
-          }
-        }
         cableOverrides[c.id] = simplify(normalizePts(pts));
       }
       APP.drag.cableSnapshot = {};
@@ -793,7 +1185,7 @@ function exitResizeMode() {
 }
 
 function setupResizeHandle(handle, sid, dir) {
-  let startX, startY, startState;
+  let startX, startY, startState, startCableSnapshot;
   const isCorner = dir.length === 2; // nw/ne/sw/se = proportionnel
 
   handle.addEventListener('pointerdown', e => {
@@ -804,10 +1196,24 @@ function setupResizeHandle(handle, sid, dir) {
     startState = { x: s.x, y: s.y, w: s.w, h: s.h, ratio: s.w / s.h };
     startX = e.clientX;
     startY = e.clientY;
+    // Figé une seule fois ici, jamais remis à jour pendant le glissé — voir le
+    // commentaire de _patchCablesForResize (cables.js) pour le pourquoi.
+    startCableSnapshot = {};
+    for (const c of APP.cables) {
+      if (c.from === sid || c.to === sid) {
+        const pts = cableOverrides[c.id];
+        if (pts) startCableSnapshot[c.id] = pts.map(p => [...p]);
+      }
+    }
     pushUndo();
   });
 
   handle.addEventListener('pointermove', e => {
+    // Sans cette garde, un simple survol de la poignée (sans clic) déclenchait ce
+    // handler et réappliquait un redimensionnement basé sur startX/startY/startState
+    // du DERNIER vrai glissé — l'appareil sautait donc à une taille périmée juste en
+    // passant la souris dessus, aucun clic requis (bug relevé le 2026-09-11).
+    if (!handle.hasPointerCapture(e.pointerId)) return;
     const s = APP.nodes[sid];
     const dx = (e.clientX - startX) / APP.view.zoom;
     const dy = (e.clientY - startY) / APP.view.zoom;
@@ -844,7 +1250,7 @@ function setupResizeHandle(handle, sid, dir) {
     // débordant visiblement de l'image réellement affichée).
     if (!isCorner) s.hManual = true;
     s.cx = s.x + s.w / 2; s.cy = s.y + s.h / 2;
-    applyNodeResize(sid);
+    applyNodeResize(sid, startCableSnapshot);
   });
 
   handle.addEventListener('pointerup', e => {
@@ -852,10 +1258,12 @@ function setupResizeHandle(handle, sid, dir) {
     // cableOverrides = {} effaçait TOUT le cache de tracé du projet (tous les câbles,
     // pas seulement ceux du nœud redimensionné), forçant un nouveau calcul BFS complet
     // qui pouvait reprendre une route différente pour des câbles sans aucun rapport —
-    // voir _patchCablesForPortMove (cables.js) qui ne patche que l'ancre + le stub
-    // adjacent des câbles réellement connectés à ce nœud.
-    if (window._resizePatchCables && typeof _patchCablesForPortMove === 'function') {
-      _patchCablesForPortMove(sid);
+    // voir _patchCablesForResize (cables.js), qui ne patche que l'ancre + le stub
+    // adjacent des câbles réellement connectés à ce nœud. Même fonction (et même
+    // snapshot figé au pointerdown) que pendant le glissé live juste au-dessus, pour
+    // qu'il n'y ait aucun "saut" final vers un calcul différent.
+    if (window._resizePatchCables && typeof _patchCablesForResize === 'function') {
+      _patchCablesForResize(sid, startCableSnapshot);
     } else {
       cableOverrides = {};
     }
@@ -866,10 +1274,15 @@ function setupResizeHandle(handle, sid, dir) {
   });
 }
 
-function applyNodeResize(sid) {
+function applyNodeResize(sid, cableSnapshot) {
   const s = APP.nodes[sid];
   const el = document.getElementById(`n-${sid}`);
   if (!el) return;
+
+  // Même vue effective que renderOneNode — les dots déjà dans le DOM à ce stade
+  // sont ceux de la vue affichée au dernier rendu, il faut donc bouger les MÊMES.
+  const _rearActive = _previewView[sid] === 'rear' && !!s.imgRear;
+  const _dispPorts  = _rearActive ? (s.portsRear || []) : (s.ports || []);
 
   el.style.left   = s.x + 'px';
   el.style.top    = s.y + 'px';
@@ -888,18 +1301,51 @@ function applyNodeResize(sid) {
   const portsLayer = el.querySelector('.node-ports');
   if (portsLayer) { portsLayer.style.width = s.w + 'px'; portsLayer.style.height = s.h + 'px'; }
 
-  // Mettre à jour la position des port dots
-  if (s.ports && s.ports.length) {
-    s.ports.forEach(p => {
+  // Mettre à jour la position des port dots ET de leurs étiquettes de type — les deux
+  // doivent utiliser la même formule que _placeDots() (offset image via _nodeImgRect,
+  // pas juste nx*s.w) sous peine de décalage sur un appareil dont l'image ne remplit pas
+  // exactement son cadre. Avant ce correctif, seul le dot était repositionné ici : les
+  // étiquettes restaient figées à leur ancienne position pendant un redimensionnement
+  // (bug relevé le 2026-09-11).
+  if (_dispPorts && _dispPorts.length) {
+    const r = _nodeImgRect(s, _rearActive ? 'rear' : 'front');
+    const refDim = r ? Math.min(r.rW, r.rH) : Math.min(s.w, s.h);
+    _dispPorts.forEach(p => {
+      const lx = r ? r.offX + p.nx * r.rW : p.nx * s.w;
+      const ly = r ? r.offY + p.ny * r.rH : p.ny * s.h + 3;
+      // Recalculé à chaque resize, comme dans _placeDots() — sinon le dot garde sa taille
+      // de création pendant tout le glissé (position déjà corrigée, mais pas la taille :
+      // régression relevée le 2026-09-11, visible seulement après reload/undo).
+      const _wl = WIRELESS_TYPES.has(p.type);
+      const dotSize = window._xPortDotFixedScreen === false
+        ? `${Math.min(60, refDim * (_wl ? 0.114 : 0.09))}px`
+        : `var(${_wl ? '--z-port-dot-w' : '--z-port-dot'})`;
       const dot = el.querySelector(`.port-dot-node[data-port-id="${p.id}"]`);
       if (dot) {
-        dot.style.left = (p.nx * s.w) + 'px';
-        dot.style.top  = (p.ny * s.h + 3) + 'px';
+        dot.style.left   = lx + 'px';
+        dot.style.top    = ly + 'px';
+        dot.style.width  = dotSize;
+        dot.style.height = dotSize;
+      }
+      const lbl = el.querySelector(`.port-dot-type-lbl[data-port-id="${p.id}"]`);
+      if (lbl) {
+        lbl.style.left = lx + 'px';
+        lbl.style.top  = `calc(${ly}px - ${dotSize} * ${PORT_LBL_HOVER_SCALE / 2} - ${p.dual ? 8 : 3}px)`;
       }
     });
   }
 
   _updateLblPos(sid);
+  // Patch live des câbles pendant le glissé, pas seulement au relâchement (pointerup,
+  // voir plus bas) — sinon le câble reste figé sur son ancien tracé tout le long du
+  // redimensionnement puis saute d'un coup à la fin, incohérent avec les points/
+  // étiquettes qui suivent déjà en direct (régression relevée le 2026-09-11).
+  // _patchCablesForResize (pas _patchCablesForPortMove, réservée à des ajustements
+  // ponctuels ailleurs) : ne bouge que le strict minimum de segments, toujours depuis
+  // le snapshot figé au pointerdown, jamais depuis le résultat du tick précédent.
+  if (window._resizePatchCables && typeof _patchCablesForResize === 'function') {
+    _patchCablesForResize(sid, cableSnapshot);
+  }
   redrawOnlyCables();
 }
 

@@ -9,6 +9,7 @@ let _zPlaceEl       = null;
 let _zoneInEditMode = null;   // id de la zone en mode édition, ou null
 let _onDocDown      = null;   // référence au listener actif pour le supprimer
 let _zDrag          = null;   // { id, startX, startY, ox, oy, moved }
+let _zLabelDrag     = null;   // glisser du NOM : déplace la zone ET son contenu
 let _zResize        = null;   // { id, dir, startX, startY, ox, oy, ow, oh, undoPushed }
 
 const ZONE_COLORS = [
@@ -162,6 +163,29 @@ function _applyZoneStyles(id, el) {
   }
 }
 
+// Contenu d'une zone, figé au début d'un glisser du nom : appareils, étiquettes de
+// texte et zones imbriquées dont le CENTRE est dans le rectangle. Le centre plutôt que
+// l'englobement complet, pour qu'un appareil à cheval sur le bord suive quand même —
+// et pour que la règle reste prévisible quelle que soit sa taille.
+function _zoneMembers(zid) {
+  const z = APP.zones[zid];
+  const out = { nodes: [], labels: [], zones: [] };
+  if (!z) return out;
+  const inside = (cx, cy) => cx >= z.x && cx <= z.x + z.width && cy >= z.y && cy <= z.y + z.height;
+
+  for (const [id, n] of Object.entries(APP.nodes)) {
+    if (inside(n.x + n.w / 2, n.y + n.h / 2)) out.nodes.push({ id, x: n.x, y: n.y });
+  }
+  for (const [id, tl] of Object.entries(APP.textLabels || {})) {
+    if (inside(tl.x, tl.y)) out.labels.push({ id, x: tl.x, y: tl.y });
+  }
+  for (const [id, zz] of Object.entries(APP.zones || {})) {
+    if (id === zid) continue;
+    if (inside(zz.x + zz.width / 2, zz.y + zz.height / 2)) out.zones.push({ id, x: zz.x, y: zz.y });
+  }
+  return out;
+}
+
 // ── Bind events ───────────────────────────────────────────────
 function _bindZoneEvents(id, el) {
   const body  = el.querySelector('.zone-body');
@@ -204,11 +228,27 @@ function _bindZoneEvents(id, el) {
   });
 
   // ── Zone label ─────────────────────────────────────────────
+  // Glisser le NOM déplace la zone AVEC son contenu — comme la barre de titre d'une
+  // fenêtre (demande de l'utilisateur, 2026-09-17). Glisser le FOND ne déplace que le
+  // rectangle, comportement historique inchangé. Le double-clic renomme, inchangé.
+  // Sécurité anti-régression : window._xZoneLabelMovesContent = false → le nom ne fait
+  // que sélectionner, comme avant.
+  // La sélection (et donc l'ouverture du panneau de droite) se fait au RELÂCHEMENT,
+  // et seulement si la zone n'a pas bougé : sinon le panneau s'ouvrait dès le premier
+  // pixel d'un déplacement, et venait recouvrir le canevas pendant le geste
+  // (demande du 2026-09-17).
   label.addEventListener('pointerdown', e => {
     if (e.button !== 0) return;
     e.stopPropagation();
-    if (APP.selZone !== id) selectZone(id);
+    if (zoneLabelDragStart(id, e)) label.setPointerCapture(e.pointerId);
   });
+
+  // stopPropagation : l'etiquette garde la capture du pointeur, mais l'evenement
+  // remonte quand meme au canevas, qui traite lui aussi ce geste (voir canvas.js).
+  // Sans cela, chaque deplacement serait calcule deux fois par image.
+  label.addEventListener('pointermove', e => { if (zoneLabelDragMove(e)) e.stopPropagation(); });
+
+  label.addEventListener('pointerup', e => { if (zoneLabelDragEnd()) e.stopPropagation(); });
 
   label.addEventListener('click', e => e.stopPropagation());
 
@@ -257,6 +297,28 @@ function _bindZoneEvents(id, el) {
   });
 }
 
+// Regle d'appui posee par l'utilisateur (2026-09-19) : au-dessus d'un cable c'est le
+// cable ; dans une partie vide du rectangle c'est la zone ; sur le nom c'est la zone
+// ET son contenu. Hors edition rien n'est a faire : main.css place deja les cables
+// (15) au-dessus des zones (5). Mais une zone SELECTIONNEE passe dans
+// #zone-edit-overlay (calque 50) pour rester attrapable la ou elle recouvre un
+// appareil — et son rectangle avalait alors tout appui sur un cable. On fait donc
+// monter les cables juste au-dessus d'elle le temps de l'edition seulement.
+// Effet de bord assume, limite a la duree de la selection : un cable qui croise un
+// appareil sans lui etre branche passe par-dessus son image. Les cables caches par la
+// face affichee ne sont pas concernes, leur trace est efface et non recouvert.
+// Securite anti-regression : window._xCablesAboveZones = false -> rien n'est touche.
+function _zoneEditCableStacking(actif) {
+  if (window._xCablesAboveZones === false) return;
+  const cab = document.getElementById('cables-svg');
+  const flo = document.getElementById('flow-svg');
+  // En sortie on EFFACE le style en ligne : main.css reprend la main (#cables-svg
+  // et #flow-svg y sont a 15, deja au-dessus des zones et des appareils), et le
+  // mecanisme du cable selectionne qui monte a 30 refonctionne.
+  if (cab) cab.style.zIndex = actif ? '51' : '';
+  if (flo) flo.style.zIndex = actif ? '52' : '';
+}
+
 // ── Zone edit mode ────────────────────────────────────────────
 function enterZoneEditMode(id) {
   if (_zoneInEditMode === id) return;
@@ -267,6 +329,7 @@ function enterZoneEditMode(id) {
   // Move zone into overlay (z-index:50) so zone-body receives pointer events above nodes
   const overlay = document.getElementById('zone-edit-overlay');
   if (overlay && el) overlay.appendChild(el);
+  _zoneEditCableStacking(true);
 
   _onDocDown = e => {
     const elCheck = _zEl(id);
@@ -297,13 +360,183 @@ function exitZoneEditMode(id) {
   // Move zone back to zones-layer
   const layer = _zLayer();
   if (layer && el) layer.appendChild(el);
+  _zoneEditCableStacking(false);
+}
+
+// ── Deplacement d'une zone par son NOM (zone + contenu) ───────
+// Extrait des gestionnaires de l'etiquette : le canevas doit pouvoir demarrer
+// EXACTEMENT le meme geste. L'etiquette est en effet recouverte par le calque des
+// appareils tant que la zone n'est pas selectionnee, et l'appui arrive alors au
+// canevas, jamais a l'etiquette (constate le 2026-09-19 : le canevas se deplacait).
+// Securite anti-regression : window._xZoneLabelMovesContent = false -> le nom
+// selectionne seulement, comme avant l'ajout du deplacement avec le contenu.
+function zoneLabelDragStart(id, e) {
+  if (window._xZoneLabelMovesContent === false) {
+    if (APP.selZone !== id) selectZone(id);
+    return false;
+  }
+  const z = APP.zones[id];
+  if (!z) return false;
+  _zLabelDrag = {
+    id, startX: e.clientX, startY: e.clientY,
+    ox: z.x, oy: z.y, moved: false,
+    locked: !!z.hidden,                 // zone masquee : selectionnable, pas deplacable
+    members: z.hidden ? { nodes: [], labels: [], zones: [] } : _zoneMembers(id),
+    dx: 0, dy: 0,
+  };
+  // Instantane des traces faits a la main, comme pour un glisser d'appareil : le
+  // deplacement les TRANSLATE (redrawCablesMovingGroup, cables.js) au lieu de les
+  // effacer. Seuls les cables touchant un appareil emporte sont concernes.
+  // Securite anti-regression : window._xGroupCablePaths = false -> traces effaces
+  // et recalcules, comportement du 2026-09-17.
+  if (window._xGroupCablePaths !== false) {
+    const ids = new Set(_zLabelDrag.members.nodes.map(s => s.id));
+    APP.drag = APP.drag || {};
+    APP.drag.cableSnapshot = {};
+    for (const c of APP.cables) {
+      if ((ids.has(c.from) || ids.has(c.to)) && cableOverrides[c.id]) {
+        APP.drag.cableSnapshot[c.id] = cableOverrides[c.id].map(p => [...p]);
+      }
+    }
+    _zLabelDrag.movedIds = ids;
+  }
+  return true;
+}
+
+// Renvoie true quand le geste a ete pris en charge, pour que l'appelant s'arrete la.
+function zoneLabelDragMove(e) {
+  if (!_zLabelDrag) return false;
+  if (_zLabelDrag.locked) return true;
+  const id = _zLabelDrag.id;
+  const el = _zEl(id);
+  const dx = (e.clientX - _zLabelDrag.startX) / APP.view.zoom;
+  const dy = (e.clientY - _zLabelDrag.startY) / APP.view.zoom;
+  if (!_zLabelDrag.moved && Math.hypot(dx, dy) < 3) return true;
+  if (!_zLabelDrag.moved) { pushUndo(); _zLabelDrag.moved = true; }
+
+  const z = APP.zones[id];
+  if (!z) return true;
+  z.x = _zLabelDrag.ox + dx;
+  z.y = _zLabelDrag.oy + dy;
+  if (el) { el.style.left = z.x + 'px'; el.style.top = z.y + 'px'; }
+
+  const m = _zLabelDrag.members;
+  for (const s of m.nodes) {
+    const n = APP.nodes[s.id];
+    if (!n) continue;
+    n.x = s.x + dx; n.y = s.y + dy;
+    n.cx = n.x + n.w / 2; n.cy = n.y + n.h / 2;
+    const nel = document.getElementById(`n-${s.id}`);
+    if (nel) { nel.style.left = n.x + 'px'; nel.style.top = n.y + 'px'; }
+    if (typeof _updateLblPos === 'function') _updateLblPos(s.id);
+  }
+  for (const s of m.labels) {
+    const tl = APP.textLabels[s.id];
+    if (!tl) continue;
+    tl.x = s.x + dx; tl.y = s.y + dy;
+    const tel = document.getElementById(`tl-${s.id}`);
+    if (tel) { tel.style.left = tl.x + 'px'; tel.style.top = tl.y + 'px'; }
+  }
+  for (const s of m.zones) {
+    const zz = APP.zones[s.id];
+    if (!zz) continue;
+    zz.x = s.x + dx; zz.y = s.y + dy;
+    const zel = document.getElementById(`zone-${s.id}`);
+    if (zel) { zel.style.left = zz.x + 'px'; zel.style.top = zz.y + 'px'; }
+  }
+  // Cables : recalcul COMPLET, au plus une fois par image. redrawCablesMovingNode()
+  // ne convient pas ici : elle repart de l'instantane de debut de geste pour TOUS les
+  // cables a chaque appel, puis ne corrige que l'appareil qu'on lui passe — appelee
+  // une fois par appareil deplace, chaque appel defait le precedent et les cables se
+  // detachent (constate le 2026-09-17).
+  _zLabelDrag.dx = dx;
+  _zLabelDrag.dy = dy;
+  if (!_zLabelDrag.rafId) {
+    _zLabelDrag.rafId = requestAnimationFrame(() => {
+      if (!_zLabelDrag) return;
+      _zLabelDrag.rafId = null;
+      if (_zLabelDrag.movedIds && typeof redrawCablesMovingGroup === 'function') {
+        redrawCablesMovingGroup(_zLabelDrag.movedIds, _zLabelDrag.dx, _zLabelDrag.dy);
+        return;
+      }
+      for (const s of _zLabelDrag.members.nodes) {
+        for (const c of APP.cables) {
+          if (c.from === s.id || c.to === s.id) delete cableOverrides[c.id];
+        }
+      }
+      if (typeof renderCables === 'function') renderCables();
+    });
+  }
+  if (APP.selZone === id) _updateZoneNodesPanel(id);
+  return true;
+}
+
+function zoneLabelDragEnd() {
+  if (!_zLabelDrag) return false;
+  const id = _zLabelDrag.id;
+  if (_zLabelDrag.rafId) cancelAnimationFrame(_zLabelDrag.rafId);
+  if (_zLabelDrag.moved) {
+    if (_zLabelDrag.movedIds && typeof redrawCablesMovingGroup === 'function') {
+      // Dernier calage sur la position finale, puis nettoyage du trace : normalizePts
+      // insere le bon coin, simplify supprime les points redondants. Aucun trace n'est
+      // efface — c'est tout l'objet du correctif.
+      redrawCablesMovingGroup(_zLabelDrag.movedIds, _zLabelDrag.dx, _zLabelDrag.dy);
+      for (const c of APP.cables) {
+        const pts = cableOverrides[c.id];
+        if (!pts || pts.length < 2) continue;
+        cableOverrides[c.id] = simplify(normalizePts(pts));
+      }
+      if (APP.drag) APP.drag.cableSnapshot = {};
+    } else {
+      for (const s of _zLabelDrag.members.nodes) {
+        for (const c of APP.cables) {
+          if (c.from === s.id || c.to === s.id) delete cableOverrides[c.id];
+        }
+      }
+    }
+    if (typeof renderCables === 'function') renderCables();
+    setDirty();
+    wLog('ZONE_MOVE_WITH_CONTENT', { id, nodes: _zLabelDrag.members.nodes.length });
+  } else if (APP.selZone !== id) {
+    selectZone(id);   // simple clic sur le nom : on selectionne, le panneau s'ouvre
+  }
+  _zLabelDrag = null;
+  return true;
+}
+
+// Boite de l'etiquette d'une zone, en coordonnees canevas. Mesuree sur l'element
+// quand il existe (sa taille depend du nom et de labelSize), sinon estimee.
+function _zoneLabelBox(id) {
+  const z = APP.zones[id];
+  if (!z) return null;
+  const el  = _zEl(id);
+  const lab = el && el.querySelector('.zone-label');
+  const h = lab ? lab.offsetHeight : Math.round((z.labelSize || 96) * 1.35 + 8);
+  const w = lab ? lab.offsetWidth  : z.width;
+  const GAP = 6;                        // meme ecart que la regle CSS .zone-label
+  return { x: z.x + z.width / 2 - w / 2, y: z.y - GAP - h, w, h };
+}
+
+// Zone dont le NOM se trouve sous ce point (coordonnees canevas).
+function findZoneLabelAtPoint(x, y) {
+  let best = null, bestZ = -1;
+  for (const id of Object.keys(APP.zones || {})) {
+    const b = _zoneLabelBox(id);
+    if (!b) continue;
+    if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+      const zz = APP.zones[id].zIndex || 1;
+      if (zz > bestZ) { best = id; bestZ = zz; }
+    }
+  }
+  return best;
 }
 
 function findZoneAtPoint(x, y) {
   let best = null, bestZ = -1;
   for (const [id, z] of Object.entries(APP.zones || {})) {
     const inBody  = !z.hidden && x >= z.x && x <= z.x + z.width && y >= z.y && y <= z.y + z.height;
-    const inLabel = x >= z.x && x <= z.x + z.width && y >= z.y - 50 && y < z.y;
+    const lb      = _zoneLabelBox(id);   // 50 points en dur laissaient passer le haut d'une etiquette
+    const inLabel = !!lb && x >= lb.x && x <= lb.x + lb.w && y >= lb.y && y < z.y;
     if (inBody || inLabel) {
       const zz = z.zIndex || 1;
       if (zz > bestZ) { best = id; bestZ = zz; }
@@ -599,6 +832,7 @@ function _getNodesInZone(id) {
 
 // ── Place mode (click+drag to draw zone) ──────────────────────
 function startZonePlaceMode() {
+  if (typeof _routeStepPending === 'function' && _routeStepPending()) return; // câble en attente de sa route
   _zPlace = true;
   document.getElementById('canvas-area').style.cursor = 'crosshair';
 

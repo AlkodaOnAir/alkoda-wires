@@ -52,3 +52,28 @@ for(const lang of ['en','fr','es']){
   const l=WIRES_LOCALES.renderer[lang];
   if(l&&l.search_logo_src) l.search_logo_src='../renderer/'+l.search_logo_src;
 }
+
+
+// ── Recherche d'image en ligne : indisponible dans cette demo ────────────────
+// Elle passe par une fenetre Electron dediee, absente d'une page web. Sans ce
+// garde-fou le visiteur ouvre une fenetre qui ne peut aboutir. On neutralise donc
+// le bouton plutot que de le laisser promettre ce qui ne marchera pas.
+// L'infobulle traduite est retiree, sinon le prochain changement de langue la
+// reecrirait par-dessus la notre.
+function _demoDisableImageSearch() {
+  var btn = document.getElementById('pick-image-search');
+  if (!btn || btn.dataset.demoDisabled === '1') return;
+  btn.dataset.demoDisabled = '1';
+  btn.disabled = true;
+  btn.removeAttribute('data-i18n-title');
+  btn.title = 'Online image search is not available in this demo';
+  btn.style.cursor = 'not-allowed';
+  btn.style.opacity = '0.4';
+  btn.style.filter = 'grayscale(1)';
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }, true);
+}
+_demoDisableImageSearch();
+document.addEventListener('DOMContentLoaded', _demoDisableImageSearch);

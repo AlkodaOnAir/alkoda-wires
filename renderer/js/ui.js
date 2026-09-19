@@ -99,12 +99,18 @@ function initUI() {
   // sélectionné "en coulisses" (APP.sel jamais remis à null), donc l'estompage
   // du canevas persistait même panneau fermé.
   document.getElementById('btn-routes').addEventListener('click', () => {
-    document.getElementById('routes-panel').classList.toggle('open');
-    if (typeof clearSel === 'function') clearSel();
-    if (typeof closePanel === 'function') closePanel();
+    const _toggle = () => {
+      document.getElementById('routes-panel').classList.toggle('open');
+      if (typeof clearSel === 'function') clearSel();
+      if (typeof closePanel === 'function') closePanel();
+    };
+    // Fermer le panneau pendant le formulaire de route d'un nouveau câble supprime ce câble : avertir d'abord.
+    const _open = document.getElementById('routes-panel').classList.contains('open');
+    if (_open && typeof _confirmLeaveRouteStep === 'function') _confirmLeaveRouteStep(_toggle); else _toggle();
   });
   document.getElementById('btn-routes-close').addEventListener('click', () => {
-    document.getElementById('routes-panel').classList.remove('open');
+    const _close = () => document.getElementById('routes-panel').classList.remove('open');
+    if (typeof _confirmLeaveRouteStep === 'function') _confirmLeaveRouteStep(_close); else _close();
   });
 
   // Info panel close
@@ -129,9 +135,13 @@ function initUI() {
 function newProject(offerTour = true, skipDirtyCheck = false) {
   const _doNew = () => {
     wLog('PROJECT_NEW', {});
+    if (typeof _closeRouteStep === 'function') _closeRouteStep(); // étape « route » d'un câble en attente : ne pas la garder dans le nouveau projet
   APP.nodes        = {};
   APP.cables       = [];
   APP.chains       = [];
+  // Aperçu Avant/Arrière : jamais sauvegardé, rien à réinitialiser en pratique
+  // ici (projet neuf = aucun nœud) mais garde ceci cohérent avec loadState.
+  if (typeof _previewView !== 'undefined') _previewView = {};
   APP.sel          = null;
   APP.selCable     = null;
   APP.selMulti     = new Set();

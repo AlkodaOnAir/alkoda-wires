@@ -363,6 +363,7 @@ function _editTlInline(id) {
 
 // ── Place mode ────────────────────────────────────────────────
 function startTextLabelPlaceMode() {
+  if (typeof _routeStepPending === 'function' && _routeStepPending()) return; // câble en attente de sa route
   _tlPlace = true;
   document.getElementById('canvas-area').style.cursor = 'crosshair';
 

@@ -2,6 +2,13 @@
    panel.js — Right side info panel
 ═══════════════════════════════════════════════════════════════ */
 
+// Scan du réseau pour le champ « Adresse IP » : résultat gardé pour la session (tous les appareils),
+// affiché par le panneau de l'appareil actuellement ouvert (voir openInfoPanel).
+let _ipScanResult  = null; // { devices: [{ ip, mac, vendor }], error? }
+let _ipScanRunning = null; // scan en cours (promesse)
+let _ipScanRender  = null; // rendu du panneau actuellement ouvert
+let _ipScanFolded  = false; // liste repliée par l'utilisateur (session), redépliée par un nouveau scan
+
 function _showSinglePanelMode() {
   const multi = document.getElementById('ip-multi');
   if (multi) multi.style.display = 'none';
@@ -105,20 +112,55 @@ function openInfoPanel(sid) {
     setDirty();
   };
 
+  // Position du nom autour de l'appareil (4 flèches en T inversé). Choix par appareil,
+  // jamais retenu comme valeur de départ des suivants : « en dessous » reste le défaut.
+  // S'applique à toute la sélection quand plusieurs appareils sont sélectionnés.
+  const posWrap = document.getElementById('ip-lblpos');
+  if (posWrap) {
+    const _cur = typeof nodeLblPos === 'function' ? nodeLblPos(s) : (s.lblPos || 'bottom');
+    posWrap.querySelectorAll('button').forEach(b => {
+      b.classList.toggle('active', b.dataset.pos === _cur);
+      b.onclick = () => {
+        const targets = (APP.selMulti && APP.selMulti.size > 1) ? [...APP.selMulti] : [sid];
+        const pos = b.dataset.pos;
+        if (targets.every(id => (APP.nodes[id]?.lblPos || 'bottom') === pos)) return;
+        pushUndo();
+        targets.forEach(id => {
+          const n = APP.nodes[id];
+          if (!n) return;
+          if (pos === 'bottom') delete n.lblPos; else n.lblPos = pos;
+          _updateLblPos(id);
+        });
+        posWrap.querySelectorAll('button').forEach(x => x.classList.toggle('active', x.dataset.pos === pos));
+        setDirty();
+        wLog('NODE_LBL_POS', { id: sid, pos, count: targets.length });
+      };
+    });
+  }
+
   // Bouton crayon → modale de modification complète de l'appareil (nom, nom court,
   // catégorie, image/forme, ports) — voir openEditNodeModal/library.js
   const editBtn = document.getElementById('ip-edit-node');
   editBtn.title = t('edit_device_title');
   editBtn.onclick = () => { if (typeof openEditNodeModal === 'function') openEditNodeModal(sid); };
 
-  // Image
+  // Image — reflète la vue active (Avant/Arrière) si l'appareil en a deux.
+  // Ports/câbles restent basés sur l'Avant (voir renderOneNode/nodes.js) :
+  // ce bouton ne change que l'aperçu affiché ici et sur le canevas.
   const ipImg     = document.getElementById('ip-img');
   const ipImgWrap = document.getElementById('ip-img-wrap');
-  if (s.img) {
-    ipImg.src = s.img;
+  const ipFlipBtn = document.getElementById('ip-flip-view');
+  const _rearActive = typeof _previewView !== 'undefined' && _previewView[sid] === 'rear' && !!s.imgRear;
+  const _dispImg = _rearActive ? s.imgRear : s.img;
+  if (_dispImg) {
+    ipImg.src = _dispImg;
     ipImgWrap.style.display = '';
   } else {
     ipImgWrap.style.display = 'none';
+  }
+  if (ipFlipBtn) {
+    ipFlipBtn.style.display = s.imgRear ? '' : 'none';
+    ipFlipBtn.onclick = () => { if (typeof toggleNodeActiveView === 'function') toggleNodeActiveView(sid); };
   }
 
   // Shape color section — visible only for shape nodes
@@ -194,6 +236,201 @@ function openInfoPanel(sid) {
     ipShapeColor.querySelector('label').onclick = () => picker.click();
   } else {
     ipShapeColor.style.display = 'none';
+  }
+
+  // Adresse IP — deuxième ligne sous le nom sur le canevas (voir _applyNodeIpLine, nodes.js).
+  // Taille de départ 2/3 du nom et couleur blanche, figées au premier réglage puis indépendantes du nom.
+  let ipSection = document.getElementById('ip-ipaddr');
+  if (!ipSection) {
+    ipSection = document.createElement('div');
+    ipSection.id = 'ip-ipaddr';
+    ipSection.className = 'ip-section';
+    ipSection.innerHTML = `
+      <div class="ip-section-title" data-i18n="ip_address">${t('ip_address')}</div>
+      <div class="ip-tl-field" id="ip-ipaddr-octets" style="display:flex;align-items:center;gap:3px">
+        ${[0, 1, 2, 3].map(i => `${i ? '<span style="color:var(--textdim);font-family:var(--mono)">.</span>' : ''}<input type="text" class="ip-tl-input" inputmode="numeric" maxlength="3" spellcheck="false" style="flex:1;min-width:0;text-align:center;padding:5px 2px">`).join('')}
+      </div>
+      <div class="ip-tl-field">
+        <button type="button" class="ip-btn" id="ip-ipaddr-scan" data-i18n="ip_scan">${t('ip_scan')}</button>
+        <div id="ip-ipaddr-scan-status" style="font-family:var(--mono);font-size:10px;color:var(--textdim);margin-top:4px"></div>
+        <div id="ip-ipaddr-scan-toggle" style="position:relative;display:flex;align-items:center;min-height:22px;font-family:var(--mono);font-size:10px;color:var(--textdim);margin-top:4px;cursor:pointer;user-select:none"></div>
+        <div id="ip-ipaddr-scan-list" style="max-height:140px;overflow-y:auto;margin-top:4px"></div>
+      </div>
+      <label class="ip-tl-field" style="display:flex;align-items:center;gap:6px;cursor:pointer">
+        <input type="checkbox" id="ip-ipaddr-visible" style="margin:0">
+        <span class="ip-tl-label" style="margin:0" data-i18n="ip_visible">${t('ip_visible')}</span>
+      </label>
+      <div class="ip-tl-row2">
+        <div class="ip-tl-field" style="flex:1">
+          <label class="ip-tl-label" data-i18n="tl_size">${t('tl_size')}</label>
+          <input type="number" id="ip-ipaddr-size" class="ip-tl-input" min="6" max="400">
+        </div>
+        <div class="ip-tl-field" style="flex:1">
+          <label class="ip-tl-label" data-i18n="tl_color">${t('tl_color')}</label>
+          <input type="color" id="ip-ipaddr-color" class="ip-tl-color">
+        </div>
+      </div>`;
+    document.getElementById('ip-conns-section').insertAdjacentElement('beforebegin', ipSection);
+  }
+  ipSection.style.display = s.cat === 'internet' ? 'none' : '';
+  if (s.cat !== 'internet') {
+    const octets = [...document.querySelectorAll('#ip-ipaddr-octets input')];
+    const ipVis = document.getElementById('ip-ipaddr-visible');
+    const ipSz  = document.getElementById('ip-ipaddr-size');
+    const ipCol = document.getElementById('ip-ipaddr-color');
+    const _defSize = node => _defaultIpSize(node); // dernière taille choisie (gardée en mémoire) ou 2/3 du nom
+    const _ipEdit = fn => () => {
+      const node = APP.nodes[sid];
+      if (!node) return;
+      fn(node);
+      if (node.ipSize == null)  node.ipSize  = _defSize(node);
+      if (node.ipColor == null) node.ipColor = _defaultIpColor(); // dernière couleur choisie (gardée en mémoire) ou blanc
+      _applyNodeIpLine(sid);
+      setDirty();
+    };
+    ipVis.checked  = s.ipVisible !== false;
+    ipSz.value     = s.ipSize || _defSize(s);
+    ipCol.value    = s.ipColor || _defaultIpColor();
+
+    // Adresse IPv4 en 4 cases, points fixes : 3 chiffres → case suivante (001 pour 1), ou Point/Espace/virgule/flèche droite ;
+    // zéros inutiles retirés (001 → 1), 255 au maximum ; coller une adresse complète remplit les 4 cases.
+    const _octetNorm = v => (v === '' ? '' : String(Math.min(255, parseInt(v, 10))));
+    const _saveOctets = _ipEdit(node => { node.ip = octets.every(o => o.value === '') ? '' : octets.map(o => o.value).join('.'); });
+    const _goto = (i, caretEnd) => {
+      const o = octets[i];
+      if (!o) return;
+      o.focus();
+      if (caretEnd) o.setSelectionRange(o.value.length, o.value.length);
+    };
+    const _ipParts = (s.ip || '').split('.');
+    octets.forEach((o, i) => {
+      o.value   = (_ipParts[i] || '').replace(/\D/g, '').slice(0, 3);
+      o.onfocus = () => o.select();
+      o.oninput = () => {
+        o.value = o.value.replace(/\D/g, '').slice(0, 3);
+        if (o.value.length === 3) {
+          o.value = _octetNorm(o.value);
+          _saveOctets();
+          if (i < 3) _goto(i + 1);
+          return;
+        }
+        _saveOctets();
+      };
+      o.onblur = () => {
+        const n = _octetNorm(o.value);
+        if (n !== o.value) { o.value = n; _saveOctets(); }
+      };
+      o.onkeydown = e => {
+        if (e.key === '.' || e.key === ' ' || e.key === ',') {
+          e.preventDefault();
+          if (o.value !== '' && i < 3) _goto(i + 1);
+        } else if (e.key === 'ArrowRight' && o.selectionStart === o.value.length && i < 3) {
+          e.preventDefault(); _goto(i + 1);
+        } else if (e.key === 'ArrowLeft' && o.selectionEnd === 0 && i > 0) {
+          e.preventDefault(); _goto(i - 1, true);
+        } else if (e.key === 'Backspace' && o.value === '' && i > 0) {
+          e.preventDefault(); _goto(i - 1, true);
+        } else if (e.key === 'Enter') {
+          e.preventDefault(); o.blur();
+        }
+      };
+      o.onpaste = e => {
+        const m = (e.clipboardData?.getData('text') || '').match(/(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/);
+        if (!m) return;
+        e.preventDefault();
+        octets.forEach((x, k) => { x.value = _octetNorm(m[k + 1]); });
+        _saveOctets();
+      };
+    });
+
+    // Scan du réseau : propositions « IP — fabricant » gardées pour la session, fabricant de l'appareil en tête ;
+    // un clic sur une proposition remplit les 4 cases (toujours modifiables ensuite).
+    const scanBtn    = document.getElementById('ip-ipaddr-scan');
+    const scanStatus = document.getElementById('ip-ipaddr-scan-status');
+    const scanList   = document.getElementById('ip-ipaddr-scan-list');
+    const scanToggle = document.getElementById('ip-ipaddr-scan-toggle');
+    const _setI18n = (el, key) => { el.dataset.i18n = key; el.textContent = t(key); };
+    _ipScanRender = () => {
+      const res = _ipScanResult;
+      _setI18n(scanBtn, _ipScanRunning ? 'ip_scanning' : (res ? 'ip_rescan' : 'ip_scan'));
+      scanBtn.disabled = !!_ipScanRunning;
+      scanList.innerHTML = '';
+      scanStatus.removeAttribute('data-i18n');
+      scanStatus.textContent = '';
+      scanToggle.textContent = '';
+      scanToggle.style.display = 'none';
+      if (_ipScanRunning || !res) return;
+      if (res.error || !res.devices.length) { _setI18n(scanStatus, res.error ? 'ip_scan_error' : 'ip_scan_none'); return; }
+      // Ligne « N propositions ▾/▸ » : replie ou déplie la liste (état gardé pour la session).
+      const count = res.devices.length;
+      const countLbl = document.createElement('span');
+      countLbl.textContent = count === 1 ? t('ip_scan_count_1') : t('ip_scan_count').replace('$n', count);
+      // Triangle dessiné (un caractère de police serait décalé en hauteur selon la police) : exactement au milieu
+      // de la ligne, donc aligné sur le texte ; même taille que l'ancien caractère agrandi.
+      const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      arrow.setAttribute('width', '12');
+      arrow.setAttribute('height', '12');
+      arrow.setAttribute('viewBox', '0 0 12 12');
+      arrow.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block';
+      const tri = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      tri.setAttribute('d', _ipScanFolded ? 'M2.5 1 L9.5 6 L2.5 11 Z' : 'M1 2.5 L11 2.5 L6 9.5 Z');
+      tri.setAttribute('fill', 'currentColor');
+      arrow.appendChild(tri);
+      scanToggle.append(countLbl, arrow);
+      scanToggle.style.display = 'flex'; // pas '' : effacerait le display:flex qui centre le texte en hauteur
+      scanToggle.onclick = () => { _ipScanFolded = !_ipScanFolded; _ipScanRender(); };
+      if (_ipScanFolded) return;
+      const node   = APP.nodes[sid];
+      const nameLc = `${node?.name || ''} ${node?.short || ''}`.toLowerCase();
+      // Marque du nom présente dans la table des fabricants enregistrés (brands.js) : elle décide, groupe propriétaire compris
+      // (Marantz → D&M Holdings) ; sinon, premier mot du fabricant cherché dans le nom. Même marque : en tête et en couleur.
+      // window._xIpVendorTable = false en console : premier mot seul, comme avant.
+      const tableMatch = window._xIpVendorTable !== false ? vendorMatcherForDevice(nameLc) : null;
+      const sameBrand  = d => {
+        if (tableMatch) return tableMatch(d.vendor);
+        const w = (d.vendor || '').toLowerCase().split(/[^a-z0-9]+/).find(x => x.length >= 3);
+        return !!(w && nameLc.includes(w));
+      };
+      res.devices.map(d => ({ d, same: sameBrand(d) })).sort((a, b) => b.same - a.same).forEach(({ d, same }) => {
+        const item = document.createElement('div');
+        item.textContent = d.vendor ? `${d.ip} — ${d.vendor}` : d.ip;
+        item.title = item.textContent;
+        item.style.cssText = 'font-family:var(--mono);font-size:11px;padding:3px 6px;border-radius:3px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'
+          + (same ? ';color:var(--accent)' : '');
+        item.onmouseenter = () => { item.style.background = 'rgba(0,212,255,.12)'; };
+        item.onmouseleave = () => { item.style.background = ''; };
+        item.onclick = () => {
+          const p = d.ip.split('.');
+          octets.forEach((o, k) => { o.value = p[k] || ''; });
+          _saveOctets();
+        };
+        scanList.appendChild(item);
+      });
+    };
+    scanBtn.onclick = async () => {
+      if (_ipScanRunning || !window.electronAPI?.networkScan) return;
+      _ipScanRunning = window.electronAPI.networkScan();
+      _ipScanFolded  = false; // nouveau scan : liste redépliée pour montrer les nouveaux résultats
+      _ipScanRender();
+      try { _ipScanResult = await _ipScanRunning; }
+      catch (e) { _ipScanResult = { devices: [], error: String(e) }; }
+      _ipScanRunning = null;
+      _ipScanRender?.(); // panneau ouvert à la fin du scan, qui peut être celui d'un autre appareil
+    };
+    _ipScanRender();
+
+    ipVis.onchange = () => { pushUndo(); _ipEdit(node => { node.ipVisible = ipVis.checked; })(); };
+    // Taille et couleur choisies : gardées en mémoire comme départ du prochain appareil, même après redémarrage.
+    ipSz.oninput   = _ipEdit(node => {
+      const v = parseInt(ipSz.value, 10);
+      if (!(v >= 6 && v <= 400)) return;
+      node.ipSize = v;
+      localStorage.setItem('wires-ip-size', String(v));
+    });
+    ipCol.oninput  = _ipEdit(node => {
+      node.ipColor = ipCol.value;
+      localStorage.setItem('wires-ip-color', ipCol.value);
+    });
   }
 
   // Connections list
@@ -276,6 +513,8 @@ function openCablePanel(cid) {
   nameEl.oninput = null;
 
   document.getElementById('ip-img-wrap').style.display = 'none';
+  const ipSection = document.getElementById('ip-ipaddr'); // adresse IP : réservée au panneau d'un appareil
+  if (ipSection) ipSection.style.display = 'none';
   document.getElementById('ip-conns-list').innerHTML = `
     <div style="font-family:var(--mono);font-size:11px;color:var(--textdim);padding:8px 0;line-height:2">
       <div><span style="color:${escapeHtml(c.color)}">${escapeHtml(tType(c.type))}</span></div>

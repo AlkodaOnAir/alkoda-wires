@@ -358,6 +358,8 @@ html, body {
    couche pour rien (classe posée par _flowSvg, routes.js). */
 #flow-svg.off { will-change: auto; }
 #cables-svg .cable-visual { transition: opacity .2s, stroke-width .2s; pointer-events: none; }
+/* Estompage de sélection reposé après un redessin : appliqué sans fondu (voir reapplySelCableDim, select.js). */
+#cables-svg.cables-no-transition .cable-visual { transition: none; }
 #cables-svg .cable-hit { pointer-events: stroke; cursor: move; }
 #cables-svg .anchor-handle { transition: filter .15s; cursor: crosshair; }
 #cables-svg .anchor-handle:hover { filter: brightness(1.5); }
@@ -589,6 +591,27 @@ html, body {
 }
 .node-img-wrap img { object-fit: contain; width: 100%; height: 100%; padding: 3px; pointer-events: none; -webkit-user-drag: none; }
 
+/* Bouton de bascule Avant/Arrière — visible seulement si le nœud est sélectionné */
+.node-flip-btn {
+  display: none; position: absolute; top: 4px; right: 4px; z-index: 21;
+  width: 44px; height: 44px; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.2); background: rgba(0,0,0,.55); color: #e6ecf5;
+  font-size: 26px; line-height: 1; cursor: pointer;
+  align-items: center; justify-content: center;
+}
+.node-flip-btn:hover { background: rgba(0,0,0,.75); }
+.node.sel .node-flip-btn { display: flex; }
+/* Mode ajout de câble : ↻ seulement sur les appareils marqués (port libre), sélectionnés ou non */
+.cable-add-mode .node.cab-flip .node-flip-btn { display: flex; }
+.cable-add-mode .node:not(.cab-flip) .node-flip-btn { display: none; }
+/* Glissement d'une extrémité de câble : ↻ sur les appareils marqués (Arrière + port acceptant cette extrémité,
+   voir _markDragFlipBtns dans cables.js). Survol prolongé = bascule de la vue ; .drag-flip-armed pendant l'attente. */
+#canvas-area.reattach-active .node.drag-flip .node-flip-btn { display: flex; }
+#canvas-area.reattach-active .node:not(.drag-flip) .node-flip-btn { display: none; }
+.node-flip-btn.drag-flip-armed { background: rgba(0,212,255,.35); border-color: #00d4ff; }
+/* Câble fantôme (occlusion : tracé qui ne sort jamais du cadre de l'appareil) — plus fin au repos seulement */
+#cables-svg .cable-visual.cable-occl-ghost[opacity="0.85"] { stroke-width: 2px; }
+
 /* Resize handles */
 .rh {
   position: absolute; z-index: 20; background: var(--accent); border: 1px solid #fff;
@@ -609,6 +632,13 @@ html, body {
   -webkit-text-stroke: 1px #000; paint-order: stroke fill;
   pointer-events: auto; cursor: text; letter-spacing: .5px;
   transition: color .2s, opacity .2s ease; outline: none; min-width: 4px;
+  text-align: center;
+}
+/* Adresse IP : deuxième ligne sous le nom, hors du texte éditable (data-ip + ::after) —
+   taille et couleur propres à l'appareil, voir _applyNodeIpLine (nodes.js). */
+.node-lbl[data-ip]::after {
+  content: attr(data-ip); display: block; line-height: 1.15;
+  font-size: var(--ip-fs, 32px); color: var(--ip-color, #fff); pointer-events: none;
 }
 /* Estompage synchronisé avec .node.dim/.route-dim .node-box (l'étiquette est
    dans node-labels-layer, hors de .node : elle a besoin de ses propres règles) */
@@ -708,6 +738,24 @@ html, body {
 .ip-name[contenteditable] { cursor: text; outline: none; }
 .ip-name[contenteditable]:focus { text-decoration: underline dotted rgba(0,212,255,.5); }
 
+/* Position du nom de l'appareil : 4 flèches en T inversé, au bout de la ligne du nom.
+   Volontairement petites — c'est un réglage d'appoint, pas une commande principale. */
+.ip-lblpos {
+  position: absolute; right: 14px; bottom: 12px;
+  display: grid; grid-template-columns: repeat(3, 13px); gap: 1px;
+  justify-items: center;
+}
+.ip-lblpos button {
+  grid-row: 2; width: 13px; height: 13px; padding: 0;
+  background: transparent; border: 1px solid transparent; border-radius: 2px;
+  color: var(--textdim); font-size: 7px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .12s; opacity: .55;
+}
+.ip-lblpos button[data-pos="top"] { grid-row: 1; grid-column: 2; }
+.ip-lblpos button:hover { opacity: 1; background: rgba(0,212,255,.1); border-color: rgba(0,212,255,.35); color: var(--accent); }
+.ip-lblpos button.active { opacity: 1; color: var(--accent); border-color: rgba(0,212,255,.55); background: rgba(0,212,255,.15); }
+
 .ip-close {
   position: absolute; top: 14px; right: 14px; width: 22px; height: 22px;
   background: transparent; border: 1px solid transparent; border-radius: 3px;
@@ -738,8 +786,17 @@ html, body {
   margin: 14px 18px; height: 130px; border-radius: 5px; overflow: hidden;
   background: var(--bg3); border: 1px solid var(--border);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  position: relative;
 }
 .ip-img img { max-width: 100%; max-height: 100%; object-fit: contain; padding: 6px; }
+#ip-flip-view {
+  position: absolute; top: 6px; right: 6px; z-index: 5;
+  width: 48px; height: 48px; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.2); background: rgba(0,0,0,.55); color: #e6ecf5;
+  font-size: 26px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+#ip-flip-view:hover { background: rgba(0,0,0,.75); }
 
 .ip-section { padding: 14px 18px; border-bottom: 1px solid var(--border); }
 .ip-section-title { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 3px; color: var(--textdim); text-transform: uppercase; margin-bottom: 10px; }
@@ -1013,6 +1070,10 @@ html, body {
    Garde-fou : si ça arrivait un jour, c'est celle-ci qui doit gagner. */
 #modal-device-search.open { z-index: 10020; }
 #export-big-preview.open { z-index: 10010; }
+/* Doit rester visible même sur l'écran d'accueil (#startup-screen, z-index
+   99999) puisque la vérification de mise à jour se déclenche dès le démarrage
+   — palier 100000+ comme licence (100001) et à propos (100002), pas 10000. */
+#_update-dialog.open { z-index: 100003; }
 .modal-box {
   background: var(--panel); border: 1px solid var(--border2); border-radius: 10px;
   width: 500px; max-width: 95vw; max-height: 90vh;
@@ -1022,6 +1083,26 @@ html, body {
 .modal-title { font-family: var(--display); font-size: 12px; font-weight: 700; letter-spacing: 3px; color: #fff; }
 .modal-close { background: none; border: none; color: var(--textdim); font-size: 18px; cursor: pointer; padding: 2px 6px; line-height: 1; }
 .modal-close:hover { color: #fff; }
+/* Configuration image : nom de l'appareil sur la ligne du titre (library.js, _refreshRmbgDeviceName). L'emplacement
+   (.rmbg-device-slot) prend toute la place libre entre le titre et ✕ ; la case du nom en occupe 75 %, centrée entre
+   les deux. Case de 50px de haut, dont 10px pris en haut et en bas dans la marge de l'en-tête : la case grandit sans
+   agrandir l'en-tête. Taille de la typo calculée en JS pour remplir la hauteur de la case, puis tenir en largeur
+   (_fitRmbgDeviceName). */
+#modal-remove-bg .modal-title { flex: 0 0 auto; }
+.rmbg-device-slot { flex: 1 1 auto; min-width: 0; margin: 0 14px; display: flex; justify-content: center; }
+.rmbg-device-name {
+  width: 75%; min-width: 0; height: 50px; margin: -10px 0;
+  display: flex; flex-direction: column; justify-content: center;
+}
+/* Même police que les noms d'appareils du canevas (.node-lbl), centrée dans la case ; couleurs posées en JS (catégorie,
+   couleur de l'IP), sans atténuation. Nom en gras (Share Tech Mono n'existe qu'en normal : le gras est dessiné par
+   le navigateur), IP en normal. Jamais écrasées en hauteur par la case (flex: none). */
+.rmbg-dn-name, .rmbg-dn-ip {
+  flex: none; display: block; text-align: center; white-space: nowrap; overflow: hidden; line-height: 1.25;
+  font-family: var(--mono); letter-spacing: .5px;
+}
+.rmbg-dn-name { font-weight: 700; }
+.rmbg-dn-ip:empty { display: none; }
 .modal-body { flex: 1; overflow-y: auto; padding: 18px; }
 .modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--border); flex-shrink: 0; }
 .field-error { border-color: #ff6b6b !important; animation: shake .3s; }
@@ -1152,6 +1233,39 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 }
 .rm-bg-btn:hover:not(:disabled) { background: rgba(0,212,255,.08); border-color: rgba(0,212,255,.5); }
 .rm-bg-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Onglets Avant/Arrière — modale Image & Connection Point Setup */
+.rmbg-side-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.rmbg-side-tab {
+  flex: 1; padding: 8px 6px; background: var(--bg2); border: none; border-bottom: 2px solid transparent;
+  color: var(--textdim); font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  cursor: pointer; transition: color .15s, border-color .15s, background .15s;
+}
+.rmbg-side-tab:hover { color: var(--text); background: rgba(255,255,255,.03); }
+.rmbg-side-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+/* Onglet survole pendant qu'on glisse un point de port : un instant de plus et
+   le port passe sur cette face (voir _rmbgMovePortsToSide, library.js). */
+.rmbg-side-tab.rmbg-side-tab-drop {
+  color: var(--accent);
+  background: rgba(0, 176, 240, .18);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+/* Croix d'effacement d'une vue, au bord extérieur de son onglet : à gauche pour l'Avant, à droite pour
+   l'Arrière (visible seulement quand les deux vues existent) */
+.rmbg-side-tab { position: relative; }
+.rmbg-side-del {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  padding: 0 4px; border-radius: 3px;
+  font-weight: 400; letter-spacing: 0; color: var(--textdim);
+}
+#rmbg-del-front { right: auto; left: 8px; }
+.rmbg-side-del:hover { color: #ff4444; background: rgba(255,68,68,.12); }
+#rmbg-swap-sides {
+  flex: 0 0 auto; width: 32px; background: var(--bg2); border: none; border-bottom: 2px solid transparent;
+  color: var(--textdim); font-size: 14px; cursor: pointer; transition: color .15s, background .15s;
+}
+#rmbg-swap-sides:hover:not(:disabled) { color: var(--accent); background: rgba(255,255,255,.03); }
+#rmbg-swap-sides:disabled { opacity: .3; cursor: not-allowed; }
 /* Aucun autre appareil ne partage cette image : la numérotation ne veut rien
    dire, le champ reste en place (pas de saut des champs voisins) mais grisé. */
 #an-number:disabled { opacity: .4; cursor: not-allowed; border-color: var(--border) !important; color: var(--textdim) !important; }
@@ -1221,17 +1335,26 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 
 /* Nom du type de port : élément FRÈRE du point (portsLayer), pas enfant — le point
    applique clip-path:circle() (règle .cab-clickable/.cab-free ci-dessous) qui
-   rognerait tout contenu enfant. Visibilité pilotée uniquement par ses PROPRES
-   classes, posées depuis newcable.js : lbl-available (_refreshPortDotState — port
-   cible disponible) et label-crowded (_refreshPortLabelCrowding — voisin affiché
-   trop proche à l'écran). Jamais affiché sur un port déjà utilisé ou de type
-   incompatible, même si son point reste visible (estompé). */
-.port-dot-type-lbl { display: none; }
-.cable-add-mode .port-dot-type-lbl.lbl-available {
-  display: block;
-}
-.cable-add-mode .port-dot-type-lbl.lbl-available.label-crowded {
+   rognerait tout contenu enfant. Affiché uniquement au survol du point LUI-MÊME —
+   :has() sur le sibling suivant, déjà utilisé plus haut (.node:has(.port-dot-node
+   .port-wireless:hover)). Jamais sur un port utilisé/incompatible : ceux-ci ont
+   pointer-events:none (règles .cab-used/.cab-mismatch plus bas), le survol ne peut
+   donc même pas s'y déclencher. Taille fixe à l'écran quel que soit le zoom
+   (var(--z-port-lbl), posée dans canvas.js::applyT, même principe que --z-border
+   utilisé ailleurs dans ce fichier). */
+.port-dot-type-lbl {
   display: none;
+  font-size: var(--z-port-lbl, 20px);
+  /* Détourage ~1px À L'ÉCRAN quel que soit le zoom, comme .node-lbl (même
+     -webkit-text-stroke + paint-order) — mais en em, pas en px : ce label vit dans
+     _root (comme .node-lbl) donc une valeur en px suivrait le scale() ambiant du
+     zoom, alors que font-size est déjà compensé (--z-port-lbl). 0.05em du
+     font-size compensé = exactement 1px réel, à n'importe quel niveau de zoom. */
+  -webkit-text-stroke: 0.05em #000;
+  paint-order: stroke fill;
+}
+.cable-add-mode .port-dot-type-lbl:has(+ .port-dot-node.cab-free:hover) {
+  display: block;
 }
 
 /* Port libre et compatible → cliquable */
@@ -1401,6 +1524,8 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   transition: background .1s;
 }
 #add-dropdown > div:hover { background: #0e1628; color: #00d4ff; }
+/* Câble en attente de sa route : entrées du menu + bloquées (newcable.js) */
+#add-dropdown > div.dd-locked { opacity: .35; pointer-events: none; }
 
 /* ── New cable modal ─────────────────────────────────────────── */
 .nc-type-btn {
@@ -1510,7 +1635,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   top: 0;
   transform: translate(-50%, calc(-100% - 6px));
   pointer-events: all;
-  cursor: pointer;
+  cursor: move;              /* le nom déplace la zone ET son contenu (zones.js) */
   white-space: nowrap;
   font-family: var(--mono);
   font-size: 96px;
@@ -1865,7 +1990,8 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   border: 1px solid var(--border2);
   border-top: 1px solid rgba(0,212,255,.25);
   border-radius: 10px;
-  width: 560px; max-width: 96vw;
+  width: 600px; max-width: 96vw;
+  max-height: calc(100vh - 24px); overflow-y: auto;
   padding: 32px 32px 28px;
   position: relative;
   box-shadow: 0 24px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(0,212,255,.06);
@@ -1897,6 +2023,17 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   letter-spacing: 2px; margin-top: 2px;
 }
 
+/* Logo Wires Pro + numéro de version (remplacent ⬡ WIRES PRO dans la fenêtre de licence) */
+.license-brand { margin-bottom: 20px; }
+.license-brand-line { display: flex; align-items: flex-end; gap: 8px; }
+.license-logo { height: 64px; width: auto; display: block; user-select: none; -webkit-user-drag: none; }
+/* Calé sur le bas des lettres du logo, pas sur le bas de l'image (halo lumineux dessous) */
+.license-version {
+  font-family: var(--display); font-size: 12px; font-weight: 700;
+  letter-spacing: 1.5px; color: #fff; line-height: 1; margin-bottom: 3px;
+}
+.license-brand .license-sub { margin-top: 6px; }
+
 /* Context title (what's locked) */
 .license-paywall-title {
   font-family: var(--body); font-size: 13px; color: #ffc107;
@@ -1926,6 +2063,15 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 .license-row.ok::before { content: '✓  '; color: #4caf50; }
 .license-row.no { color: #e53935; }
 .license-col.pro .license-row.ok { color: #4caf50; }
+.license-new { color: #e53935; font-style: italic; font-weight: 700; }
+/* Onde sans fil : les 3 arcs de l'animation (routes.js, _makeWaveEl), à la couleur du texte */
+.license-wave { width: 12px; height: 12px; vertical-align: -3px; overflow: visible; }
+.license-wave path { fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; }
+.license-compare.has-more { margin-bottom: 12px; }
+.license-more {
+  font-family: var(--body); font-size: 13px; font-weight: 600; font-style: italic;
+  color: var(--textdim); text-align: center; margin-bottom: 18px;
+}
 
 /* Activate block */
 .license-activate-block {
@@ -2070,6 +2216,40 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 .about-ok-btn:hover { background: rgba(0,212,255,.2); }
 
 /* ── License gate tooltip ──────────────────────────────────────── */
+/* Vérification de licence au démarrage : seulement au tout premier lancement après une
+   mise à jour, le temps que LemonSqueezy réponde. Affichée au-delà de 400 ms d'attente,
+   et jamais moins de 3 s une fois affichée (décision de l'utilisateur, 2026-09-19). */
+#license-check-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 200001;
+  background: rgba(2,4,14,.82); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+#license-check-overlay.visible { display: flex; }
+#license-check-box {
+  background: #0d1525; border: 1px solid rgba(0,212,255,.3); border-radius: 10px;
+  padding: 26px 34px; min-width: 300px; text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,.75);
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+#license-check-spin {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid rgba(0,212,255,.2); border-top-color: var(--accent);
+  animation: lic-spin .8s linear infinite;
+}
+#license-check-overlay.failed #license-check-spin { display: none; }
+@keyframes lic-spin { to { transform: rotate(360deg); } }
+#license-check-msg {
+  font-family: var(--body); font-size: 13px; color: var(--text); line-height: 1.45; max-width: 320px;
+}
+#license-check-continue {
+  background: rgba(0,212,255,.12); border: 1px solid rgba(0,212,255,.35);
+  border-radius: 5px; padding: 7px 14px;
+  color: var(--accent); font-family: var(--body); font-size: 12px; cursor: pointer;
+  transition: all .15s;
+}
+#license-check-continue:hover { background: rgba(0,212,255,.22); }
+
 #license-gate-backdrop {
   display: none;
   position: fixed; inset: 0; z-index: 199999;
@@ -2105,6 +2285,15 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   cursor: pointer; transition: all .15s; text-align: center;
 }
 #license-gate-upgrade-btn:hover { background: rgba(0,212,255,.22); }
+/* Sortie de la bulle : simple texte cliquable, jamais un second bouton — l'appel à
+   l'action doit rester seul (demande de l'utilisateur, 2026-09-19) */
+#license-gate-dismiss-btn {
+  background: none; border: none; padding: 0; margin: -2px 0 0;
+  color: var(--textdim); font-family: var(--body); font-size: 11px;
+  cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
+  transition: color .15s; align-self: center;
+}
+#license-gate-dismiss-btn:hover { color: var(--text); }
 
 /* ── License sections (paywall / pro info) ─────────────────────── */
 #license-section-paywall,
@@ -2152,6 +2341,13 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 .license-copy-btn.copied { color: #4caf50; border-color: rgba(76,175,80,.5); }
 .license-copy-all-btn {
   display: block; width: 100%; margin: 0 0 18px; padding: 8px 12px; font-size: 11px;
+}
+/* Support : le bouton, et sous lui le rappel affiché après la copie */
+.license-support-section { margin-bottom: 18px; }
+.license-support-section .license-copy-all-btn { margin-bottom: 6px; }
+.license-support-note {
+  font-family: var(--body); font-size: 11px; line-height: 1.4; color: #ff9f43;
+  min-height: 0; text-align: center;
 }
 .license-deactivate-section {
   display: flex; flex-direction: column; align-items: flex-start; gap: 8px;

@@ -38,7 +38,10 @@ function pushUndo() {
 function undo() {
   if (!APP.undo.length) return;
   wLog('UNDO', { remaining: APP.undo.length - 1 });
-  APP.redo.push(captureState());
+  // Annulation qui retire le câble encore en attente de sa route : l'étape se referme, et ce câble inachevé ne revient pas par Rétablir.
+  const _endsRouteStep = typeof _undoEndsRouteStep === 'function' && _undoEndsRouteStep(APP.undo[APP.undo.length - 1]);
+  if (_endsRouteStep) { _closeRouteStep(); APP.redo.length = 0; }
+  else APP.redo.push(captureState());
   applyState(APP.undo.pop());
   updateUndoRedoBtns();
 }

@@ -72,30 +72,38 @@ function edgePt(s, tx, ty) {
 // Avec box-sizing:border-box global, la bordure 1px du node-box est intérieure :
 //   l'image commence à (border=1 + padding=3, border=1 + padding=3) = (4, 4) dans .node
 // catbar est display:none donc contribue 0px ; imgWrap a height explicite s.h-3.
-function _nodeImgRect(s) {
-  if (!s._imgW || !s._imgH) return null;
+// `side` ('front' par défaut, ou 'rear') : un appareil à deux vues (Avant/Arrière,
+// voir nodes.js) a deux images potentiellement de ratio différent dans la MÊME boîte
+// (s.w/s.h, toujours basée sur l'Avant) — chaque vue a donc son propre rect interne,
+// calculé depuis son propre couple de dimensions naturelles (s._imgW/H pour l'Avant,
+// s._imgWRear/HRear pour l'Arrière). Ne jamais mélanger : un port Arrière positionné
+// avec le rect de l'Avant (ou l'inverse) dériverait dès que les deux ratios diffèrent.
+function _nodeImgRect(s, side) {
+  const natW = side === 'rear' ? s._imgWRear : s._imgW;
+  const natH = side === 'rear' ? s._imgHRear : s._imgH;
+  if (!natW || !natH) return null;
   const PAD = 3;
   const wrapH  = s.h - 3;        // imgWrap height explicite (nodes.js)
   const availW = s.w  - PAD * 2;
   const availH = wrapH - PAD * 2;
-  const scale  = Math.min(availW / s._imgW, availH / s._imgH);
-  const rW     = s._imgW * scale;
-  const rH     = s._imgH * scale;
+  const scale  = Math.min(availW / natW, availH / natH);
+  const rW     = natW * scale;
+  const rH     = natH * scale;
   const offX   = (availW - rW) / 2 + PAD + 1;  // +1 bordure node-box
   const offY   = (availH - rH) / 2 + PAD + 1;  // +1 bordure node-box (catbar hidden)
   return { offX, offY, rW, rH };
 }
 
-function edgePtFixed(s, nx, ny) {
+function edgePtFixed(s, nx, ny, side) {
   const R = v => Math.round(v);
-  const r = _nodeImgRect(s);
+  const r = _nodeImgRect(s, side);
   if (r) return [R(s.x + r.offX + nx * r.rW), R(s.y + r.offY + ny * r.rH)];
   return [R(s.x + nx * s.w), R(s.y + ny * s.h)];
 }
 
-function stubPt(s, nx, ny) {
+function stubPt(s, nx, ny, side) {
   // Utilise edgePtFixed pour que stub et ancre partagent le même point de base
-  const [px, py] = edgePtFixed(s, nx, ny);
+  const [px, py] = edgePtFixed(s, nx, ny, side);
 
   // Direction override explicite sur le nœud → prioritaire
   const dir = s.stub || null;

@@ -8,8 +8,20 @@ let _cableAddFrom = null; // { nodeId, portId, type, nx, ny }
 const _USB_FAMILY   = new Set(['USB-A', 'USB-C']);
 function _usbCompat(a, b)   { return _USB_FAMILY.has(a)   && _USB_FAMILY.has(b); }
 
-const _AUDIO_ANALOG = new Set(['Jack 3.5', 'Jack 6.35', 'RCA/Cinch', 'XLR']);
+// Prise combo (Neutrik « Combo ») : accepte un câble XLR ou un jack — même famille audio analogique.
+const COMBO_XLR_JACK = 'Combo XLR/Jack';
+const _AUDIO_ANALOG = new Set(['Jack 3.5', 'Jack 6.35', 'RCA/Cinch', 'XLR', COMBO_XLR_JACK]);
 function _audioCompat(a, b) { return _AUDIO_ANALOG.has(a) && _AUDIO_ANALOG.has(b); }
+
+// Type du câble créé entre deux ports : par défaut celui du premier port cliqué. Une prise
+// combo n'est pas un câble — le câble prend alors le type de l'autre extrémité (XLR, jack…),
+// quel que soit l'ordre des clics, et XLR entre deux prises combo (choix du 2026-09-15).
+// Sécurité anti-régression : window._xComboCableType = false → toujours le premier port cliqué.
+function _cableTypeForPorts(fromType, toType) {
+  if (window._xComboCableType === false) return fromType;
+  if (fromType === COMBO_XLR_JACK) return toType === COMBO_XLR_JACK ? 'XLR' : toType;
+  return fromType;
+}
 
 // ── Griser l'option câble si aucun device (hors Internet) ────
 function refreshAddCableBtn() {
@@ -28,6 +40,9 @@ function initNewCableModal() {
 
   btn.addEventListener('click', e => {
     e.stopPropagation();
+    // Câble en attente de sa route : les 4 entrées restent bloquées tant que l'étape n'est pas finie ou annulée.
+    const _locked = typeof _routeStepPending === 'function' && _routeStepPending();
+    ['add-dd-device', 'add-dd-cable', 'add-dd-label', 'add-dd-zone'].forEach(id => document.getElementById(id)?.classList.toggle('dd-locked', _locked));
     const r = btn.getBoundingClientRect();
     dropdown.style.left = r.left + 'px';
     dropdown.style.top  = (r.bottom + 4) + 'px';
@@ -79,19 +94,27 @@ function _isPortFull(nodeId, port, used) {
 
 // ── Démarrer le mode câble ────────────────────────────────────
 function _startCableAddMode() {
+  if (typeof _routeStepPending === 'function' && _routeStepPending()) return; // câble précédent en attente de sa route
   const used = _usedPorts();
+  // Regarde les deux côtés (Avant ET Arrière), pas seulement l'Avant — sinon un
+  // projet où tous les ports Avant sont pris mais où un appareil a des ports
+  // Arrière libres refusait à tort de démarrer (bug relevé le 2026-09-12).
   const hasFree = Object.entries(APP.nodes).some(([id, n]) =>
-    (n.ports || []).some(p => !_isPortFull(id, p, used))
+    (n.ports || []).some(p => !_isPortFull(id, p, used)) ||
+    (n.portsRear || []).some(p => !_isPortFull(id, p, used))
   );
   if (!hasFree) {
     _showCableAddBanner(t('no_free_connectors'), true);
     return;
   }
+  // Une sélection gardée pendant l'ajout faisait estomper au survol les câbles redessinés à la création.
+  if (typeof clearSel === 'function') clearSel();
   _cableAddMode = true;
   _cableAddFrom = null;
   wLog('CABLE_MODE_START', {});
   document.getElementById('canvas-area').classList.add('cable-add-mode');
   _refreshPortDotState();
+  _refreshFlipBtnMarks();
   _showCableAddBanner(t('cable_mode_from'));
 }
 
@@ -107,6 +130,19 @@ function exitCableAddMode() {
   document.querySelectorAll('.port-dot-node').forEach(dot => {
     dot.classList.remove('cab-used', 'cab-mismatch', 'cab-selected', 'cab-clickable', 'cab-free');
   });
+  document.querySelectorAll('.node.cab-flip').forEach(n => n.classList.remove('cab-flip'));
+}
+
+// Marque les appareils ayant un port libre (Avant ou Arrière) : la CSS y affiche le ↻ en mode câble.
+function _refreshFlipBtnMarks() {
+  const used = _usedPorts();
+  for (const [sid, node] of Object.entries(APP.nodes)) {
+    const el = document.getElementById(`n-${sid}`);
+    if (!el) continue;
+    const hasFree = (node.ports || []).some(p => !_isPortFull(sid, p, used)) ||
+                    (node.portsRear || []).some(p => !_isPortFull(sid, p, used));
+    el.classList.toggle('cab-flip', hasFree);
+  }
 }
 
 // ── Mettre à jour l'état visuel des dots ─────────────────────
@@ -115,7 +151,13 @@ function _refreshPortDotState() {
   for (const [sid, node] of Object.entries(APP.nodes)) {
     const el = document.getElementById(`n-${sid}`);
     if (!el) continue;
-    (node.ports || []).forEach(p => {
+    // Côté actuellement affiché pour CET appareil — même formule que renderOneNode
+    // (nodes.js) : sans ça, ce calcul ne regardait QUE node.ports (Avant), donc les
+    // points Arrière n'étaient jamais marqués disponibles/cliquables une fois
+    // l'Arrière affichée (bug relevé le 2026-09-12).
+    const _rearActive = _previewView[sid] === 'rear' && !!node.imgRear;
+    const _dispPorts  = _rearActive ? (node.portsRear || []) : (node.ports || []);
+    _dispPorts.forEach(p => {
       const dot = el.querySelector(`.port-dot-node[data-port-id="${p.id}"]`);
       if (!dot) return;
       const isFull     = _isPortFull(sid, p, used);
@@ -129,43 +171,6 @@ function _refreshPortDotState() {
       dot.classList.toggle('cab-mismatch',  !!_cableAddFrom && !isSelected && !sameType);
       dot.classList.toggle('cab-free',      isAvailable);
       dot.classList.toggle('cab-clickable', isAvailable);
-      const lbl = el.querySelector(`.port-dot-type-lbl[data-port-id="${p.id}"]`);
-      if (lbl) lbl.classList.toggle('lbl-available', isAvailable);
-    });
-  }
-  _refreshPortLabelCrowding();
-}
-
-// ── Nom du type de port : cacher si un voisin AFFICHÉ est trop proche ────────
-// N'entrent en compte que les ports actuellement cab-free/cab-clickable (les
-// seuls dont le nom peut réellement s'afficher, voir main.css) — un port déjà
-// utilisé ou de type incompatible n'affiche jamais son nom, donc ne peut jamais
-// gêner celui d'un voisin. Distance mesurée À L'ÉCRAN (multipliée par le zoom
-// courant), pas dans les coordonnées internes du canevas : sans ça, zoomer ne
-// libérerait jamais de place puisque l'écart entre deux ports grandit avec le
-// zoom exactement comme le reste du canevas. Rappelée à chaque changement d'état
-// câble (ci-dessus) ET à chaque zoom/déplacement (canvas.js::applyT).
-function _refreshPortLabelCrowding() {
-  if (!_cableAddMode) return;
-  const zoom = APP.view?.zoom || 1;
-  const MIN_GAP_PX = 38; // ~taille d'un point sans fil (38px) — repère, pas une mesure exacte du texte
-  for (const [sid, node] of Object.entries(APP.nodes)) {
-    const el = document.getElementById(`n-${sid}`);
-    if (!el || !node.ports || !node.ports.length) continue;
-    const r = typeof _nodeImgRect === 'function' ? _nodeImgRect(node) : null;
-    const shown = [];
-    node.ports.forEach(p => {
-      const lbl = el.querySelector(`.port-dot-type-lbl[data-port-id="${p.id}"]`);
-      if (!lbl || !lbl.classList.contains('lbl-available')) return;
-      shown.push({
-        lbl,
-        lx: r ? r.offX + p.nx * r.rW : p.nx * node.w,
-        ly: r ? r.offY + p.ny * r.rH : p.ny * node.h + 3,
-      });
-    });
-    shown.forEach(o1 => {
-      const crowded = shown.some(o2 => o2 !== o1 && Math.hypot(o2.lx - o1.lx, o2.ly - o1.ly) * zoom < MIN_GAP_PX);
-      o1.lbl.classList.toggle('label-crowded', crowded);
     });
   }
 }
@@ -247,7 +252,7 @@ function _onPortSideChosen(nodeId, portId, portType, nx, ny, side) {
     pushUndo();
     createCable(
       _cableAddFrom.nodeId, nodeId,
-      _cableAddFrom.type,
+      _cableTypeForPorts(_cableAddFrom.type, portType),
       _cableAddFrom.portId, portId,
       {
         from_nx:   _cableAddFrom.nx, from_ny: _cableAddFrom.ny,

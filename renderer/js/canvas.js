@@ -199,6 +199,16 @@ function initCanvas() {
       if (!e.altKey) {
         // Vérifier s'il y a une zone sous le curseur
         const pos     = screenToCanvas(e.clientX, e.clientY);
+        // Appui sur le NOM d'une zone : on demarre le meme geste que l'etiquette
+        // elle-meme (la zone ET son contenu). Necessaire parce que le calque des
+        // appareils recouvre l'etiquette tant que la zone n'est pas selectionnee :
+        // l'appui arrive ici, jamais sur l'etiquette. Voir zones.js.
+        const hitLabel = typeof findZoneLabelAtPoint === 'function' ? findZoneLabelAtPoint(pos.x, pos.y) : null;
+        if (hitLabel && typeof zoneLabelDragStart === 'function' && zoneLabelDragStart(hitLabel, e)) {
+          _zoneJustSelected = true;
+          _area.setPointerCapture(e.pointerId);
+          return;
+        }
         const hitZone = typeof findZoneAtPoint === 'function' ? findZoneAtPoint(pos.x, pos.y) : null;
         if (hitZone) {
           if (typeof selectZone === 'function') selectZone(hitZone);
@@ -222,6 +232,7 @@ function initCanvas() {
     }
   });
   _area.addEventListener('pointermove', e => {
+    if (typeof zoneLabelDragMove === 'function' && zoneLabelDragMove(e)) return;
     if (_zoneDrag) {
       const dx = (e.clientX - _zoneDrag.startX) / APP.view.zoom;
       const dy = (e.clientY - _zoneDrag.startY) / APP.view.zoom;
@@ -263,6 +274,11 @@ function initCanvas() {
     }
   });
   _area.addEventListener('pointerup', e => {
+    if (typeof zoneLabelDragEnd === 'function' && zoneLabelDragEnd()) {
+      _area.releasePointerCapture(e.pointerId);
+      _area.style.cursor = '';
+      return;
+    }
     if (_zoneDrag) {
       if (_zoneDrag.moved && typeof setDirty === 'function') setDirty();
       _zoneDrag = null;
@@ -301,6 +317,8 @@ function initCanvas() {
         return;
       }
       const routesPanel = document.getElementById('routes-panel');
+      // Câble en attente de sa route : le panneau Routes reste ouvert, un clic sur le canevas vide ne fait rien.
+      if (routesPanel?.classList.contains('open') && typeof _routeStepPending === 'function' && _routeStepPending()) return;
       if (routesPanel?.classList.contains('open') || window._routesPanelJustClosed) {
         window._routesPanelJustClosed = false;
         routesPanel?.classList.remove('open');
@@ -414,14 +432,22 @@ function applyT() {
   const { zoom, panX, panY } = APP.view;
   _root.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
   document.documentElement.style.setProperty('--z-border', (2 / zoom).toFixed(3) + 'px');
+  // Nom du type de port au survol (mode ajouter un câble) : taille fixe à l'écran,
+  // même principe que --z-border ci-dessus — sans ça le texte grandirait/rétrécirait
+  // avec le zoom puisqu'il vit dans _root, qui porte le scale().
+  document.documentElement.style.setProperty('--z-port-lbl', (20 / zoom).toFixed(3) + 'px');
+  // Points de connexion : même principe, diamètre fixe à l'écran, plafonné par l'écart
+  // entre prises du projet (voir portDotSizes/refreshPortDotCap, nodes.js).
+  if (typeof portDotSizes === 'function') {
+    const _pd = portDotSizes(zoom);
+    document.documentElement.style.setProperty('--z-port-dot',   _pd.normal.toFixed(2) + 'px');
+    document.documentElement.style.setProperty('--z-port-dot-w', _pd.wireless.toFixed(2) + 'px');
+  }
   document.getElementById('zoom-val').textContent = Math.round(zoom * 100) + '%';
   // Bande de capture des câbles : largeur constante à l'écran au-delà de 100 %, donc à
   // réécrire quand le zoom bouge. Aucun redessin — un seul attribut par câble, et la
   // fonction sort d'elle-même si la largeur n'a pas changé (pan, zoom sous 100 %).
   if (typeof refreshCableHitWidths === 'function') refreshCableHitWidths();
-  // Nom du type sous un point de connexion (mode ajouter un câble) : la distance qui
-  // compte est celle À L'ÉCRAN entre deux ports, donc à recalculer à chaque zoom.
-  if (typeof _refreshPortLabelCrowding === 'function') _refreshPortLabelCrowding();
   scheduleMinimap();
   clearTimeout(_zoomLogTmr);
   _zoomLogTmr = setTimeout(() => wLog('ZOOM', { pct: Math.round(zoom * 100) }), 600);
@@ -588,3 +614,4 @@ function drawMinimap() {
   _mmCtx.lineWidth = 1;
   _mmCtx.strokeRect(vx, vy, vw, vh);
 }
+

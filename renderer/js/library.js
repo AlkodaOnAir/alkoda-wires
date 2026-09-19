@@ -3,6 +3,14 @@
    Fidèle à la référence Alkoda_transparent.html
 ═══════════════════════════════════════════════════════════════ */
 
+// Tous les points de connexion d'un appareil (ou d'une entrée de bibliothèque), les
+// deux faces confondues. Toute règle qui vaut « pour l'appareil » doit passer par ici :
+// lire seulement `ports` laisse la vue Arrière à l'écart, avec des dégâts invisibles
+// jusqu'à ce que l'utilisateur la retourne (voir CLAUDE.md).
+function _bothFacesPorts(o) {
+  return [...(o?.ports || []), ...(o?.portsRear || [])];
+}
+
 const _catFilter  = new Set();
 const _zoneFilter = new Set();
 // Mode de chaque filtre : false = isoler (le Set = ce qu'on affiche), true =
@@ -205,12 +213,15 @@ function _startCableInlineEdit(btn, type, labelSpan) {
       // écrit. Sans ça, les ports gardent un nom qui n'existe plus dans la liste des
       // types — affichés comme type inconnu, et plus aucun câble ne peut s'y
       // rebrancher, la compatibilité de type ne trouvant plus de correspondance.
+      // ⚠️ Les DEUX faces : un port de la vue Arrière oublié ici gardait un type disparu,
+      // s'affichait en type inconnu et n'acceptait plus aucun câble — et c'était écrit dans
+      // le .wires, donc définitif (corrigé le 2026-09-19).
       Object.values(APP.nodes).forEach(n =>
-        (n.ports || []).forEach(p => { if (p.type === currentName) p.type = newName; }));
+        _bothFacesPorts(n).forEach(p => { if (p.type === currentName) p.type = newName; }));
 
       let libTouched = false;
       EQUIPMENT_LIBRARY.forEach(eq =>
-        (eq.ports || []).forEach(p => {
+        _bothFacesPorts(eq).forEach(p => {
           if (p.type === currentName) { p.type = newName; libTouched = true; }
         }));
       if (libTouched && typeof _saveUserLibrary === 'function') _saveUserLibrary();
@@ -1099,6 +1110,9 @@ function _resetAddDeviceState() {
   _currentShape = null;
   _searchProduct = null; // un nom rapporté par une recherche abandonnée ne doit pas survivre
   _anPorts      = [];
+  _rmbgEditNodeId  = null;
+  _rmbgActiveSide  = 'front';
+  _rmbgSideBundles = { front: null, rear: null };
   _shortEdited  = false;
   _lastAppliedBB = null; // calculé au passage par la configuration image
   const _ov = document.getElementById('an-prev-overlay');
@@ -1126,7 +1140,7 @@ function _openAddNodeModalUI() {
   });
   const optCustom = document.createElement('option');
   optCustom.value = '__custom__';
-  optCustom.textContent = 'Custom...';
+  optCustom.textContent = t('cat_custom') + '…';
   catSel.appendChild(optCustom);
   const customCatInput = document.getElementById('an-cat-custom');
   customCatInput.style.display = 'none';
@@ -1157,8 +1171,11 @@ function _openAddNodeModalUI() {
 // distinct (#an-number), alimenté par la numérotation en cascade. Un numéro
 // collé dans le nom casserait ce mécanisme.
 function _prefillFromSearchProduct() {
+  // Pas remis à zéro ici : le produit sert encore à la validation, qui l'enregistre sur
+  // l'appareil (voir _anFinalizeConfirm). Chaque ajout (_resetAddDeviceState) et chaque
+  // modification (openEditNodeModal, openNodePortsEditor) repart sans produit : il ne peut
+  // pas passer à l'appareil suivant.
   const p = _searchProduct;
-  _searchProduct = null; // consommé une seule fois, jamais reporté sur l'appareil suivant
   if (!p) return;
   const marque = (p.brand || '').trim();
   const modele = (p.model || '').trim();
@@ -1181,11 +1198,55 @@ function _prefillFromSearchProduct() {
   // c'est l'utilisateur qui le range. Une marque ne justifie pas un classement.
 }
 
+// Nom d'un appareil sans son numéro d'exemplaire — seulement quand ce numéro suit la série
+// établie par les AUTRES appareils de même image. Un appareil sans groupe détecté garde son
+// nom entier, chiffre ou pas : « SHURE - SM 58 » seul reste tel quel.
+function _nameWithoutGroupNumber(node) {
+  const imgKey = _imgKeyOf(node);
+  const sibNames = imgKey
+    ? Object.values(APP.nodes)
+        .filter(n => n !== node && _imgKeyOf(n) === imgKey)
+        .map(n => n.name || n.short || '?')
+    : [];
+  const { base } = _imgGroupNumbering(sibNames);
+  const own = _splitTrailingNumber(node.name || '');
+  return (base && own.base === base && own.num !== null) ? own.base : (node.name || '');
+}
+
+// Produit (marque, modèle) d'un appareil déjà posé, pour pré-remplir la recherche quand on lui
+// ajoute ou remplace une image. D'abord celui enregistré sur l'appareil par une recherche
+// (searchBrand/searchModel, voir _storeSearchProductOn) ; sinon, pour un appareil plus ancien,
+// relu dans le nom que Wires lui donne à la création, « MARQUE - Modèle », sans numéro
+// d'exemplaire. Nom modifié hors de ce format : null (champs de la recherche vides).
+function _searchProductOfNode(node) {
+  if (!node) return null;
+  if (node.searchBrand || node.searchModel) return { brand: node.searchBrand || '', model: node.searchModel || '' };
+  const name = _nameWithoutGroupNumber(node).trim();
+  const i = name.indexOf(' - ');
+  if (i <= 0) return null;
+  const brand = name.slice(0, i).trim();
+  const model = name.slice(i + 3).trim();
+  return brand && model ? { brand, model } : null;
+}
+
+// Enregistre sur l'appareil (ou l'équipement créé) le produit choisi dans la recherche pendant
+// cet ajout ou cette modification. Aucune recherche utilisée : il garde celui qu'il avait.
+function _storeSearchProductOn(target) {
+  const p = _searchProduct;
+  if (!target || !p) return;
+  const brand = (p.brand || '').trim();
+  const model = (p.model || '').trim();
+  if (!brand && !model) return;
+  target.searchBrand = brand;
+  target.searchModel = model;
+}
+
 // Point d'entrée « Nouvel appareil » (menu +) : réinitialise l'état puis ouvre
 // directement le choix d'image/forme (#modal-pick-image) — la modale Ajouter
 // un appareil (nom/catégorie) ne s'affiche qu'à la fin, une fois l'image/les
 // ports déjà configurés (voir la branche « mode création » de rmbg-apply).
 function _startAddDeviceFlow() {
+  if (typeof _routeStepPending === 'function' && _routeStepPending()) return; // câble en attente de sa route
   const nodeCount = Object.keys(APP.nodes).filter(id => id !== 'internet').length;
   if (!LICENSE.isPro() && nodeCount >= 10) {
     LICENSE.showGate('devices');
@@ -1197,7 +1258,36 @@ function _startAddDeviceFlow() {
   // atteindre l'option au fond du menu Catégorie de la toute dernière étape.
   const hasInternet = Object.values(APP.nodes).some(n => n.cat === 'internet');
   document.getElementById('pick-image-restore-internet').style.display = hasInternet ? 'none' : '';
+  _pickForSecondImage = false;
+  _setPickImageTitle('front');
   document.getElementById('modal-pick-image').classList.add('open');
+}
+
+// « + Ajouter une deuxième image » : la fenêtre Configuration image ne passe sur la vue
+// Arrière (vierge) qu'au moment où une image ou une forme est vraiment choisie. Fermer le
+// choix sans rien prendre (✕, Échap, recherche refermée) la laisse donc sur l'Avant, intacte ;
+// basculer dès le clic la laissait sur une Arrière vide, l'Avant semblant avoir disparu.
+// À appeler AVANT toute remise à zéro de la vue active (forme…) : _switchRmbgSide range
+// d'abord l'Avant telle qu'elle est.
+let _pickForSecondImage = false;
+function _enterRearIfSecondImagePick() {
+  if (!_pickForSecondImage) return;
+  _pickForSecondImage = false;
+  if (!document.getElementById('modal-remove-bg')?.classList.contains('open') || _rmbgHasRearImage()) return;
+  _switchRmbgSide('rear');
+}
+
+// Titre de la fenêtre de choix d'image selon la vue qui recevra l'image :
+// « ⚙ IMAGE AVANT » pour la première image d'un nouvel appareil, « ⚙ IMAGE ARRIÈRE »
+// pour « + Ajouter une deuxième image », la vue de l'onglet actif pour « Remplacer l'image ».
+function _setPickImageTitle(side) {
+  const el = document.querySelector('#modal-pick-image .modal-title');
+  if (!el) return;
+  const key = side === 'rear' ? 'pick_image_title_rear' : 'pick_image_title_front';
+  const txt = t(key);
+  if (txt === key) return; // traduction absente : le titre générique reste
+  el.dataset.i18n = key;   // un changement de langue garde ainsi le bon titre
+  el.textContent = txt;
 }
 
 // Titre + libellé du bouton de validation selon le mode (ajout / modification)
@@ -1225,6 +1315,11 @@ function openEditNodeModal(sid) {
   const node = APP.nodes[sid];
   if (!node) return;
   _anEditNodeId = sid;
+  _searchProduct = null; // produit d'une recherche faite pour un autre appareil : jamais repris ici
+  // Marque « Configuration utilisée pour CETTE modification » (posée par rmbg-apply) : repartir sans elle,
+  // sinon une marque restée d'une modification précédente du même appareil ferait relire à _applyEditToNode
+  // la tolérance et les vues d'une Configuration qui n'a pas servi cette fois.
+  delete document.getElementById('modal-remove-bg')?.dataset.usedForEdit;
 
   const modal  = document.getElementById('modal-add-node');
   const catSel = document.getElementById('an-cat');
@@ -1237,7 +1332,7 @@ function openEditNodeModal(sid) {
   });
   const optCustom = document.createElement('option');
   optCustom.value = '__custom__';
-  optCustom.textContent = 'Custom...';
+  optCustom.textContent = t('cat_custom') + '…';
   catSel.appendChild(optCustom);
   catSel.value = node.cat;
 
@@ -1253,18 +1348,7 @@ function openEditNodeModal(sid) {
   // _refreshImgGroupNumberField), et valider donnerait "Tally-MA 03 03".
   // Un appareil sans groupe détecté (pas de voisin partageant son image)
   // garde son nom complet tel quel, chiffre ou pas — rien à en déduire ici.
-  {
-    const imgKey = node.img_original || node.img || null;
-    const sibNames = imgKey
-      ? Object.values(APP.nodes)
-          .filter(n => n !== node && _imgKeyOf(n) === imgKey)
-          .map(n => n.name || n.short || '?')
-      : [];
-    const { base } = _imgGroupNumbering(sibNames);
-    const own = _splitTrailingNumber(node.name || '');
-    document.getElementById('an-name').value =
-      (base && own.base === base && own.num !== null) ? own.base : (node.name || '');
-  }
+  document.getElementById('an-name').value = _nameWithoutGroupNumber(node);
   document.getElementById('an-short').value = node.short || '';
   _shortEdited  = true; // ne pas écraser le nom court existant en tapant dans le nom
 
@@ -1274,6 +1358,10 @@ function openEditNodeModal(sid) {
   _currentShapeColor = node.shapeColor || '#6B7280';
   _anPorts           = (node.ports || []).map(p => ({ ...p }));
   _lastAppliedBB     = null; // recalculé si on repasse par la configuration image
+  // Onglets Avant/Arrière de CET appareil, préparés comme au double-clic : sans ça, Configuration
+  // ouverte depuis cette fenêtre ne chargeait jamais sa vue Arrière et gardait les onglets du dernier
+  // appareil édité. window._xEditSideAware = false en console : ancien comportement (Avant seul).
+  if (window._xEditSideAware !== false) _rmbgPrefillSidesFromNode(node);
 
   _renderAddDevicePreview();
   document.getElementById('an-confirm').disabled = false;
@@ -1285,9 +1373,10 @@ function openEditNodeModal(sid) {
 }
 
 let _shortEdited       = false;
-// Produit rapporté par la recherche d'images ({ brand?, model? }), en attente
-// d'être versé dans #modal-add-node — qui n'ouvre qu'après Configuration image.
-// null pour un import local ou une forme générique.
+// Produit rapporté par la recherche d'images ({ brand?, model? }) pendant l'ajout ou la
+// modification en cours : versé dans #modal-add-node (qui n'ouvre qu'après Configuration
+// image), puis enregistré sur l'appareil à la validation (searchBrand/searchModel).
+// null pour un import local ou une forme générique à l'Avant.
 let _searchProduct     = null;
 let _currentShape      = null;    // forme générique active ('rectangle','square','circle','triangle') ou null
 let _currentShapeColor = '#6B7280'; // couleur de fond de la forme active
@@ -1328,14 +1417,42 @@ const RMBG_COLLAPSE_ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill
 // (voir _portTypeLocked), donc lier l'allumage à "menu ouvert" ne marchait
 // que sur les ports pas encore câblés. Un seul actif à la fois.
 let _rmbgActivePortListId = null;
-// Noms de port en double (sur CET appareil) — autorisé (pas de blocage de la
+// Numérotation des ports sur TOUT l'appareil, faces Avant et Arrière confondues (demande du
+// 2026-09-17) : la face affichée vit dans _anPorts, l'autre dans son bundle (_rmbgSideBundles).
+// Sécurité anti-régression : window._xPortNumAcrossSides = false → ancien comportement (face affichée
+// seule, numéro de secours = position du port dans cette face).
+function _portNumAcrossSides() { return window._xPortNumAcrossSides !== false; }
+
+// Ports de l'AUTRE face de l'appareil en cours de configuration ; [] s'il n'a qu'une image.
+function _otherSidePorts() {
+  if (!_portNumAcrossSides()) return [];
+  const other = _rmbgActiveSide === 'rear' ? 'front' : 'rear';
+  return _rmbgSideBundles[other]?.ports || [];
+}
+
+// Numéro d'un nouveau port : le plus petit numéro libre sur l'appareil — 1, 2, 3 puis suppression
+// du 2 → le suivant reçoit 2 ; sans trou, celui qui suit le plus grand. Seuls les noms entièrement
+// numériques occupent un numéro (« USB » n'en prend aucun).
+function _nextFreePortLabel() {
+  const taken = new Set();
+  for (const p of [..._anPorts, ..._otherSidePorts()]) {
+    const l = String(p.label || '').trim();
+    if (/^\d+$/.test(l)) taken.add(parseInt(l, 10));
+  }
+  let n = 1;
+  while (taken.has(n)) n++;
+  return String(n);
+}
+
+// Noms de port en double (sur CET appareil, ses deux faces) — autorisé (pas de blocage de la
 // saisie), mais signalé : fond de ligne rouge + clignotement du champ, et
 // Appliquer désactivé tant que ça dure (demandé explicitement). Comparaison
 // sur le texte tel quel (espaces retirés) ; un champ vide n'est jamais
-// compté comme doublon entre deux ports vides.
+// compté comme doublon entre deux ports vides. Renvoie les ports de la face AFFICHÉE
+// en conflit (surlignage) — un conflit avec un port de l'autre face les allume aussi.
 function _findDuplicatePortLabels() {
   const counts = new Map();
-  _anPorts.forEach(p => {
+  [..._anPorts, ..._otherSidePorts()].forEach(p => {
     const label = (p.label || '').trim();
     if (!label) return;
     counts.set(label, (counts.get(label) || 0) + 1);
@@ -1346,6 +1463,19 @@ function _findDuplicatePortLabels() {
     if (label && counts.get(label) > 1) dupIds.add(p.id);
   });
   return dupIds;
+}
+
+// Un doublon n'importe où sur l'appareil — y compris entre deux ports de la face NON affichée —
+// bloque Appliquer (voir _updateConfirmBtn).
+function _deviceHasDuplicatePortLabels() {
+  const seen = new Set();
+  for (const p of [..._anPorts, ..._otherSidePorts()]) {
+    const label = (p.label || '').trim();
+    if (!label) continue;
+    if (seen.has(label)) return true;
+    seen.add(label);
+  }
+  return false;
 }
 
 // ⚠️ POINT D'ENTRÉE UNIQUE — la seule fonction à appeler dès que quelque
@@ -1817,7 +1947,7 @@ document.addEventListener('keydown', e => {
 });
 
 // ── Rendu des dots de port sur la zone interactive ────────────
-const PORT_CONNECTOR_TYPES = ['Bluetooth','Dante','DC','DisplayPort','HDMI','HF','Jack 3.5','Jack 6.35','MADI','Optical','RCA/Cinch','RJ45','SDI','SDI-F','Speakon','Thunderbolt','USB-A','USB-C','USB-DC','WiFi','XLR'];
+const PORT_CONNECTOR_TYPES = ['Bluetooth','Combo XLR/Jack','Dante','DC','DisplayPort','HDMI','HF','Jack 3.5','Jack 6.35','MADI','Optical','RCA/Cinch','RJ45','SDI','SDI-F','Speakon','Thunderbolt','USB-A','USB-C','USB-DC','WiFi','XLR'];
 
 // ── Calcul pur : position de l'image dans la zone (object-fit:contain) ──
 // Utilise naturalWidth/Height + dimensions du div. Zéro getBoundingClientRect.
@@ -1868,6 +1998,30 @@ function _isInsideShape(nx, ny) {
          checkAt(px0, py0 + d)   || checkAt(px0, py0 - d)   ||
          checkAt(px0 + d2, py0 + d2) || checkAt(px0 + d2, py0 - d2) ||
          checkAt(px0 - d2, py0 + d2) || checkAt(px0 - d2, py0 - d2);
+}
+
+// ── Faire passer des ports sur l'autre face ──────────────────
+// Appele pendant un glisser de point, quand le curseur s'attarde sur l'onglet de
+// l'autre face (voir le gestionnaire de .pdot). Les ports gardent leur identite et
+// leur position relative : les cables branches dessus restent branches, le numero
+// ne change pas, et il ne reste qu'a les faire glisser au bon endroit sur la
+// nouvelle image. Retourne true si la bascule a eu lieu.
+// Securite anti-regression : window._xPortSideDrag = false -> geste desactive.
+function _rmbgMovePortsToSide(ids, side) {
+  if (side === _rmbgActiveSide) return false;
+  const emportes = _anPorts.filter(p => ids.has(p.id)).map(p => ({ ...p }));
+  if (!emportes.length) return false;
+  // Retires de la face courante AVANT la bascule : _switchRmbgSide range la face
+  // active dans son paquet, elle doit donc deja etre debarrassee de ces ports.
+  _anPorts = _anPorts.filter(p => !ids.has(p.id));
+  _switchRmbgSide(side);
+  for (const p of emportes) _anPorts.push(p);
+  _selectedPortIds = new Set(ids);
+  _rmbgTouched = true;
+  _syncPortVisuals();
+  _renderPortList();
+  _updateAlignButtons();
+  return true;
 }
 
 // ── Rendu des dots (divs absolus dans la zone) ────────────────
@@ -1948,13 +2102,54 @@ function _renderPortDots() {
         minNy = Math.min(minNy, s.ny); maxNy = Math.max(maxNy, s.ny);
       }
 
+      // Glisser vers l'onglet de l'AUTRE face : un survol prolonge bascule la vue et
+      // emporte le ou les ports. Le relachement sert a les poser, jamais a basculer.
+      const ids = new Set(startPos.keys());
+      let survolDepuis = null, ongletSurvole = null;
+      const finirSurvol = () => {
+        if (ongletSurvole) ongletSurvole.classList.remove('rmbg-side-tab-drop');
+        ongletSurvole = null; survolDepuis = null;
+      };
+
       const onMove = ev => {
         if (Date.now() - pressedAt < 200) return;
+
+        if (window._xPortSideDrag !== false && _rmbgHasRearImage()) {
+          const autre = _rmbgActiveSide === 'front' ? 'rear' : 'front';
+          const onglet = document.getElementById('rmbg-tab-' + autre);
+          const r = onglet ? onglet.getBoundingClientRect() : null;
+          const dessus = r && ev.clientX >= r.left && ev.clientX <= r.right
+                           && ev.clientY >= r.top  && ev.clientY <= r.bottom;
+          if (dessus) {
+            if (ongletSurvole !== onglet) { finirSurvol(); ongletSurvole = onglet; survolDepuis = Date.now(); }
+            onglet.classList.add('rmbg-side-tab-drop');
+            if (Date.now() - survolDepuis >= 500 && _rmbgMovePortsToSide(ids, autre)) {
+              finirSurvol();
+              // Nouvelle image, nouvelles references : on repart de la position
+              // actuelle des ports, sinon le prochain deplacement ferait un saut.
+              startPos.clear();
+              minNx = 1; maxNx = 0; minNy = 1; maxNy = 0;
+              for (const pp of _anPorts) {
+                if (!ids.has(pp.id)) continue;
+                startPos.set(pp.id, { nx: pp.nx, ny: pp.ny });
+                minNx = Math.min(minNx, pp.nx); maxNx = Math.max(maxNx, pp.nx);
+                minNy = Math.min(minNy, pp.ny); maxNy = Math.max(maxNy, pp.ny);
+              }
+            }
+            return;   // pendant le survol de l'onglet, les points ne suivent pas
+          }
+          finirSurvol();
+        }
+
         const zR = document.getElementById('rmbg-ports-zone').getBoundingClientRect();
         const rc = _getImgContainRect();
         const st = startPos.get(p.id);
+        if (!st) return;
         const nx = (ev.clientX - zR.left - rc.left) / rc.width;
         const ny = (ev.clientY - zR.top  - rc.top)  / rc.height;
+        // Le point saisi reste SOUS le curseur, y compris juste apres une bascule de
+        // face : startPos est alors repris sur les positions courantes, si bien que ce
+        // calcul ramene le port sous la souris au lieu de le laisser en arriere.
         const dnx = Math.max(-minNx, Math.min(1 - maxNx, nx - st.nx));
         const dny = Math.max(-minNy, Math.min(1 - maxNy, ny - st.ny));
         for (const pp of _anPorts) {
@@ -1962,13 +2157,16 @@ function _renderPortDots() {
           if (!s0) continue;
           pp.nx = s0.nx + dnx;
           pp.ny = s0.ny + dny;
-          const el = pp.id === p.id ? dot : zone.querySelector(`.pdot[data-port-id="${pp.id}"]`);
+          // Jamais la reference capturee au depart : apres une bascule de face, les
+          // points ont ete redessines et cet element-la n'existe plus.
+          const el = zone.querySelector(`.pdot[data-port-id="${pp.id}"]`);
           if (!el) continue;
           el.style.left = (rc.left + pp.nx * rc.width)  + 'px';
           el.style.top  = (rc.top  + pp.ny * rc.height) + 'px';
         }
       };
       const onUp = () => {
+        finirSurvol();
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseup', onUp);
         if (Date.now() - pressedAt < 200) {
@@ -2071,7 +2269,10 @@ function _renderPortList(scrollToLast = false) {
   // à ce stade, et un label vide se classerait avant n'importe quel numéro
   // existant dans le tri (chaîne vide < tout le reste), le faisant sauter en
   // tête de liste au lieu de rester à sa place naturelle en fin de série.
-  _anPorts.forEach(p => { if (!p.label) p.label = String(_origIndex.get(p) + 1); });
+  // Numérotation sur tout l'appareil : le plus petit numéro libre, faces confondues (_nextFreePortLabel).
+  _anPorts.forEach(p => {
+    if (!p.label) p.label = _portNumAcrossSides() ? _nextFreePortLabel() : String(_origIndex.get(p) + 1);
+  });
 
   // Tri par numérotation (p.label) — MAIS un port actuellement en conflit
   // (voir _findDuplicatePortLabels) garde sa place dans _base au lieu d'être
@@ -2118,7 +2319,7 @@ function _renderPortList(scrollToLast = false) {
     isolateBtn.type = 'button';
     isolateBtn.className = 'port-isolate-btn';
     isolateBtn.dataset.portId = String(p.id);
-    isolateBtn.title = 'Show only this connection point';
+    isolateBtn.title = t('port_isolate_title');
     isolateBtn.setAttribute('aria-label', `Show only connection point ${p.label || _fallbackNum}`);
     isolateBtn.style.cssText = `
       display:flex;align-items:center;gap:6px;min-width:46px;
@@ -2336,7 +2537,7 @@ function _renderPortList(scrollToLast = false) {
     // Bouton passthrough ⇌ — sans objet pour un port sans fil (pas de notion
     // d'IN/OUT : source/destination illimitées des deux côtés par défaut).
     const dualBtn = document.createElement('button');
-    dualBtn.title = 'Passthrough port (IN + OUT)';
+    dualBtn.title = t('port_dual_title');
     dualBtn.textContent = '⇌';
     const _dualStyle = () => {
       const isWireless = typeof WIRELESS_TYPES !== 'undefined' && WIRELESS_TYPES.has(p.type);
@@ -2361,7 +2562,7 @@ function _renderPortList(scrollToLast = false) {
     const del = document.createElement('button');
     del.className = 'port-list-del';
     del.textContent = '✕';
-    del.title = 'Remove';
+    del.title = t('remove');
     del.addEventListener('click', () => {
       if (_isolatedPortId === p.id) _isolatedPortId = null;
       _anPorts = _anPorts.filter(x => x.id !== p.id);
@@ -2386,8 +2587,18 @@ function _renderPortList(scrollToLast = false) {
   _syncPortVisuals(); // état initial correct dès l'ouverture (doublons déjà présents, pas seulement après une frappe)
 
   if (scrollToLast) {
-    // Forcer le scroll en bas directement — plus fiable que scrollIntoView
-    requestAnimationFrame(() => { list.scrollTop = list.scrollHeight; });
+    // Défiler jusqu'à la ligne du port qui vient d'être créé (_rmbgActivePortListId, seul appelant :
+    // l'ajout d'un port) — avec la numérotation « plus petit numéro libre », il n'est plus forcément le
+    // dernier de la liste triée (ex. 4 repris après suppression). Défilement calculé à la main, centré
+    // sur la ligne, plutôt que scrollIntoView (moins fiable ici, comme l'ancien défilement en bas).
+    // Sécurité anti-régression : window._xScrollToNewPort = false → ancien comportement (bas de la liste).
+    requestAnimationFrame(() => {
+      const row = window._xScrollToNewPort === false ? null
+        : list.querySelector(`.port-list-item[data-port-id="${CSS.escape(String(_rmbgActivePortListId))}"]`);
+      if (!row) { list.scrollTop = list.scrollHeight; return; }
+      const rowTop = row.getBoundingClientRect().top - list.getBoundingClientRect().top + list.scrollTop;
+      list.scrollTop = rowTop - (list.clientHeight - row.offsetHeight) / 2;
+    });
   }
 
   // Rendre le focus/curseur au même champ qu'avant la reconstruction (voir
@@ -2423,6 +2634,10 @@ function _renderAddDevicePreview() {
 
   const _placeDots = () => {
     overlay.querySelectorAll('.an-pdot').forEach(d => d.remove());
+    // Plus aucun point de connexion sur cette vignette (décision du 2026-09-17, jugés peu esthétiques ici) :
+    // ils restent visibles dans Configuration image. Sécurité anti-régression :
+    // window._xPreviewPortDots = true → points réaffichés, avec leur vrai numéro.
+    if (window._xPreviewPortDots !== true) return;
     const iW = img.naturalWidth  || 1;
     const iH = img.naturalHeight || 1;
     const pW = overlay.clientWidth;
@@ -2435,7 +2650,10 @@ function _renderAddDevicePreview() {
       const dot = document.createElement('div');
       dot.className = 'an-pdot';
       dot.style.cssText = `position:absolute;left:${offX + p.nx * rW}px;top:${offY + p.ny * rH}px;width:12px;height:12px;background:${previewColor};border:2px solid #fff;border-radius:3px;transform:translate(-50%,-50%);font-family:monospace;font-size:7px;font-weight:bold;color:#fff;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:10;`;
-      dot.textContent = i + 1;
+      // Même numéro que dans Configuration image (p.label), jamais l'ordre de pose : sinon un port « 11 »
+      // affichait 1, et deux ports renumérotés après une suppression apparaissaient inversés.
+      // Sécurité anti-régression : window._xPreviewPortLabels = false → ancien affichage (ordre de pose).
+      dot.textContent = window._xPreviewPortLabels === false ? i + 1 : (p.label || (i + 1));
       overlay.appendChild(dot);
     });
   };
@@ -2449,7 +2667,8 @@ function _updateConfirmBtn() {
   // Seul vrai blocage existant sur ce bouton (demandé explicitement) : au
   // moins deux ports du même appareil avec le même nom. Tout le reste de la
   // fenêtre ne bloque jamais Appliquer (voir historique du bouton).
-  if (applyBtn) applyBtn.disabled = _findDuplicatePortLabels().size > 0;
+  // Doublon cherché sur les deux faces de l'appareil (voir _deviceHasDuplicatePortLabels).
+  if (applyBtn) applyBtn.disabled = _deviceHasDuplicatePortLabels();
   _refreshRmbgApplyLabel();
 }
 
@@ -2474,7 +2693,72 @@ let _rmbgTolAtOpen = null;
 // Compare l'état de la fenêtre à celui de l'appareil. Comparaison sur l'état FINAL,
 // pas sur le geste : déplacer un port puis le remettre exactement où il était ne
 // compte pas comme une modification.
+//
+// Chaque vue est comparée à SES propres champs sur l'appareil — Avant : ports, shape,
+// tolérance ; Arrière : portsRear, shapeRear, rmbg_tolRear — lue en direct si c'est
+// l'onglet affiché, sinon depuis son bundle mis de côté (_rmbgSideBundles).
+// Corrigé le 2026-09-15 : l'Avant était comparé aux variables actives quel que soit
+// l'onglet. Sur l'onglet Arrière, les points de l'Arrière passaient donc pour ceux de
+// l'Avant (« Appliquer » sans aucune modification), et une tolérance ou une forme
+// changée seulement sur l'Arrière n'était jamais vue (« Fermer » depuis l'Avant,
+// modification perdue au clic).
+// Sécurité anti-régression : window._xStateDiffersPerSide = false → ancienne comparaison.
 function _rmbgStateDiffers(node) {
+  if (!node) return true;
+  if (_rmbgTouched) return true;
+  if (window._xStateDiffersPerSide === false) return _rmbgStateDiffersLegacy(node);
+
+  const tolEl = document.getElementById('rmbg-tol');
+  const live = {
+    original: _rmbgOriginal, ports: _anPorts,
+    tol: tolEl ? +tolEl.value : null,
+    shape: _currentShape, shapeColor: _currentShapeColor,
+  };
+  const sideState = side => (_rmbgActiveSide === side ? live : _rmbgSideBundles[side]);
+
+  // Avant
+  const front = sideState('front');
+  if (!front) return true; // état introuvable : ne jamais conclure « rien n'a changé »
+  if ((node.shape || null) !== (front.shape || null)) return true;
+  if (front.shape && (node.shapeColor || null) !== (front.shapeColor || null)) return true;
+  // Référence : ce que le curseur affichait à l'ouverture (voir _rmbgTolAtOpen).
+  if (front.tol != null && _rmbgTolAtOpen !== null && +front.tol !== +_rmbgTolAtOpen) return true;
+  if (_rmbgPortsDiffer(node.ports, front.ports)) return true;
+
+  // Arrière : présente/absente différemment de l'appareil enregistré, ou modifiée depuis.
+  const rear = sideState('rear');
+  const hadRear = !!node.imgRear;
+  const hasRear = !!(rear && rear.original);
+  if (hadRear !== hasRear) return true;
+  if (hasRear) {
+    if ((node.shapeRear || null) !== (rear.shape || null)) return true;
+    if (rear.shape && (node.shapeColorRear || null) !== (rear.shapeColor || null)) return true;
+    // Référence : valeur pré-remplie à l'ouverture (_rmbgPrefillSidesFromNode), 1 par défaut.
+    if (rear.tol != null && +rear.tol !== +(node.rmbg_tolRear ?? 1)) return true;
+    if (_rmbgPortsDiffer(node.portsRear, rear.ports)) return true;
+  }
+  return false;
+}
+
+// Vrai si la liste de ports diffère de celle enregistrée : nombre, id, position, type,
+// mode simple/double ou nom.
+function _rmbgPortsDiffer(oldList, newList) {
+  const oldPorts = oldList || [], newPorts = newList || [];
+  if (oldPorts.length !== newPorts.length) return true;
+  for (const op of oldPorts) {
+    const np = newPorts.find(p => p.id === op.id);
+    if (!np) return true;                     // port supprimé (ou remplacé par un autre)
+    if (Math.abs((op.nx || 0) - (np.nx || 0)) > 1e-6) return true;
+    if (Math.abs((op.ny || 0) - (np.ny || 0)) > 1e-6) return true;
+    if ((op.type || '') !== (np.type || ''))  return true;
+    if (!!op.dual !== !!np.dual)              return true;
+    if ((op.label || '') !== (np.label || '')) return true;
+  }
+  return false;
+}
+
+// Ancienne comparaison, gardée seulement pour window._xStateDiffersPerSide = false.
+function _rmbgStateDiffersLegacy(node) {
   if (!node) return true;
   if (_rmbgTouched) return true;
   if ((node.shape || null) !== (_currentShape || null)) return true;
@@ -2494,6 +2778,32 @@ function _rmbgStateDiffers(node) {
     if (!!op.dual !== !!np.dual)              return true;
     if ((op.label || '') !== (np.label || '')) return true;
   }
+
+  // Vue Arrière : présente/absente différemment de l'appareil enregistré, ou
+  // modifiée depuis. Lue en direct si c'est la vue affichée, sinon depuis son
+  // bundle mis de côté (voir _rmbgSideBundles) — jamais périmée dans les deux
+  // cas, contrairement à _rmbgFinalizeSide cette fonction ne dépend d'aucun
+  // appel préalable à _saveActiveRmbgSide().
+  const rearEff = _rmbgActiveSide === 'rear'
+    ? { original: _rmbgOriginal, ports: _anPorts }
+    : _rmbgSideBundles.rear;
+  const hadRear = !!node.imgRear;
+  const hasRear = !!(rearEff && rearEff.original);
+  if (hadRear !== hasRear) return true;
+  if (hasRear) {
+    const oldRearPorts = node.portsRear || [], newRearPorts = rearEff.ports || [];
+    if (oldRearPorts.length !== newRearPorts.length) return true;
+    for (const op of oldRearPorts) {
+      const np = newRearPorts.find(p => p.id === op.id);
+      if (!np) return true;
+      if (Math.abs((op.nx || 0) - (np.nx || 0)) > 1e-6) return true;
+      if (Math.abs((op.ny || 0) - (np.ny || 0)) > 1e-6) return true;
+      if ((op.type || '') !== (np.type || ''))  return true;
+      if (!!op.dual !== !!np.dual)              return true;
+      if ((op.label || '') !== (np.label || '')) return true;
+    }
+  }
+
   return false;
 }
 
@@ -2922,6 +3232,18 @@ function _assignPasteNumbering(newNodeId) {
   if (!siblings.length) return; // seul de son espèce : rien à numéroter
 
   const base = _splitTrailingNumber(node.name || node.short || '').base;
+  // Le nom COURT est celui affiché sous l'appareil sur le canevas (nodes.js :
+  // `s.short || s.name`) : sans lui, deux appareils collés/importés restaient
+  // visuellement identiques, seule leur fiche portait le numéro. Il suit donc le
+  // même numéro que le nom complet, avec sa propre base (demande du 2026-09-17).
+  // Sécurité anti-régression : window._xNumberShortName = false → nom complet seul.
+  const shortBase = _splitTrailingNumber(node.short || '').base;
+  const _numberOne = (n, sid, num, width) => {
+    const suffix = ' ' + _formatGroupNumber(num, width);
+    n.name = base + suffix;
+    if (n.short && window._xNumberShortName !== false) n.short = shortBase + suffix;
+    renderOneNode(sid);
+  };
 
   // Sépare les voisins déjà numérotés (jamais retouchés) de ceux qui ne le sont pas
   // encore — typiquement l'appareil source, dont on vient justement de coller une
@@ -2944,14 +3266,12 @@ function _assignPasteNumbering(newNodeId) {
   let next = currentHighest;
   for (const [sid, n] of unnumbered) {
     next++;
-    n.name = base + ' ' + _formatGroupNumber(next, width);
-    renderOneNode(sid);
+    _numberOne(n, sid, next, width);
   }
 
   // Le nouvel appareil collé reçoit toujours le numéro le plus grand du lot.
   next++;
-  node.name = base + ' ' + _formatGroupNumber(next, width);
-  renderOneNode(newNodeId);
+  _numberOne(node, newNodeId, next, width);
 }
 
 function setupAddNodeModal() {
@@ -2995,6 +3315,14 @@ function setupAddNodeModal() {
   // passer à une forme, la zone import/formes juste au-dessus reste disponible.
   document.getElementById('an-prev-overlay').addEventListener('click', () => {
     if (!_rmbgOriginal && !_anImgData) return;
+    // Modification d'un appareil (crayon) : mémoriser l'état avant ouverture, remis tel quel par
+    // « Annuler » (rmbg-cancel) — sinon des points modifiés ou une vue effacée puis annulés restaient
+    // en attente et étaient enregistrés par la fenêtre de modification.
+    _anSetupSnapshot = (_anEditNodeId && window._xEditSideAware !== false) ? {
+      ports: _anPorts.map(p => ({ ...p })), original: _rmbgOriginal, imgData: _anImgData,
+      shape: _currentShape, shapeColor: _currentShapeColor, bb: _lastAppliedBB,
+      activeSide: _rmbgActiveSide, bundles: { ..._rmbgSideBundles },
+    } : null;
     _openRmbgModal(_rmbgOriginal || _anImgData);
   });
 
@@ -3194,30 +3522,58 @@ function _anFinalizeConfirm(name, short, cat) {
   }
 
   try {
+    // Onglet actuellement affiché rangé dans son bundle AVANT toute finalisation
+    // par côté — même précaution qu'en mode édition (voir rmbg-apply), sinon
+    // _rmbgFinalizeSide('rear') ci-dessous pourrait lire un état pas encore
+    // sauvegardé pour la vue active.
+    _saveActiveRmbgSide();
+
     // #an-prev-img affiche déjà _anImgData au moment où ce bouton est cliquable
     // (voir _renderAddDevicePreview) : ses dimensions naturelles sont donc fiables ici.
     const _prevImg = document.getElementById('an-prev-img');
     const { w: _iw, h: _ih } = _computeImportSize(_prevImg?.naturalWidth, _prevImg?.naturalHeight);
+    // Les deux côtés passent PAR _rmbgFinalizeSide, jamais par une lecture directe
+    // des variables partagées de l'éditeur (_anImgData/_anPorts/le curseur de
+    // tolérance...) : ces variables reflètent l'onglet ACTUELLEMENT affiché, qui
+    // peut être Avant ou Arrière indifféremment au moment du clic. Lire l'Avant
+    // directement plantait le bug suivant, confirmé le 2026-09-13 : valider
+    // depuis l'onglet Arrière faisait passer les données Arrière (déjà actives,
+    // donc lues telles quelles) pour les données Avant aussi — les deux vues se
+    // retrouvaient avec la même image/ports. _rmbgFinalizeSide('front') bascule
+    // lui-même sur l'Avant si besoin avant de lire, quel que soit l'onglet affiché.
+    const frontData = _rmbgFinalizeSide('front');
+    const rearData  = _rmbgFinalizeSide('rear');
     const eq = {
       id:           'custom-' + uuid(),
       name,
       short:        short || smartShortName(name) || name,
       cat,
-      img:          _anImgData || null,
-      img_original: _rmbgOriginal || null,
-      rmbg_tol:     +document.getElementById('rmbg-tol').value,
-      rmbg_crop:    _cropRectAsFractions(),
-      ports:        _anPorts.map(p => ({ id: p.id, nx: p.nx, ny: p.ny, type: p.type, dual: p.dual || false, label: p.label || null })),
-      shape:        _currentShape || null,
-      shapeColor:   _currentShape ? _currentShapeColor : null,
+      img:          frontData.img,
+      img_original: frontData.img_original,
+      rmbg_tol:     frontData.tol,
+      rmbg_crop:    frontData.crop,
+      ports:        frontData.ports,
+      shape:        frontData.shape || null,
+      shapeColor:   frontData.shape ? frontData.shapeColor : null,
       w: _iw, h: _ih,
       // Cadre du contenu visible, calculé sur les pixels opaques de l'image finale
       // (voir _alphaBBFromCanvas) plutôt qu'une valeur fixe : c'est ce rectangle qui
       // sert d'obstacle au routage et au contournement d'un segment déplacé.
-      bb: (_currentShape ? null : _lastAppliedBB) || { left: 0, right: 1, top: 0, bottom: 1 },
+      bb: frontData.bb || { left: 0, right: 1, top: 0, bottom: 1 },
       bbAuto: true,
       stub: null,
     };
+    if (rearData) {
+      eq.imgRear          = rearData.img;
+      eq.imgRear_original = rearData.img_original;
+      eq.rmbg_tolRear      = rearData.tol;
+      eq.rmbg_cropRear     = rearData.crop;
+      eq.portsRear         = rearData.ports;
+      if (rearData.shape) { eq.shapeRear = rearData.shape; eq.shapeColorRear = rearData.shapeColor; }
+    }
+    // Produit trouvé par la recherche : gardé sur l'appareil, pour pré-remplir la recherche
+    // d'une image ajoutée ou remplacée plus tard, même après fermeture (voir _searchProductOfNode).
+    _storeSearchProductOn(eq);
 
     EQUIPMENT_LIBRARY.push(eq);
     _saveUserLibrary(); // persistance immédiate
@@ -3248,14 +3604,31 @@ function _applyEditToNode(sid, { name, short, cat }) {
   const catAvant = node.cat; // pour ne proposer la propagation qu'en cas de changement réel
   pushUndo();
 
-  const oldPorts = node.ports || [];
+  // Vue Arrière, seulement si Configuration a servi pendant CETTE modification (sinon rien n'y a
+  // changé) : même traitement qu'au double-clic (rmbg-apply) — Arrière finalisée si elle a été
+  // affichée, effacée si l'appareil en avait une et que la fenêtre n'en a plus, et ses ports
+  // comparés avec ceux de l'Avant. window._xEditSideAware = false en console : Avant seul, comme avant.
+  const sideAware = window._xEditSideAware !== false
+    && document.getElementById('modal-remove-bg')?.dataset.usedForEdit === sid;
+  let rearData = null, rearDeleted = false, frontFromRear = false;
+  if (sideAware) {
+    _saveActiveRmbgSide();
+    rearData      = _rmbgFinalizeSide('rear');
+    rearDeleted   = !!node.imgRear && !_rmbgHasRearImage();
+    frontFromRear = rearDeleted && (_rmbgOriginal || null) === (node.imgRear_original || node.imgRear);
+  }
+
+  const oldPorts = sideAware ? [...(node.ports || []), ...(node.portsRear || [])] : (node.ports || []);
+  const newPorts = sideAware
+    ? [..._anPorts, ...(rearDeleted ? [] : rearData ? rearData.ports : (node.portsRear || []))]
+    : _anPorts;
   const invalidatedPortIds = new Set();
-  for (const newP of _anPorts) {
+  for (const newP of newPorts) {
     const oldP = oldPorts.find(op => op.id === newP.id);
     if (oldP && !!oldP.dual !== !!newP.dual) invalidatedPortIds.add(newP.id);
   }
   for (const oldP of oldPorts) {
-    if (!_anPorts.some(np => np.id === oldP.id)) invalidatedPortIds.add(oldP.id);
+    if (!newPorts.some(np => np.id === oldP.id)) invalidatedPortIds.add(oldP.id);
   }
 
   node.name  = name;
@@ -3274,6 +3647,21 @@ function _applyEditToNode(sid, { name, short, cat }) {
     node.rmbg_tol = +document.getElementById('rmbg-tol').value;
     node.rmbg_crop = _cropRectAsFractions();
   }
+  if (rearData && !rearDeleted) {
+    node.imgRear          = rearData.img;
+    node.imgRear_original = rearData.img_original;
+    node.rmbg_tolRear     = rearData.tol;
+    node.rmbg_cropRear    = rearData.crop;
+    node.portsRear        = rearData.ports;
+    if (rearData.shape) { node.shapeRear = rearData.shape; node.shapeColorRear = rearData.shapeColor; }
+  }
+  _storeSearchProductOn(node); // produit choisi dans la recherche pendant cette modification
+  if (frontFromRear) {
+    node._imgW = node._imgWRear || node._imgW;
+    node._imgH = node._imgHRear || node._imgH;
+    node.bbAuto = false; // cadre du contenu recalculé sur la nouvelle image au rendu
+  }
+  if (rearDeleted) _rmbgClearRearFromNode(sid, node);
 
   if (invalidatedPortIds.size) {
     for (const cc of (APP.cables || [])) {
@@ -3284,6 +3672,7 @@ function _applyEditToNode(sid, { name, short, cat }) {
 
   wLog('NODE_EDIT', { id: sid, name, cat });
   renderOneNode(sid);
+  if (typeof refreshPortDotCap === 'function') refreshPortDotCap(); // ses prises ont pu bouger
   _autoNumberUnnumberedSiblings(sid);
   _patchCablesForPortMove(sid);
   rebuildCM();
@@ -3294,7 +3683,8 @@ function _applyEditToNode(sid, { name, short, cat }) {
   // sort tôt si APP.sel === id déjà (cas normal ici, on édite l'appareil
   // sélectionné) : on le vide d'abord pour forcer un vrai recalcul avec la
   // table de connexions fraîche (rebuildCM() vient de la reconstruire).
-  if (typeof selectNode === 'function') { APP.sel = null; selectNode(sid); }
+  // reselectNode (select.js) le fait sans rejouer le fondu des câbles.
+  if (typeof reselectNode === 'function') reselectNode(sid);
   updateHeaderStats();
   renderSidebarCats();
   if (typeof refreshSidebar === 'function') refreshSidebar();
@@ -3333,6 +3723,218 @@ let _rmbgRafId      = null;
 let _rmbgEditNodeId = null;   // si défini : on édite un nœud existant
 let _rmbgAppPath  = localStorage.getItem('wires-ext-editor') || '';
 
+// ── Vues Avant/Arrière (front/rear) ─────────────────────────
+// _rmbgActiveSide indique quelle vue est actuellement affichée dans la modale ;
+// TOUTES les variables ci-dessus (_rmbgOriginal, _cropRect, _anPorts, _currentShape...)
+// représentent TOUJOURS la vue active — jamais front ou rear en dur. La vue
+// inactive est mise de côté dans _rmbgSideBundles, restaurée au retour dessus.
+let _rmbgActiveSide   = 'front';               // 'front' | 'rear'
+let _rmbgSideBundles  = { front: null, rear: null };
+
+// Vrai si une image arrière existe déjà (active ou mise de côté) — sert à la
+// fois à afficher l'onglet ARRIÈRE et à désactiver "+ Ajouter une deuxième image".
+function _rmbgHasRearImage() {
+  if (_rmbgActiveSide === 'rear') return !!_rmbgOriginal;
+  return !!(_rmbgSideBundles.rear && _rmbgSideBundles.rear.original);
+}
+
+// Range l'état courant (vue active) dans son bundle avant de basculer ailleurs.
+// canvas/cropRect/result ne sont jamais réinitialisés ici : s'ils sont déjà
+// valides (rendu terminé cette session), _loadRmbgSide les réutilise tels
+// quels au retour — sinon canvas reste null et _loadRmbgSide relance le rendu.
+function _saveActiveRmbgSide() {
+  _rmbgSideBundles[_rmbgActiveSide] = {
+    original: _rmbgOriginal, result: _rmbgResult, canvas: _rmbgCanvas,
+    cropRect: _cropRect, portsImgCropRect: _portsImgCropRect, pendingCropFrac: _pendingCropFrac,
+    imgNatW: _imgNatW, imgNatH: _imgNatH,
+    ports: _anPorts.map(p => ({ ...p })),
+    tol: +document.getElementById('rmbg-tol').value,
+    shape: _currentShape, shapeColor: _currentShapeColor,
+    // Cadre auto-détecté (voir _lastAppliedBB, tout en bas du fichier) — sans le
+    // ranger ici, il reste une variable UNIQUE partagée par les deux côtés :
+    // finaliser l'Avant après être passé par l'Arrière lui aurait silencieusement
+    // donné le cadre de l'Arrière (bug relevé le 2026-09-13, même famille que la
+    // tolérance ci-dessus).
+    bb: _lastAppliedBB,
+  };
+}
+
+// Recharge le bundle d'un côté dans les variables actives + réaffiche.
+// Point clé : si ce côté n'a JAMAIS été rendu cette session (canvas encore
+// null — bundle pré-rempli depuis le nœud sauvegardé, jamais encore affiché),
+// on NE bricole PAS un affichage à partir de champs épars : on relance
+// _scheduleRmbgRender(), le MÊME pipeline (détourage + bbox auto ou
+// restauration du recadrage enregistré) que celui utilisé à l'ouverture
+// initiale de la fenêtre. Sans ça, l'image revient non recadrable et/ou
+// tronquée dans la zone des ports (bug constaté en revenant sur l'Arrière).
+function _loadRmbgSide(side) {
+  const b = _rmbgSideBundles[side];
+  _rmbgOriginal     = b ? b.original         : null;
+  _rmbgResult       = b ? b.result           : null;
+  _rmbgCanvas       = b ? b.canvas           : null;
+  _cropRect         = b ? b.cropRect         : null;
+  _portsImgCropRect = b ? b.portsImgCropRect : null;
+  _pendingCropFrac  = b ? b.pendingCropFrac  : null;
+  _imgNatW = b ? b.imgNatW : 0;
+  _imgNatH = b ? b.imgNatH : 0;
+  _anPorts = b ? b.ports.map(p => ({ ...p })) : [];
+  _currentShape      = b ? b.shape      : null;
+  _currentShapeColor = b ? b.shapeColor : '#6B7280';
+  _lastAppliedBB     = b ? b.bb : null;
+  _setSlider('rmbg-tol', b ? b.tol : 1);
+
+  const colorSection = document.getElementById('rmbg-shape-color');
+  if (colorSection) {
+    colorSection.style.display = _currentShape ? '' : 'none';
+    if (_currentShape) _syncShapeSwatches(_currentShapeColor);
+  }
+
+  if (!_rmbgOriginal) {
+    // Côté vierge : rien à afficher.
+    document.getElementById('rmbg-orig-img').src  = '';
+    document.getElementById('rmbg-prev-img').src  = '';
+    document.getElementById('rmbg-ports-img').src = '';
+    document.getElementById('crop-overlay').style.display = 'none';
+    document.getElementById('rmbg-ports-zone').querySelectorAll('.pdot').forEach(d => d.remove());
+    _renderPortList();
+    _updateConfirmBtn();
+    _updateAlignButtons();
+    return;
+  }
+
+  document.getElementById('rmbg-orig-img').src = _rmbgOriginal;
+  document.getElementById('rmbg-status').textContent = '';
+
+  if (_rmbgCanvas) {
+    // Déjà rendu cette session : réafficher directement à partir du cache
+    // (recadrage recalculé via _applyCrop(), pas juste le résultat brut du
+    // détourage), sans relancer le traitement — c'est ce qui permet de garder
+    // un recadrage ajusté à la main quand on va-et-vient entre les onglets.
+    document.getElementById('rmbg-prev-img').src  = _rmbgResult || _rmbgOriginal;
+    document.getElementById('rmbg-ports-img').src = _applyCrop();
+    _portsImgCropRect = _cropRect ? { ..._cropRect } : null;
+    if (_cropRect) _updateCropOverlay(); else document.getElementById('crop-overlay').style.display = 'none';
+    _syncPortVisuals();
+    _renderPortList();
+  } else {
+    // Jamais rendu cette session (1ère visite après réouverture du nœud, ou
+    // juste après le choix de l'image) : relancer EXACTEMENT le pipeline de
+    // l'ouverture initiale plutôt qu'un raccourci qui laisserait l'image brute.
+    document.getElementById('rmbg-prev-img').src  = '';
+    document.getElementById('rmbg-ports-img').src = _rmbgOriginal;
+    document.getElementById('rmbg-ports-zone').querySelectorAll('.pdot').forEach(d => d.remove());
+    document.getElementById('crop-overlay').style.display = 'none';
+    _scheduleRmbgRender();
+  }
+  _updateConfirmBtn();
+  _updateAlignButtons();
+}
+
+// Bascule l'onglet affiché.
+function _switchRmbgSide(side) {
+  if (side === _rmbgActiveSide) return;
+  _saveActiveRmbgSide();
+  _rmbgActiveSide = side;
+  _loadRmbgSide(side);
+  _updateRmbgTabsChrome();
+}
+
+// Classe active + visibilité de l'onglet ARRIÈRE + désactivation du bouton
+// "+ Ajouter une deuxième image" — pur chrome, indépendant du rendu image.
+function _updateRmbgTabsChrome() {
+  const tabFront = document.getElementById('rmbg-tab-front');
+  const tabRear  = document.getElementById('rmbg-tab-rear');
+  const hasRear  = _rmbgHasRearImage();
+  if (tabFront) tabFront.classList.toggle('active', _rmbgActiveSide === 'front');
+  if (tabRear) {
+    tabRear.classList.toggle('active', _rmbgActiveSide === 'rear');
+    tabRear.style.display = hasRear ? '' : 'none';
+  }
+  const addBtn = document.getElementById('rmbg-add-second');
+  if (addBtn) addBtn.disabled = hasRear;
+  const swapBtn = document.getElementById('rmbg-swap-sides');
+  if (swapBtn) swapBtn.disabled = !hasRear; // rien à inverser tant qu'un seul côté existe
+  // Croix d'effacement : seulement quand les deux vues existent (l'image unique ne s'efface pas)
+  ['rmbg-del-front', 'rmbg-del-rear'].forEach(id => {
+    const del = document.getElementById(id);
+    if (del) del.style.display = hasRear ? '' : 'none';
+  });
+}
+
+// Échange complètement Avant et Arrière (image, ports, recadrage, tolérance,
+// forme) — pour le cas où l'utilisateur s'est trompé de sens en configurant
+// les deux images. Sauvegarde d'abord la vue active dans son bundle (comme
+// pour Appliquer) pour être sûr d'échanger deux bundles à jour, puis réaffiche
+// la vue actuellement sélectionnée avec son NOUVEAU contenu.
+function _swapRmbgSides() {
+  if (!_rmbgHasRearImage()) return; // bouton normalement déjà désactivé
+  _saveActiveRmbgSide();
+  const tmp = _rmbgSideBundles.front;
+  _rmbgSideBundles.front = _rmbgSideBundles.rear;
+  _rmbgSideBundles.rear  = tmp;
+  _rmbgTouched = true; // compte comme une modification même si l'onglet affiché semble inchangé
+  _loadRmbgSide(_rmbgActiveSide);
+  _updateRmbgTabsChrome();
+}
+
+// Croix d'un onglet : efface cette vue après confirmation. La fenêtre repasse tout de suite à une
+// seule image, mais rien n'est enregistré avant « Appliquer » (« Annuler » remet les deux vues).
+// Effacer l'Avant : l'Arrière prend sa place, avec son image, son recadrage, sa tolérance et ses
+// points. À Appliquer, les points de la vue effacée disparaissent et leurs câbles deviennent
+// orphelins, par la même comparaison des ports que pour un point supprimé.
+async function _deleteRmbgSide(side) {
+  if (!_rmbgHasRearImage()) return; // croix normalement cachée
+  const ok = await showConfirm(t('delete_view_confirm'), { ok: t('delete_view_ok'), danger: true });
+  if (!ok) return;
+  _saveActiveRmbgSide();
+  if (side === 'front') _rmbgSideBundles.front = _rmbgSideBundles.rear;
+  _rmbgSideBundles.rear = null;
+  _rmbgTouched = true;
+  _rmbgActiveSide = 'front';
+  _loadRmbgSide('front');
+  _updateRmbgTabsChrome();
+  _refreshRmbgApplyLabel();
+}
+
+// Données finales (image recadrée + ports + tolérance...) d'un côté donné, au
+// moment d'Appliquer. Ne renvoie non-null QUE si ce côté a réellement été
+// rendu cette session (vue active avec image, ou bundle mis de côté dont le
+// canvas est prêt) — un côté juste pré-rempli depuis le nœud sans jamais avoir
+// été affiché n'est PAS retouché : ses champs sur le nœud restent tels quels
+// plutôt que d'être écrasés par un recadrage encore vide.
+// Précondition : _saveActiveRmbgSide() vient d'être appelé.
+function _rmbgFinalizeSide(side) {
+  const activeSnapshot = _rmbgActiveSide;
+
+  if (side === activeSnapshot) {
+    if (!_rmbgOriginal) return null;
+    return {
+      img: _currentShape ? _rmbgOriginal : _applyCrop(),
+      img_original: _rmbgOriginal,
+      tol: +document.getElementById('rmbg-tol').value,
+      crop: _cropRectAsFractions(),
+      ports: _anPorts.map(p => ({ ...p })),
+      shape: _currentShape, shapeColor: _currentShapeColor,
+      bb: _currentShape ? { left: 0, right: 1, top: 0, bottom: 1 } : _lastAppliedBB,
+    };
+  }
+
+  const b = _rmbgSideBundles[side];
+  if (!b || !b.original || !b.canvas) return null; // jamais rendu cette session — on ne touche à rien
+  _loadRmbgSide(side);
+  const out = {
+    img: _currentShape ? _rmbgOriginal : _applyCrop(),
+    img_original: _rmbgOriginal,
+    tol: +document.getElementById('rmbg-tol').value,
+    crop: _cropRectAsFractions(),
+    ports: _anPorts.map(p => ({ ...p })),
+    shape: _currentShape, shapeColor: _currentShapeColor,
+    bb: _currentShape ? { left: 0, right: 1, top: 0, bottom: 1 } : _lastAppliedBB,
+  };
+  _loadRmbgSide(activeSnapshot);
+  return out;
+}
+
 // Crop state — coordonnées en pixels image réelle
 // Recadrage courant en fractions (0..1) de l'image d'origine, prêt à être
 // enregistré sur un appareil. Même convention que les positions de ports et le
@@ -3361,12 +3963,47 @@ let _imgNatW  = 0;
 let _imgNatH  = 0;
 
 // ── Ouvrir Image Setup pour éditer un nœud existant ─────────
+// Repartir d'un état propre pour CET appareil : la vue active est toujours Avant à
+// l'ouverture, et la vue Arrière n'est pré-remplie que s'il en a déjà une — sinon
+// l'onglet ARRIÈRE resterait affiché avec les données du dernier appareil édité.
+// Commun au double-clic (openNodePortsEditor) et au crayon (openEditNodeModal).
+function _rmbgPrefillSidesFromNode(node) {
+  _rmbgActiveSide  = 'front';
+  _rmbgSideBundles = { front: null, rear: null };
+  if (node.imgRear) {
+    _rmbgSideBundles.rear = {
+      original: node.imgRear_original || node.imgRear, result: null, canvas: null,
+      cropRect: null, portsImgCropRect: null, pendingCropFrac: node.rmbg_cropRear || null,
+      imgNatW: node._imgWRear || 0, imgNatH: node._imgHRear || 0,
+      ports: (node.portsRear || []).map(p => ({ ...p })),
+      tol: node.rmbg_tolRear ?? 1,
+      shape: node.shapeRear || null, shapeColor: node.shapeColorRear || '#6B7280',
+    };
+  }
+}
+
+// Vue effacée par la croix d'un onglet, enregistrée : l'appareil redevient à une seule image.
+// Champs de la vue Arrière retirés, aperçu ↻ et pixels d'occlusion en cache oubliés (nodes.js).
+function _rmbgClearRearFromNode(sid, node) {
+  for (const k of ['imgRear', 'imgRear_original', 'portsRear', 'rmbg_tolRear', 'rmbg_cropRear',
+                   'shapeRear', 'shapeColorRear', '_imgWRear', '_imgHRear']) delete node[k];
+  if (typeof _previewView      !== 'undefined') delete _previewView[sid];
+  if (typeof _alphaPixelsCache !== 'undefined') delete _alphaPixelsCache[sid];
+  if (typeof _rearReadPending  !== 'undefined') delete _rearReadPending[sid];
+}
+
+// Configuration ouverte depuis la fenêtre de modification (crayon) : état d'avant l'ouverture,
+// remis tel quel par « Annuler » (voir le clic sur #an-prev-overlay et rmbg-cancel).
+let _anSetupSnapshot = null;
+
 function openNodePortsEditor(sid) {
   const node = APP.nodes[sid];
   if (!node) return;
   _rmbgEditNodeId = sid;
+  _searchProduct = null; // produit d'une recherche faite pour un autre appareil : jamais repris ici
   _currentShape      = node.shape || null;
   _currentShapeColor = node.shapeColor || '#6B7280';
+  _rmbgPrefillSidesFromNode(node);
   // Utiliser l'original si disponible pour permettre re-crop + re-BG
   const dataUrl = node.img_original || node.img || null;
   if (!dataUrl) {
@@ -3380,6 +4017,107 @@ function openNodePortsEditor(sid) {
   _rmbgTouched = false;
   _refreshRmbgApplyLabel();
 }
+
+// ── Nom de l'appareil dans l'en-tête de Configuration image (demande du 2026-09-15) ──
+// Appareil déjà posé (double-clic : _rmbgEditNodeId, crayon : _anEditNodeId) → son nom, dans la couleur de sa
+// catégorie (celle choisie dans la fenêtre de modification si elle est ouverte), et sur la ligne du dessous son
+// adresse IP si elle est complète, dans sa couleur du canevas. Nouvel appareil venu de la Recherche d'image →
+// son modèle, couleur de la catégorie choisie ou de « Non classé ». Nouvel appareil depuis un fichier ou une
+// forme → rien, il n'a pas encore de nom. Marque retirée seulement quand une recherche l'a fournie
+// (_stripKnownBrand) : un appareil qui ne vient pas d'une recherche garde son nom long tel quel.
+// Taille du nom : celle qui remplit la hauteur de sa case (nom + IP), réduite pour tenir en largeur, sans minimum
+// (voir _fitRmbgDeviceName) ; IP à la même proportion du nom que sur le canevas.
+// Sécurité anti-régression : window._xRmbgDeviceName = false → rien d'affiché.
+function _rmbgDeviceHeaderInfo() {
+  if (window._xRmbgDeviceName === false) return null;
+  const addModalOpen = document.getElementById('modal-add-node')?.classList.contains('open');
+  const formCat      = addModalOpen ? (document.getElementById('an-cat')?.value || null) : null;
+  const editSid      = _rmbgEditNodeId || _anEditNodeId;
+  if (editSid) {
+    const node = APP.nodes[editSid];
+    if (!node || !(node.name || '').trim()) return null;
+    const ipRaw = (node.ip || '').trim();
+    const ip    = /^\d{1,3}(\.\d{1,3}){3}$/.test(ipRaw) ? ipRaw : '';
+    return {
+      // Marque connue : celle enregistrée sur l'appareil, ou celle d'une recherche faite pendant cette modification.
+      name:    _stripKnownBrand(node.name.trim(), [node.searchBrand, _searchProduct?.brand]),
+      color:   getCat(_anEditNodeId && formCat ? formCat : node.cat).color,
+      ip,
+      ipColor: node.ipColor || _defaultIpColor(),
+      ipRatio: Math.min(1, (node.ipSize || _defaultIpSize(node)) / (node.lblSize || 48)),
+    };
+  }
+  const p = _searchProduct;
+  if (!p) return null;
+  const marque = (p.brand || '').trim(), modele = (p.model || '').trim();
+  const name   = marque && modele ? `${marque} - ${modele}` : (modele || marque);
+  if (!name) return null;
+  return { name: _stripKnownBrand(name, [marque]), color: getCat(formCat || 'unsorted').color, ip: '', ipColor: '', ipRatio: 0 };
+}
+
+// Retire la marque en tête du nom quand une recherche l'a fournie : « BLACKMAGIC DESIGN - ATEM Mini 01 » →
+// « ATEM Mini 01 » (numéro d'exemplaire gardé). Marque absente du début (appareil renommé) → nom inchangé ; marque
+// suivie d'une lettre ou d'un chiffre → pas coupée (« Sony » dans « Sonyx ») ; rien après la marque → nom inchangé.
+// Sécurité anti-régression : window._xRmbgStripBrand = false → marque gardée (« MARQUE - Modèle » comme avant).
+function _stripKnownBrand(name, brands) {
+  if (window._xRmbgStripBrand === false) return name;
+  for (const b of brands) {
+    const brand = (b || '').trim();
+    if (!brand || name.slice(0, brand.length).toLowerCase() !== brand.toLowerCase()) continue;
+    if (/[\p{L}\p{N}]/u.test(name.charAt(brand.length))) continue;
+    const rest = name.slice(brand.length).replace(/^[\s\-–—:_]+/, '').trim();
+    if (rest) return rest;
+  }
+  return name;
+}
+
+function _refreshRmbgDeviceName() {
+  const box    = document.getElementById('rmbg-device-name');
+  const nameEl = document.getElementById('rmbg-dn-name');
+  const ipEl   = document.getElementById('rmbg-dn-ip');
+  if (!box || !nameEl || !ipEl) return;
+  const info = _rmbgDeviceHeaderInfo();
+  nameEl.textContent = info ? info.name : '';
+  nameEl.style.color = info ? info.color : '';
+  ipEl.textContent   = info && info.ip ? info.ip : '';
+  ipEl.style.color   = info && info.ip ? info.ipColor : '';
+  ipEl.dataset.ratio = info && info.ip ? String(info.ipRatio) : '';
+  box.title = info ? [info.name, info.ip].filter(Boolean).join('\n') : '';
+  _fitRmbgDeviceName();
+}
+
+function _fitRmbgDeviceName() {
+  const box    = document.getElementById('rmbg-device-name');
+  const nameEl = document.getElementById('rmbg-dn-name');
+  const ipEl   = document.getElementById('rmbg-dn-ip');
+  const title  = document.querySelector('#modal-remove-bg .modal-title');
+  if (!box || !nameEl || !ipEl || !title) return;
+  // Réduction proportionnelle jusqu'à tenir dans la case, sans taille minimum.
+  const fit = (el, start) => {
+    el.style.fontSize = start + 'px';
+    if (!el.textContent || !el.clientWidth) return start;
+    for (let i = 0; i < 4 && el.scrollWidth > el.clientWidth; i++) {
+      el.style.fontSize = Math.max(0.1, parseFloat(el.style.fontSize) * el.clientWidth / el.scrollWidth - 0.05) + 'px';
+    }
+    return parseFloat(el.style.fontSize);
+  };
+  const ratio = ipEl.textContent ? (+ipEl.dataset.ratio || 2 / 3) : 0;
+  // Taille de départ : le nom (et l'IP en dessous, interligne compris) remplit la hauteur de la case ; fit() la
+  // réduit ensuite si le nom est trop long pour la largeur. Case plus haute → typo plus grande.
+  // Sécurité anti-régression : window._xRmbgFitHeight = false → ancien plafond, la taille du titre.
+  const cs    = getComputedStyle(nameEl);
+  const lh    = parseFloat(cs.lineHeight) / parseFloat(cs.fontSize);
+  const lineH = lh > 0 && isFinite(lh) ? lh : 1.25;
+  const max   = window._xRmbgFitHeight === false || !box.clientHeight
+    ? (parseFloat(getComputedStyle(title).fontSize) || 12)
+    : Math.max(0.1, box.clientHeight / (lineH * (1 + ratio)) - 0.05);
+  const nameSize = fit(nameEl, max);
+  fit(ipEl, Math.max(0.1, nameSize * (ratio || 2 / 3)));
+}
+
+window.addEventListener('resize', () => {
+  if (document.getElementById('modal-remove-bg')?.classList.contains('open')) _fitRmbgDeviceName();
+});
 
 function _openRmbgModal(dataUrl) {
   // Toute ouverture charge une image : ré-import, retour de l'éditeur externe ou
@@ -3395,7 +4133,9 @@ function _openRmbgModal(dataUrl) {
   // main est écrasé à chaque réouverture de la fenêtre.
   // Stocké en fractions (0..1) et non en pixels, comme les positions de ports
   // et le cadre `bb` : indépendant des dimensions réelles de l'image.
-  _pendingCropFrac = _rmbgEditNodeId ? (APP.nodes[_rmbgEditNodeId]?.rmbg_crop || null) : null;
+  _pendingCropFrac = _rmbgEditNodeId
+    ? (APP.nodes[_rmbgEditNodeId]?.[_rmbgActiveSide === 'rear' ? 'rmbg_cropRear' : 'rmbg_crop'] || null)
+    : null;
   _shapeImgData    = null;
   _portsImgCropRect = null;
   if (_currentShape) _loadShapeImgData(dataUrl);
@@ -3429,9 +4169,12 @@ function _openRmbgModal(dataUrl) {
   // Restaurer le chemin éditeur externe mémorisé
   document.getElementById('rmbg-app-path').value = _rmbgAppPath;
 
-  // Tolérance : priorité node > localStorage global > 38
-  const _nodeTol = _rmbgEditNodeId ? (APP.nodes[_rmbgEditNodeId]?.rmbg_tol ?? null) : null;
-  _setSlider('rmbg-tol', _nodeTol !== null ? _nodeTol : +(localStorage.getItem('wires-tol') ?? 19));
+  // Tolérance : valeur déjà enregistrée pour CE côté sur cet appareil, sinon 1
+  // (jamais une mémoire globale partagée entre les deux côtés ou les appareils —
+  // voir la note sur _saveActiveRmbgSide/_loadRmbgSide).
+  const _nodeTolField = _rmbgActiveSide === 'rear' ? 'rmbg_tolRear' : 'rmbg_tol';
+  const _nodeTol = _rmbgEditNodeId ? (APP.nodes[_rmbgEditNodeId]?.[_nodeTolField] ?? null) : null;
+  _setSlider('rmbg-tol', _nodeTol !== null ? _nodeTol : 1);
   // Référence pour _rmbgStateDiffers : ce que le curseur affiche MAINTENANT,
   // quelle que soit l'origine de cette valeur. Posée après _setSlider, jamais
   // avant, sinon on mémoriserait la valeur de l'appareil précédent.
@@ -3441,6 +4184,7 @@ function _openRmbgModal(dataUrl) {
   _updateConfirmBtn();
 
   document.getElementById('modal-remove-bg').classList.add('open');
+  _refreshRmbgDeviceName(); // fenêtre visible : la case du nom peut être mesurée
 
   // Attacher les listeners de zone (frais à chaque ouverture)
   const zone = document.getElementById('rmbg-ports-zone');
@@ -3550,7 +4294,11 @@ function _openRmbgModal(dataUrl) {
         // bord de l'image au lieu d'être sans effet.
         if (nx < 0 || nx > 1 || ny < 0 || ny > 1) return;
         if (_currentShape && !_isInsideShape(nx, ny)) return; // hors de la forme — interdit
-        _anPorts.push({ id: Date.now() + '_' + _anPorts.length, nx, ny, type: 'HDMI' });
+        const _newPort = { id: Date.now() + '_' + _anPorts.length, nx, ny, type: 'HDMI' };
+        // Numéro attribué dès la création (plus petit libre sur tout l'appareil) : le point l'affiche tout de suite.
+        if (_portNumAcrossSides()) _newPort.label = _nextFreePortLabel();
+        _anPorts.push(_newPort);
+        _rmbgActivePortListId = _newPort.id; // la ligne du nouveau port devient la ligne sélectionnée
         _syncPortVisuals();
         _renderPortList(true);
         _updateConfirmBtn();
@@ -3600,15 +4348,19 @@ function _openRmbgModal(dataUrl) {
     _updateAlignButtons();
   };
 
+  // Onglets Avant/Arrière : refléter la vue active + n'afficher ARRIÈRE que
+  // si une image arrière existe déjà (bundle ou vue courante).
+  _updateRmbgTabsChrome();
+
   // Lancer un premier rendu
   _scheduleRmbgRender();
 }
 
 function _setSlider(id, val) {
   const sl = document.getElementById(id);
-  sl.value = val;
+  sl.value = val; // le navigateur ramène seul une valeur hors bornes (min/max) à la borne la plus proche
   _updateSliderStyle(sl);
-  document.getElementById(id + '-val').textContent = val;
+  document.getElementById(id + '-val').textContent = sl.value; // valeur RÉELLE du curseur après ce recadrage, jamais celle demandée
 }
 
 function _updateSliderStyle(sl) {
@@ -3630,9 +4382,21 @@ function _runRmbgRender() {
   // détourage propre) est ainsi compressée pour que ce même niveau de
   // puissance tombe à 60/100 — et laisse de la marge jusqu'à 100.
   const tol = +document.getElementById('rmbg-tol').value;
-  document.getElementById('rmbg-status').textContent = 'Processing...';
+  document.getElementById('rmbg-status').textContent = t('rmbg_processing');
+
+  // Traitement asynchrone : l'utilisateur peut changer d'onglet (Avant/Arrière)
+  // ou recharger une autre image AVANT qu'il ne se termine. Sans repère de ce
+  // pour quoi il a été lancé, son résultat s'appliquait quand même à l'état
+  // COURANT au moment où il finit — le recadrage de l'Avant pouvait ainsi
+  // atterrir sur l'Arrière si on changeait d'onglet trop vite (bug relevé le
+  // 2026-09-13). Comparé à deux reprises : à la fin du détourage, et à la fin
+  // du décodage de l'image qui suit (deux points d'attente asynchrones).
+  const _renderedSide = _rmbgActiveSide;
+  const _renderedSrc  = _rmbgOriginal;
+  const _stillRelevant = () => _rmbgActiveSide === _renderedSide && _rmbgOriginal === _renderedSrc;
 
   _removeBgCanvas(_rmbgOriginal, tol * 2).then(({ dataUrl, bbox, natW, natH }) => {
+    if (!_stillRelevant()) return;
     _rmbgResult = dataUrl;
     _imgNatW = natW;
     _imgNatH = natH;
@@ -3640,6 +4404,7 @@ function _runRmbgRender() {
     const img = document.getElementById('rmbg-prev-img');
     img.src = dataUrl;
     img.onload = () => {
+      if (!_stillRelevant()) return;
       if (!_cropRect || !window._rmbgCropFreeze) {
         if (_pendingCropFrac) {
           // Recadrage enregistré sur l'appareil : il prime sur le cadre
@@ -3870,7 +4635,6 @@ function _initRmbgModal() {
   tolSl.addEventListener('input', () => {
     document.getElementById('rmbg-tol-val').textContent = tolSl.value;
     _updateSliderStyle(tolSl);
-    localStorage.setItem('wires-tol', tolSl.value);
     _scheduleRmbgRender();
     _refreshRmbgApplyLabel();
   });
@@ -3881,6 +4645,16 @@ function _initRmbgModal() {
       document.getElementById('modal-remove-bg').classList.remove('open');
       document.getElementById('crop-overlay').style.display = 'none';
       _rmbgEditNodeId = null;
+      // Ouverte depuis la fenêtre de modification (crayon) : remettre l'état d'avant l'ouverture
+      // (points, image, vues Avant/Arrière), pour qu'« Annuler » ne change jamais rien.
+      if (_anEditNodeId && _anSetupSnapshot) {
+        const s = _anSetupSnapshot;
+        _anPorts = s.ports; _rmbgOriginal = s.original; _anImgData = s.imgData;
+        _currentShape = s.shape; _currentShapeColor = s.shapeColor; _lastAppliedBB = s.bb;
+        _rmbgActiveSide = s.activeSide; _rmbgSideBundles = s.bundles;
+        _anSetupSnapshot = null;
+        _renderAddDevicePreview();
+      }
     });
   });
 
@@ -3901,6 +4675,16 @@ function _initRmbgModal() {
     // modale qui valide tout d'un coup, en un seul pas d'annulation. Sans ça, on
     // aurait deux pushUndo() séparés pour ce qui est une seule action de l'utilisateur.
     if (_anEditNodeId) {
+      // Cette modale affiche et enregistre la vue AVANT : si l'onglet ARRIÈRE était affiché, le
+      // ranger et revenir sur l'Avant (même chargement que _rmbgFinalizeSide) avant de relire
+      // l'image — sinon l'Avant recevait l'image et les points de l'Arrière.
+      if (window._xEditSideAware !== false && _rmbgActiveSide === 'rear') {
+        _saveActiveRmbgSide();
+        _rmbgActiveSide = 'front';
+        _loadRmbgSide('front');
+        _updateRmbgTabsChrome();
+        _anImgData = _currentShape ? _rmbgOriginal : _applyCrop();
+      }
       _renderAddDevicePreview();
       const rm = document.getElementById('modal-remove-bg');
       rm.dataset.usedForEdit = _anEditNodeId; // la tolérance du curseur concerne bien CET appareil
@@ -3913,6 +4697,13 @@ function _initRmbgModal() {
       // Mode édition : mettre à jour le nœud directement
       const node = APP.nodes[_rmbgEditNodeId];
       if (node) {
+        const oldImgKey = _imgKeyOf(node); // groupe d'exemplaires avant modification (voir la fin de ce bloc)
+        // Ranger l'onglet actuellement affiché dans son bundle AVANT toute
+        // comparaison/finalisation par côté — sans ça, _rmbgFinalizeSide (et
+        // la comparaison Arrière de _rmbgStateDiffers) basculerait sur un état
+        // pas encore sauvegardé pour la vue active.
+        _saveActiveRmbgSide();
+
         // Rien n'a changé (le bouton affiche alors « Fermer ») : on referme sans rien
         // toucher. Pas d'instantané d'annulation, donc pas d'étape vide dans le Ctrl+Z
         // ni de projet marqué comme modifié, et l'image n'est pas réécrite.
@@ -3923,6 +4714,17 @@ function _initRmbgModal() {
         }
         pushUndo();
 
+        // Données finales PAR CÔTÉ (jamais les variables globales prises telles
+        // quelles : celles-ci reflètent l'onglet affiché au moment du clic, qui
+        // peut être Avant ou Arrière indifféremment). rearData est null tant
+        // qu'aucune deuxième image n'a été configurée.
+        const frontData = _rmbgFinalizeSide('front');
+        const rearData  = _rmbgFinalizeSide('rear');
+        // Vue effacée par la croix d'un onglet : l'appareil avait une Arrière, la fenêtre n'en a plus.
+        // frontFromRear : c'est l'Avant qui a été effacé, l'ancienne Arrière est devenue l'Avant.
+        const rearDeleted   = !!node.imgRear && !_rmbgHasRearImage();
+        const frontFromRear = rearDeleted && !!frontData && frontData.img_original === (node.imgRear_original || node.imgRear);
+
         // Ports dont le flag "double" (dual) change dans un sens ou l'autre, OU
         // qui ont été supprimés purement et simplement : l'appartenance (in/out)
         // des câbles déjà attachés devient ambiguë (bascule dual) ou carrément
@@ -3930,30 +4732,61 @@ function _initRmbgModal() {
         // orphelins, prêts à être rattachés). Comparé AVANT d'écraser node.ports.
         // Sans le second cas (port supprimé), un câble y restant attaché gardait
         // silencieusement son tracé figé sans jamais être signalé orphelin.
-        const oldPorts = node.ports || [];
+        // Ports Avant ET Arrière comparés ensemble : un id de port n'existe
+        // qu'une fois, quelle que soit son image, et un câble ignore totalement
+        // à quelle vue son port appartient (aucun filtre par vue sur les câbles).
+        // Un côté jamais visité cette session (frontData/rearData null, voir
+        // _rmbgFinalizeSide) n'a SUBI aucune modification — retomber sur ses
+        // ports déjà enregistrés pour cette comparaison, jamais un tableau vide,
+        // sous peine de croire que TOUS ses ports viennent d'être supprimés et
+        // de détacher à tort chaque câble qui y est branché (bug relevé le
+        // 2026-09-12 : modifier seulement l'Avant sans jamais rouvrir l'onglet
+        // Arrière détachait tous les câbles de l'Arrière, restée pourtant
+        // intacte).
+        const oldPorts = [...(node.ports || []), ...(node.portsRear || [])];
+        const newPorts = [
+          ...(frontData ? frontData.ports : (node.ports || [])),
+          ...(rearDeleted ? [] : rearData ? rearData.ports : (node.portsRear || [])),
+        ];
         const invalidatedPortIds = new Set();
-        for (const newP of _anPorts) {
+        for (const newP of newPorts) {
           const oldP = oldPorts.find(op => op.id === newP.id);
           if (oldP && !!oldP.dual !== !!newP.dual) invalidatedPortIds.add(newP.id);
         }
         for (const oldP of oldPorts) {
-          if (!_anPorts.some(np => np.id === oldP.id)) invalidatedPortIds.add(oldP.id);
+          if (!newPorts.some(np => np.id === oldP.id)) invalidatedPortIds.add(oldP.id);
         }
 
-        node.img          = _anImgData;
-        node.img_original = _rmbgOriginal;
-        node.rmbg_tol     = +document.getElementById('rmbg-tol').value;
-        node.rmbg_crop    = _cropRectAsFractions();
-        node.ports        = _anPorts.map(p => ({ ...p }));
-        if (_currentShape) { node.shape = _currentShape; node.shapeColor = _currentShapeColor; }
-        // Cadre du contenu visible (obstacle pour le routage/contournement) recalculé
-        // à partir des pixels opaques de l'image finale — une forme générique remplit
-        // son PNG par construction, donc cadre plein.
-        node.bb = _currentShape
-          ? { left: 0, right: 1, top: 0, bottom: 1 }
-          : (_lastAppliedBB || node.bb);
-        node.bbAuto = true; // déjà calculé sur les pixels — pas de migration au chargement
-
+        if (frontData) {
+          node.img          = frontData.img;
+          node.img_original = frontData.img_original;
+          node.rmbg_tol     = frontData.tol;
+          node.rmbg_crop    = frontData.crop;
+          node.ports        = frontData.ports;
+          if (frontData.shape) { node.shape = frontData.shape; node.shapeColor = frontData.shapeColor; }
+          // Cadre du contenu visible (obstacle pour le routage/contournement) —
+          // seule l'image Avant y participe pour l'instant (occlusion/rendu
+          // canevas de l'Arrière pas encore codés).
+          node.bb = frontData.bb || node.bb;
+          node.bbAuto = true; // déjà calculé sur les pixels — pas de migration au chargement
+        }
+        if (rearData) {
+          node.imgRear          = rearData.img;
+          node.imgRear_original = rearData.img_original;
+          node.rmbg_tolRear     = rearData.tol;
+          node.rmbg_cropRear    = rearData.crop;
+          node.portsRear        = rearData.ports;
+          if (rearData.shape) { node.shapeRear = rearData.shape; node.shapeColorRear = rearData.shapeColor; }
+        }
+        _storeSearchProductOn(node); // produit choisi dans la recherche pendant cette modification
+        if (frontFromRear) {
+          node.shape      = frontData.shape || null;
+          node.shapeColor = frontData.shape ? frontData.shapeColor : null;
+          node._imgW = node._imgWRear || node._imgW;
+          node._imgH = node._imgHRear || node._imgH;
+          if (!frontData.bb) node.bbAuto = false; // cadre du contenu recalculé sur la nouvelle image au rendu
+        }
+        if (rearDeleted) _rmbgClearRearFromNode(_rmbgEditNodeId, node);
 
         const nid = _rmbgEditNodeId;
         if (invalidatedPortIds.size) {
@@ -3975,6 +4808,22 @@ function _initRmbgModal() {
         rebuildCM();
         renderCables();
         setDirty();
+
+        // Image Avant changée (⇄, Avant effacée, image remplacée) et désormais partagée avec d'autres
+        // appareils, sans numéro dans ce groupe : ouvrir la fenêtre de modification, qui affiche le message
+        // « image déjà utilisée par… » et propose un numéro, comme à l'ajout (_refreshImgGroupNumberField).
+        // Numéroter y reste un pas d'annulation séparé de celui de Configuration.
+        // window._xNumberAfterSetup = false en console : ne rien ouvrir (ancien comportement).
+        const newImgKey = _imgKeyOf(node);
+        if (window._xNumberAfterSetup !== false && newImgKey && newImgKey !== oldImgKey) {
+          const sibNames = Object.entries(APP.nodes)
+            .filter(([id, n]) => id !== nid && _imgKeyOf(n) === newImgKey)
+            .map(([, n]) => n.name || n.short || '?');
+          const { base } = _imgGroupNumbering(sibNames);
+          const own = _splitTrailingNumber(node.name || node.short || '');
+          const alreadyNumbered = !!base && own.base === base && own.num !== null;
+          if (sibNames.length && !alreadyNumbered) setTimeout(() => openEditNodeModal(nid), 0);
+        }
       }
       _rmbgEditNodeId = null;
     } else {
@@ -4003,8 +4852,31 @@ function _initRmbgModal() {
     // Rouverture imbriquée, en cours de configuration d'un vrai appareil —
     // jamais pertinent d'y proposer de restaurer l'icône Internet à la place.
     document.getElementById('pick-image-restore-internet').style.display = 'none';
+    _pickForSecondImage = false;
+    _setPickImageTitle(_rmbgActiveSide);
     document.getElementById('modal-pick-image').classList.add('open');
   });
+
+  // Ajouter une deuxième image (Arrière) — même mini-dialog que "Remplacer
+  // l'image". L'onglet ARRIÈRE (vierge), où l'image choisie doit atterrir pour ne
+  // pas écraser l'Avant, n'est ouvert qu'au choix effectif : voir _enterRearIfSecondImagePick.
+  // window._xRearOnPick = false en console : ancien comportement (bascule dès le clic).
+  document.getElementById('rmbg-add-second').addEventListener('click', () => {
+    if (_rmbgHasRearImage()) return; // normalement déjà désactivé
+    if (window._xRearOnPick === false) _switchRmbgSide('rear');
+    else _pickForSecondImage = true;
+    document.getElementById('pick-image-restore-internet').style.display = 'none';
+    _setPickImageTitle('rear');
+    document.getElementById('modal-pick-image').classList.add('open');
+  });
+
+  // Onglets Avant/Arrière
+  document.getElementById('rmbg-tab-front').addEventListener('click', () => _switchRmbgSide('front'));
+  document.getElementById('rmbg-tab-rear').addEventListener('click', () => _switchRmbgSide('rear'));
+  document.getElementById('rmbg-swap-sides').addEventListener('click', () => _swapRmbgSides());
+  // Croix des onglets : le clic ne doit pas ouvrir l'onglet en même temps.
+  document.getElementById('rmbg-del-front').addEventListener('click', e => { e.stopPropagation(); _deleteRmbgSide('front'); });
+  document.getElementById('rmbg-del-rear').addEventListener('click',  e => { e.stopPropagation(); _deleteRmbgSide('rear'); });
 
   // Mini-dialog pick-image : fermeture
   document.getElementById('pick-image-cancel').addEventListener('click', () => {
@@ -4040,12 +4912,21 @@ function _initRmbgModal() {
   // a été choisie, quelle que soit sa provenance. Extrait de #pick-image-import
   // pour que les deux chemins ne puissent pas diverger.
   function _acceptPickedImage(dataUrl, produit) {
+    _enterRearIfSecondImagePick(); // en premier : l'Avant est rangée avant les remises à zéro ci-dessous
     // Le nom ne sert qu'à la DERNIÈRE étape (#modal-add-node), qui n'arrive
     // qu'après Configuration image : il faut donc le mettre de côté ici et le
-    // relire là-bas. Toujours réécrit — un import local ou une forme passent
-    // sans produit et doivent effacer celui d'une recherche précédente, sinon
-    // le nom d'un appareil trouvé en ligne se collerait à l'image suivante.
-    _searchProduct = produit || null;
+    // relire là-bas. Image Avant : toujours réécrit — un import local ou une forme
+    // passent sans produit et doivent effacer celui d'une recherche précédente, sinon
+    // le nom d'un appareil trouvé en ligne se collerait à l'image suivante. Image
+    // Arrière : c'est le même appareil, son produit n'est jamais effacé ; celui de la
+    // recherche Arrière ne sert que si l'appareil n'en a encore aucun.
+    if (_rmbgActiveSide === 'rear') {
+      const editedNode = APP.nodes[_rmbgEditNodeId || _anEditNodeId];
+      const hasStored  = !!(editedNode && (editedNode.searchBrand || editedNode.searchModel));
+      if (produit && !_searchProduct && !hasStored) _searchProduct = produit;
+    } else {
+      _searchProduct = produit || null;
+    }
     document.getElementById('modal-pick-image').classList.remove('open');
     _currentShape = null; // image réelle → plus de forme générique (voir _pickImageAndOpenRmbg)
     _rmbgTempPath = null;
@@ -4089,12 +4970,23 @@ function _initRmbgModal() {
 
       close.addEventListener('click', onCancel);
       root.innerHTML = '';
+      // window._xSearchPrefillFromNode = false en console : ancien comportement (produit de ce flux seulement).
+      const initialProduct = _searchProduct
+        || (window._xSearchPrefillFromNode !== false ? _searchProductOfNode(APP.nodes[_rmbgEditNodeId || _anEditNodeId]) : null);
       // Search Images publie window.SearchImages au chargement de son bundle.
       // Absent = bundle non compilé (voir `npm run build:search`) : on affiche
       // le repli plutôt que de laisser un écran vide sans explication.
       if (window.SearchImages) {
         window.SearchImages.mount(root, {
           lang: typeof getLang === 'function' ? getLang() : 'en',
+          // Pré-remplit avec le produit déjà connu — simple valeur de départ des
+          // champs, jamais une recherche relancée toute seule (voir mount.tsx) :
+          // celui choisi plus tôt dans ce même ajout ou cette même modification
+          // (ex. Avant déjà trouvée par recherche), sinon celui de l'appareil déjà
+          // posé dont on change une image (voir _searchProductOfNode). Vide pour
+          // une toute première recherche.
+          initialBrand: initialProduct?.brand,
+          initialModel: initialProduct?.model,
           // Second argument : { brand?, model? }, jamais une chaîne assemblée.
           // C'est Wires qui compose le nom complet et le nom court.
           onPick: (dataUrl, produit) => finish(dataUrl, produit),
@@ -4138,6 +5030,13 @@ function _initRmbgModal() {
   // Formes génériques → génère PNG et ouvre Image Setup directement
   document.querySelectorAll('.pick-shape-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      // Formes de la fenêtre de choix d'image seulement (la modale Ajouter un appareil a les siennes),
+      // et avant _currentShape = shape : l'Avant doit être rangée avec sa propre forme.
+      if (btn.closest('#modal-pick-image')) {
+        _enterRearIfSecondImagePick();
+        // Forme pour l'Avant : plus de produit trouvé en ligne (même règle que _acceptPickedImage).
+        if (_rmbgActiveSide !== 'rear') _searchProduct = null;
+      }
       document.getElementById('modal-pick-image').classList.remove('open');
       const shape = btn.dataset.shape;
       _currentShape = shape;
@@ -4176,11 +5075,11 @@ function _initRmbgModal() {
     if (appPath) localStorage.setItem('wires-ext-editor', appPath);
     const status    = document.getElementById('rmbg-status');
     const reimportBtn = document.getElementById('rmbg-reimport');
-    status.textContent = 'Opening in external editor...';
+    status.textContent = t('ext_edit_opening');
     if (window.electronAPI) {
       const pngUrl = await _asPngDataUrl(_rmbgOriginal);
       _rmbgTempPath = await window.electronAPI.openWithApp(appPath, pngUrl);
-      status.textContent = 'File opened — save in your editor, then click Re-import.';
+      status.textContent = t('ext_edit_opened');
       reimportBtn.disabled = false;
       reimportBtn.style.opacity = '1';
     }
@@ -4199,10 +5098,10 @@ function _initRmbgModal() {
   document.getElementById('rmbg-reimport').addEventListener('click', async () => {
     if (!_rmbgTempPath || !window.electronAPI) return;
     const status = document.getElementById('rmbg-status');
-    status.textContent = 'Reading file...';
+    status.textContent = t('ext_edit_reading');
     try {
       const b64 = await window.electronAPI.readFileB64(_rmbgTempPath);
-      if (!b64) { status.textContent = 'File not found — save in your editor first.'; return; }
+      if (!b64) { status.textContent = t('ext_edit_notfound'); return; }
       const newUrl = `data:image/png;base64,${b64}`;
 
       const [oldDims, newDims] = await Promise.all([_imgDims(_rmbgOriginal), _imgDims(newUrl)]);
@@ -4349,11 +5248,14 @@ function _removeBgCanvas(dataUrl, tolerance) {
       // Garder une référence au canvas pour le crop synchrone
       _rmbgCanvas = canvas;
 
-      // Bounding box des pixels visibles
+      // Bounding box des pixels visibles — même seuil que _alphaBBFromCanvas
+      // (ignore les pixels quasi transparents) : sans ça, ce rognage gardait
+      // toute trace d'opacité même infime, un halo invisible à l'œil mais
+      // au-dessus du seuil utilisé par l'occlusion des câbles (cables.js).
       let minX = W, minY = H, maxX = 0, maxY = 0;
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
-          if (data[(y * W + x) * 4 + 3] > 0) {
+          if (data[(y * W + x) * 4 + 3] > 8) {
             if (x < minX) minX = x;
             if (x > maxX) maxX = x;
             if (y < minY) minY = y;

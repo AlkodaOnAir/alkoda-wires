@@ -287,3 +287,119 @@ function smartShortName(fullName) {
 
   return modelWords[0].substring(0, 10);
 }
+
+// ── Fabricants enregistrés (scan réseau, champ Adresse IP) ────
+// Marque telle que dans la recherche d'images → débuts des noms sous lesquels elle est enregistrée au registre IEEE
+// (src/main/oui-vendors.json), groupe propriétaire compris. Liste vide : homonyme sans rapport, écarté.
+// Table figée, établie depuis la liste des marques de Supabase : à rafraîchir avant une nouvelle version.
+const BRAND_VENDORS_DB = {
+  // Sous leur propre nom (début précisé quand un homonyme existe : Yamaha Corporation, pas Yamaha Motor)
+  'ABK':                ['ABK'],
+  'ADTECHNO':           ['ADTECHNO'],
+  'AJA VIDEO SYSTEMS':  ['AJA Video Systems'],
+  'AKG':                ['AKG'],
+  'ALESIS':             ['Alesis'],
+  'APPLE':              ['Apple'],
+  'ATOMOS':             ['Atomos'],
+  'AUDIO-TECHNICA':     ['Audio-Technica'],
+  'BARCO':              ['Barco'],
+  'BEHRINGER':          ['Behringer'],
+  'BEYERDYNAMIC':       ['beyerdynamic'],
+  'BLACKMAGIC DESIGN':  ['Blackmagic Design'],
+  'BOSE':               ['Bose'],
+  'CANON':              ['Canon'],
+  'CEREVO':             ['Cerevo'],
+  'CROWN':              ['Crown Audio'],
+  'D-LINK':             ['D-Link'],
+  'DECIMATOR DESIGN':   ['Decimator Design'],
+  'DIGITAL FORECAST':   ['Digital Forecast'],
+  'DJI':                ['DJI'],
+  'DPA':                ['DPA'],
+  'ELECTRO VOICE':      ['Electro-Voice'],
+  'EVS':                ['EVS'],
+  'FOCUSRITE':          ['Focusrite'],
+  'FOR-A':              ['FOR-A'],
+  'FOSTEX':             ['Fostex'],
+  'GENELEC':            ['Genelec'],
+  'GODOX':              ['Godox'],
+  'GOPRO':              ['GoPro'],
+  'IDX':                ['IDX'],
+  'IKEGAMI':            ['Ikegami'],
+  'JBL':                ['JBL'],
+  'KRAMER':             ['Kramer'],
+  'LAWO':               ['Lawo'],
+  'LEADER':             ['Leader Electronics'],
+  'LEADER ELECTRONICS': ['Leader Electronics'],
+  'LENOVO':             ['Lenovo'],
+  'LOGITECH':           ['Logitech'],
+  'LYNX TECHNIK AG':    ['LYNX Technik'],
+  'M-AUDIO':            ['M-Audio'],
+  'MACKIE':             ['Mackie'],
+  'MIDAS':              ['Midas Klark Teknik'],
+  'NEKTAR':             ['Nektar'],
+  'NETGEAR':            ['Netgear'],
+  'NEUTRIK':            ['Neutrik'],
+  'OSEE':               ['Osee'],
+  'PANASONIC':          ['Panasonic'],
+  'PHOTRON':            ['Photron'],
+  'PRESONUS':           ['PreSonus'],
+  'QSC':                ['QSC'],
+  'RCF':                ['RCF'],
+  'RED':                ['RED Digital Cinema'],
+  'RIEDEL':             ['Riedel'],
+  'ROBE':               ['Robe'],
+  'RODE':               ['Rode'],
+  'ROTEL':              ['Rotel'],
+  'SENNHEISER':         ['Sennheiser'],
+  'SHURE':              ['Shure'],
+  'SIGMA':              ['Sigma Corporation'],
+  'SMALLHD':            ['SmallHD'],
+  'SONNET':             ['Sonnet Technologies'],
+  'SONY':               ['Sony'],
+  'SOUNDCRAFT':         ['Soundcraft'],
+  'TP-LINK':            ['TP-Link'],
+  'TVLOGIC':            ['TVLogic'],
+  'VENETEX':            ['Venetex'],
+  'VIDEOTRON':          ['Videotron'],
+  'VISION RESEARCH':    ['Vision Research'],
+  'YAMAHA':             ['Yamaha Corporation'],
+  // Sous un nom plus long
+  'CLEAR-COM':          ['HME Clear-Com'],
+  'DYNACORD':           ['Electro-Voice Dynacord'],
+  'HOLLYLAND':          ['Shenzhen Hollyland'],
+  'KILOVIEW':           ['Changsha Kiloview'],
+  'KLARK TEKNIK':       ['Midas Klark Teknik'],
+  'MAGEWELL':           ['Nanjing Magewell'],
+  'NEUMANN':            ['Georg Neumann'],
+  // Au nom de leur groupe ou sous un autre nom
+  'ALLEN&HEATH':        ['Audiotonix'],
+  'ARRI':               ['Arnold&Richter Cine Technik'],
+  'DATAVIDEO':          ['Data Video Technologies'],
+  'DBX':                ['Harman'],
+  'ELGATO':             ['Corsair'],
+  'GL.INET':            ['GL Technologies'],
+  'MARANTZ':            ['D&M Holdings', 'Sound United', 'Masimo'],
+  'MOTU':               ['Mark of the Unicorn'],
+  'RAMSA':              ['Panasonic'],
+  'TASCAM':             ['TEAC'],
+  // Homonymes sans rapport : écartés
+  'ALTO': [], 'CIS': [], 'CURRENT': [], 'ELITE': [], 'INFINITY': [], 'LES': [],
+  'PROTECH': [], 'ROLAND': [], 'SANYU': [], 'TELEVIEW': [], 'VOLTA': [], 'ZOOM': [],
+};
+
+const _vendorNorm = s => ' ' + String(s || '').toUpperCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+  .replace(/&/g, ' AND ').replace(/[^A-Z0-9]+/g, ' ').trim() + ' ';
+let _brandVendorsNorm = null; // [marque, débuts] en mots entiers, préparés au premier usage
+
+// Fonction « ce fabricant est-il de la marque de cet appareil ? », pour les marques de la table trouvées en mots
+// entiers dans le nom (« MARANTZ - SR7900 », « Allen & Heath SQ-5 »). null si le nom n'en contient aucune.
+function vendorMatcherForDevice(deviceName) {
+  if (!_brandVendorsNorm) {
+    _brandVendorsNorm = Object.entries(BRAND_VENDORS_DB).map(([brand, starts]) => [_vendorNorm(brand), starts.map(_vendorNorm)]);
+  }
+  const name  = _vendorNorm(deviceName);
+  const found = _brandVendorsNorm.filter(([brand]) => name.includes(brand));
+  if (!found.length) return null;
+  const starts = found.flatMap(([, s]) => s);
+  return vendor => { const v = _vendorNorm(vendor); return starts.some(s => v.startsWith(s)); };
+}

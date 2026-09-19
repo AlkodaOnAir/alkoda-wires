@@ -14,7 +14,20 @@ async function importSubproject() {
   let data;
   try { data = JSON.parse(result.data); }
   catch(e) { alert('Invalid project file.'); return; }
-  if (!data || data.version !== 1) { alert('Unsupported file format.'); return; }
+  // Même règle que loadState (fileIO.js) : un format ancien reste importable, seul
+  // un format plus récent que celui connu est refusé — sinon un projet 1.5.0 à
+  // face Arrière (format 2) serait rejeté par Wires 1.5.0 lui-même.
+  if (!data || !Number.isInteger(data.version) || data.version < 1) { alert(t('unsupported')); return; }
+  if (data.version > WIRES_FORMAT_MAX) { alert(t('file_newer_version')); return; }
+
+  // Nom de la zone : le FICHIER choisi, pas le titre ecrit dans le fichier. Wires
+  // reecrit ce titre interne a partir du nom de fichier a chaque ouverture et a
+  // chaque enregistrement (_syncTitleFromPath, fileIO.js), mais un projet duplique
+  // puis renomme dans l'explorateur garde l'ancien titre — et l'import etait le seul
+  // endroit a l'afficher tel quel (constat utilisateur, 2026-09-19).
+  // Securite anti-regression : window._xImportNameFromFile = false → titre interne.
+  const srcName = (window._xImportNameFromFile === false) ? null
+    : ((result.filePath || '').split(/[\\/]/).pop().replace(/\.wires$/i, '') || null);
 
   const importedNodes = (data.nodes || []).filter(n => n.cat !== 'internet');
   if (!importedNodes.length) { alert('This project contains no importable devices.'); return; }
@@ -28,7 +41,40 @@ async function importSubproject() {
   const ghostW  = srcMaxX - srcMinX + PAD * 2;
   const ghostH  = srcMaxY - srcMinY + PAD * 2;
 
-  _startSubprojectPlaceMode(data, importedNodes, ghostW, ghostH, srcMinX, srcMinY);
+  // Placement automatique : rien à cliquer. Le bandeau « Cliquer pour placer » passait
+  // inaperçu, et le canevas semblait figé sous un voile bleu tant qu'on n'avait pas
+  // cliqué — ça ressemblait à un bug (constat de l'utilisateur, 2026-09-17).
+  // Sécurité anti-régression : window._xSubprojectClickPlace = true → ancien mode.
+  if (window._xSubprojectClickPlace === true) {
+    _startSubprojectPlaceMode(data, importedNodes, ghostW, ghostH, srcMinX, srcMinY, srcName);
+    return;
+  }
+  const spot = _freeSpotForImport(ghostW, ghostH);
+  _placeSubproject(data, importedNodes, spot.x + PAD - srcMinX, spot.y + PAD - srcMinY, srcName);
+}
+
+// Coin haut-gauche d'un rectangle libre pour le contenu importé : à DROITE de tout ce
+// qui existe déjà (appareils, zones, étiquettes), aligné sur le haut de ce contenu.
+// Libre par construction, donc aucune recherche ni essai-erreur. Canevas vide : au
+// centre de la vue courante.
+function _freeSpotForImport(w, h) {
+  const GAP = 120;
+  let minY = Infinity, maxX = -Infinity;
+  const consider = (x, y, ww, hh) => {
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x + ww);
+  };
+  for (const n of Object.values(APP.nodes))      consider(n.x, n.y, n.w, n.h);
+  for (const z of Object.values(APP.zones || {})) consider(z.x, z.y, z.width, z.height);
+  for (const l of Object.values(APP.textLabels || {})) consider(l.x, l.y, 0, 0);
+
+  if (maxX === -Infinity) {                        // canevas vide → centre de la vue
+    const area = document.getElementById('canvas-area');
+    const r    = area ? area.getBoundingClientRect() : { width: 1200, height: 800 };
+    const c    = screenToCanvas(r.left + r.width / 2, r.top + r.height / 2);
+    return { x: c.x - w / 2, y: c.y - h / 2 };
+  }
+  return { x: maxX + GAP, y: minY };
 }
 
 // ── Collision : ghost rect vs existing nodes (+ label) ───────
@@ -42,7 +88,7 @@ function _ghostCollides(gx, gy, gw, gh) {
 }
 
 // ── Placement mode ────────────────────────────────────────────
-function _startSubprojectPlaceMode(data, importedNodes, ghostW, ghostH, srcMinX, srcMinY) {
+function _startSubprojectPlaceMode(data, importedNodes, ghostW, ghostH, srcMinX, srcMinY, srcName) {
   if (_spPlaceActive) return;
   _spPlaceActive = true;
 
@@ -64,14 +110,14 @@ function _startSubprojectPlaceMode(data, importedNodes, ghostW, ghostH, srcMinX,
   const ghostLabel = document.createElement('span');
   ghostLabel.id = 'sp-ghost-label';
   ghostLabel.style.cssText = 'font-family:monospace;font-size:12px;letter-spacing:1px;color:rgba(0,176,240,0.9);pointer-events:none;text-align:center;padding:4px';
-  ghostLabel.textContent = data.meta?.title || 'Import';
+  ghostLabel.textContent = srcName || data.meta?.title || 'Import';
   ghost.appendChild(ghostLabel);
   root.appendChild(ghost);
 
   // Banner
   let banner = document.getElementById('cable-add-banner');
   if (!banner) { banner = document.createElement('div'); banner.id = 'cable-add-banner'; document.body.appendChild(banner); }
-  banner.innerHTML = t('sp_place_banner') + ' <strong>' + escapeHtml(data.meta?.title || 'project') + '</strong> &nbsp;'
+  banner.innerHTML = t('sp_place_banner') + ' <strong>' + escapeHtml(srcName || data.meta?.title || 'project') + '</strong> &nbsp;'
     + `<button class="cab-cancel-btn" id="sp-cancel-btn">✕ ${t('cancel')}</button>`;
   banner.classList.add('visible');
   document.getElementById('sp-cancel-btn')?.addEventListener('click', _cancelSubprojectPlace);
@@ -151,7 +197,7 @@ function _startSubprojectPlaceMode(data, importedNodes, ghostW, ghostH, srcMinX,
     const offsetY = _ghostY + 60 - srcMinY;
 
     _cleanup();
-    _placeSubproject(data, importedNodes, offsetX, offsetY);
+    _placeSubproject(data, importedNodes, offsetX, offsetY, srcName);
   };
 
   const onKey = e => { if (e.key === 'Escape') _cancelSubprojectPlace(); };
@@ -186,7 +232,7 @@ function _cancelSubprojectPlace() {
 }
 
 // ── Place the imported content at the chosen position ─────────
-function _placeSubproject(data, importedNodes, offsetX, offsetY) {
+function _placeSubproject(data, importedNodes, offsetX, offsetY, srcName) {
   const spId = 'sp-' + Date.now();
 
   pushUndo();
@@ -270,7 +316,7 @@ function _placeSubproject(data, importedNodes, offsetX, offsetY) {
     x: minX, y: minY,
     width:  maxX - minX,
     height: maxY - minY,
-    name:   data.meta?.title || 'Imported project',
+    name:   srcName || data.meta?.title || 'Imported project',
     color:  '#00b0f0',
     opacity: 0.3,
     labelSize: 96,
@@ -279,6 +325,25 @@ function _placeSubproject(data, importedNodes, offsetX, offsetY) {
     isSubproject: true,
     subproject_id: spId,
   };
+
+  // Numérotation automatique, exactement comme un collage : deux appareils partageant
+  // la même image reçoivent des numéros distincts, l'original en dessous de l'arrivant.
+  // Importer deux fois le même projet donnait sinon des appareils rigoureusement
+  // identiques, impossibles à distinguer sur le canevas (2026-09-17).
+  // Sécurité anti-régression : window._xNumberImportedDevices = false → aucun numéro.
+  // Un seul appel par IMAGE : _assignPasteNumbering numérote déjà, au passage, tous les
+  // appareils sans numéro qui partagent cette image — donc les autres appareils importés
+  // du même modèle. L'appeler une fois par appareil les renumérotait aussitôt et laissait
+  // des trous (01, 03, 04 au lieu de 01, 02, 03 — vu en simulation avant livraison).
+  if (window._xNumberImportedDevices !== false && typeof _assignPasteNumbering === 'function') {
+    const done = new Set();
+    for (const n of addedNodes) {
+      const key = typeof _imgKeyOf === 'function' ? _imgKeyOf(n) : (n.img_original || n.img);
+      if (!key || done.has(key)) continue;
+      done.add(key);
+      _assignPasteNumbering(n.id);
+    }
+  }
 
   renderNodes();
   rebuildCM();

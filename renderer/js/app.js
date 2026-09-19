@@ -15,6 +15,7 @@ const EPS        = 4;
 // ── Métadonnées câbles ───────────────────────────────────────
 const CABLE_META = {
   'Audio'      : { color: '#ff4444', dashed: false },  // legacy compat
+  'Combo XLR/Jack': { color: '#ff4444', dashed: false },  // prise combo : accepte XLR ou jack (voir newcable.js)
   'Dante'      : { color: '#ff4444', dashed: false },
   'DC'         : { color: '#c05000', dashed: false },
   'DisplayPort': { color: '#6644cc', dashed: false },

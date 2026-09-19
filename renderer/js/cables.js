@@ -21,6 +21,190 @@ window._dragRafCoalesce = window._dragRafCoalesce !== false;
 // prévisualisation, retour au comportement d'avant (un câble tiers ne bouge jamais).
 window._xNodeBypassPreview = window._xNodeBypassPreview !== false;
 
+// ── Trouver un port par id, Avant OU Arrière (vues front/rear, nodes.js) ──
+// Un id de port n'existe qu'une fois sur l'appareil, peu importe l'image à
+// laquelle il appartient — cherché dans ports (Avant) PUIS portsRear (Arrière).
+// Renvoie { port, side: 'front'|'rear' } ou null si introuvable. Le "side" est
+// à passer tel quel à edgePtFixed/stubPt/_nodeImgRect (routing.js) : sans lui
+// (ou en ne cherchant que dans .ports, comme avant), un port Arrière se ferait
+// positionner avec le rect de l'Avant et dériverait dès que les deux images
+// n'ont pas le même ratio.
+function _findPortById(node, portId) {
+  if (!node || !portId) return null;
+  let p = (node.ports || []).find(pp => pp.id === portId);
+  if (p) return { port: p, side: 'front' };
+  p = (node.portsRear || []).find(pp => pp.id === portId);
+  if (p) return { port: p, side: 'rear' };
+  return null;
+}
+
+// ── Occlusion Avant/Arrière ────────────────────────────────────
+// Un câble dont une extrémité appartient à la vue NON affichée de son appareil
+// (celui-ci ayant une Arrière configurée) doit sembler passer derrière cet
+// appareil. Renvoie, pour chaque extrémité concernée, {node, sid, side} où
+// side = la vue ACTIVE (celle qui est opaque, par-dessus) — sert de référence
+// pour le scan pixel précis dans _occlusionEraseLength. { from, to } (null si
+// cette extrémité n'a pas besoin d'occlusion).
+// Extrémité en cours de glissement ({ cid, role }, posée par setupAnchorDrag / _drawOrphanHandle, retirée par
+// _hideAllPortDots) : jamais masquée tant qu'elle est « dans la main ». Sans ça, basculer l'appareil sur l'Avant
+// pendant le geste (↻ au survol) effaçait la partie du câble tenue sous le curseur, encore enregistrée sur son
+// ancien port Arrière (demande du 2026-09-15). L'autre extrémité, restée branchée, garde le masquage normal.
+// Sécurité anti-régression : window._xDragOcclSkip = false → extrémité glissée masquée comme avant.
+let _endDragInProgress = null;
+
+function _cableOcclusionInfo(c) {
+  const sa = c.from ? APP.nodes[c.from] : null;
+  const sb = c.to   ? APP.nodes[c.to]   : null;
+  const _activeSide = nid => (typeof _previewView !== 'undefined' && _previewView[nid] === 'rear') ? 'rear' : 'front';
+  const _held = role => window._xDragOcclSkip !== false && !!_endDragInProgress
+    && _endDragInProgress.cid === c.id && _endDragInProgress.role === role;
+  let from = null, to = null;
+  if (sa && c.from_port && sa.imgRear && !_held('from')) {
+    const f = _findPortById(sa, c.from_port);
+    const active = _activeSide(c.from);
+    if (f && f.side !== active) from = { node: sa, sid: c.from, side: active };
+  }
+  if (sb && c.to_port && sb.imgRear && !_held('to')) {
+    const t = _findPortById(sb, c.to_port);
+    const active = _activeSide(c.to);
+    if (t && t.side !== active) to = { node: sb, sid: c.to, side: active };
+  }
+  return { from, to };
+}
+
+// Convertit un point CANEVAS en pixel NATIF de l'image d'un côté donné —
+// inverse de edgePtFixed (routing.js) : pour un point du tracé d'un câble, à
+// quel pixel RÉEL de l'image (Avant ou Arrière) il correspond, pour y lire
+// l'alpha (voir _alphaPixelsCache, nodes.js).
+function _canvasPtToNativePx(node, side, canvasX, canvasY) {
+  const r = _nodeImgRect(node, side);
+  const natW = side === 'rear' ? node._imgWRear : node._imgW;
+  const natH = side === 'rear' ? node._imgHRear : node._imgH;
+  if (!r || !natW || !natH) return null;
+  return {
+    x: (canvasX - node.x - r.offX) * (natW / r.rW),
+    y: (canvasY - node.y - r.offY) * (natH / r.rH),
+  };
+}
+
+// Nombre de pixels NATIFS parcourus, en avançant depuis un point de départ
+// dans une direction cardinale (convention _dirBetween — 'up'/'down'/'left'/
+// 'right'), avant de rencontrer un pixel OPAQUE — plafonné à maxSteps. Hors
+// image = transparent (jamais compté comme opaque).
+//
+// ⚠️ Volontairement l'inverse de chercher "le premier transparent" en partant
+// du port : un unique pixel faussement transparent au milieu de l'appareil
+// (détourage trop agressif ayant rongé une zone interne, ex. fond très sombre
+// proche de la couleur de l'appareil) faisait alors croire que le câble était
+// déjà sorti, et plus rien n'était revérifié pour tout le reste du tracé —
+// bug réel observé le 2026-09-13 (câble affiché en plein milieu de texte bien
+// opaque de l'appareil). En partant du dernier coude (donc du CÔTÉ SÛR, hors
+// de l'appareil) et en avançant vers le port jusqu'au premier pixel opaque
+// rencontré, un défaut isolé plus loin à l'intérieur de l'appareil ne peut
+// plus jamais être atteint : le tracé s'arrête déjà avant.
+function _nativeStepsUntilOpaque(imageData, px, py, dir, maxSteps) {
+  const { data, width, height } = imageData;
+  const THRESH = 8; // même seuil que _alphaBBFromCanvas (library.js)
+  let x = Math.round(px), y = Math.round(py);
+  for (let steps = 0; steps <= maxSteps; steps++) {
+    const opaque = x >= 0 && x < width && y >= 0 && y < height && data[(y * width + x) * 4 + 3] > THRESH;
+    if (opaque) return steps;
+    if      (dir === 'down')  y++;
+    else if (dir === 'up')    y--;
+    else if (dir === 'right') x++;
+    else                      x--; // 'left'
+  }
+  return maxSteps;
+}
+
+// Longueur (en unités canevas, donc en unités de pathLength — voir drawCable) à
+// effacer depuis l'ancre d'un port pour qu'il semble sortir de derrière
+// l'appareil. Les câbles sont AU-DESSUS des appareils en z-index (#cables-svg:
+// 15 > #nodes-layer: 10, main.css) : rien ne les masque naturellement, c'est
+// le câble lui-même qu'il faut effacer sur la portion qui recouvre encore de
+// l'opaque. Scan pixel par pixel dans l'image RÉELLE de la vue active (pas un
+// simple rectangle), en partant du dernier coude du tracé (bendPt — hors de
+// l'appareil par construction du routage) et en avançant VERS le port
+// (anchorPt), jusqu'au premier pixel opaque rencontré (voir
+// _nativeStepsUntilOpaque ci-dessus pour le pourquoi de ce sens de parcours).
+// 0 est un résultat valide (aucun pixel opaque trouvé sur tout le segment,
+// rien à effacer) — seulement un repli temporaire si les pixels de cette vue
+// ne sont pas encore en cache (chargement asynchrone en cours, voir nodes.js :
+// le rendu suivant, auto-corrigé par _invalidateCablesForNode, affinera).
+function _occlusionEraseLength(node, sid, activeSide, anchorPt, bendPt, dir) {
+  const cached = (typeof _alphaPixelsCache !== 'undefined') ? _alphaPixelsCache[sid]?.[activeSide] : null;
+  if (!cached) return 0;
+  const anchorNat = _canvasPtToNativePx(node, activeSide, anchorPt[0], anchorPt[1]);
+  const bendNat   = _canvasPtToNativePx(node, activeSide, bendPt[0], bendPt[1]);
+  if (!anchorNat || !bendNat) return 0;
+  const totalNativeSteps = Math.round((dir === 'left' || dir === 'right')
+    ? Math.abs(anchorNat.x - bendNat.x)
+    : Math.abs(anchorNat.y - bendNat.y));
+  const transparentSteps = _nativeStepsUntilOpaque(cached.data, bendNat.x, bendNat.y, dir, totalNativeSteps);
+  const eraseNativeSteps = Math.max(0, totalNativeSteps - transparentSteps);
+  const r = _nodeImgRect(node, activeSide);
+  const natW = activeSide === 'rear' ? node._imgWRear : node._imgW;
+  if (!r || !natW) return 0;
+  return eraseNativeSteps * (r.rW / natW);
+}
+
+// Occlusion multi-coudes : remonte du point où le tracé sort du cadre de l'image active vers le port. ghost = ne sort jamais du cadre.
+function _occlusionEraseMulti(node, sid, activeSide, pts, fromEnd) {
+  const none = { len: 0, ghost: false };
+  const cached = (typeof _alphaPixelsCache !== 'undefined') ? _alphaPixelsCache[sid]?.[activeSide] : null;
+  const r = _nodeImgRect(node, activeSide);
+  const natW = activeSide === 'rear' ? node._imgWRear : node._imgW;
+  if (!cached || !r || !natW || pts.length < 2) return none;
+  const L = node.x + r.offX, T = node.y + r.offY, Rt = L + r.rW, Bt = T + r.rH;
+  const inside = q => q[0] >= L && q[0] <= Rt && q[1] >= T && q[1] <= Bt;
+  const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);
+  const P = fromEnd ? pts : pts.slice().reverse();
+
+  let k = 1;
+  while (k < P.length && inside(P[k])) k++;
+  if (k === P.length) return { len: 0, ghost: true };
+
+  let E = P[k];
+  if (inside(P[k - 1])) {
+    E = Math.abs(P[k][1] - P[k - 1][1]) < 1
+      ? [Math.min(Rt, Math.max(L, P[k][0])), P[k][1]]
+      : [P[k][0], Math.min(Bt, Math.max(T, P[k][1]))];
+  }
+
+  const pos = [0];
+  for (let i = 1; i < k; i++) pos[i] = pos[i - 1] + dist(P[i - 1], P[i]);
+  const posE = pos[k - 1] + dist(P[k - 1], E);
+
+  const scale = r.rW / natW;
+  let found = -1;
+  for (let i = 0; i < k && found < 0; i++) {
+    const a = i === 0 ? E : P[k - i];
+    const b = P[k - 1 - i];
+    const posA = i === 0 ? posE : pos[k - i];
+    if (dist(a, b) < 0.5) continue;
+    const aNat = _canvasPtToNativePx(node, activeSide, a[0], a[1]);
+    const bNat = _canvasPtToNativePx(node, activeSide, b[0], b[1]);
+    if (!aNat || !bNat) return none;
+    const dir = _dirBetween(a, b);
+    const steps = Math.round((dir === 'left' || dir === 'right') ? Math.abs(bNat.x - aNat.x) : Math.abs(bNat.y - aNat.y));
+    const t = _nativeStepsUntilOpaque(cached.data, aNat.x, aNat.y, dir, steps);
+    if (t < steps) found = Math.max(0, posA - t * scale);
+  }
+  if (found < 0) return none;
+
+  // Coudes arrondis (rayon max 20, comme toSVG dans routing.js) : le tracé réel est plus court que la ligne brisée.
+  const ARC_SHORTEN = 0.1884; // 1 - longueur d'un quart d'arc quadratique / (2 × rayon)
+  let corr = 0, acc = 0;
+  for (let i = 1; i <= Math.min(k, P.length - 2); i++) {
+    const lIn = dist(P[i - 1], P[i]), lOut = dist(P[i], P[i + 1]);
+    acc += lIn;
+    if (lIn < 0.01 || lOut < 0.01) continue;
+    const rc = Math.min(20, lIn / 2, lOut / 2);
+    corr += Math.min(Math.max(found - (acc - rc), 0), 2 * rc) * ARC_SHORTEN;
+  }
+  return { len: Math.max(0, found - corr), ghost: false };
+}
+
 // ── Rendu complet des câbles ──────────────────────────────────
 function renderCables() {
   _svg = document.getElementById('cables-svg');
@@ -54,13 +238,15 @@ function renderCables() {
     // Si override manuel existant → utiliser directement
     if (cableOverrides[c.id]) return { c, pts: cableOverrides[c.id] };
 
-    const fromPt   = (c.from_nx != null) ? edgePtFixed(sa, c.from_nx, c.from_ny) : null;
-    const toPt     = (c.to_nx   != null) ? edgePtFixed(sb, c.to_nx,   c.to_ny  ) : null;
+    const fromSide = c.from_port ? _findPortById(sa, c.from_port)?.side : undefined;
+    const toSide   = c.to_port   ? _findPortById(sb, c.to_port)?.side   : undefined;
+    const fromPt   = (c.from_nx != null) ? edgePtFixed(sa, c.from_nx, c.from_ny, fromSide) : null;
+    const toPt     = (c.to_nx   != null) ? edgePtFixed(sb, c.to_nx,   c.to_ny,   toSide  ) : null;
     const fromStub = (c.from_nx != null)
-      ? (c.from_stub_dir && fromPt ? _stubFromDir(fromPt, c.from_stub_dir) : stubPt(sa, c.from_nx, c.from_ny))
+      ? (c.from_stub_dir && fromPt ? _stubFromDir(fromPt, c.from_stub_dir) : stubPt(sa, c.from_nx, c.from_ny, fromSide))
       : null;
     const toStub   = (c.to_nx   != null)
-      ? (c.to_stub_dir && toPt ? _stubFromDir(toPt, c.to_stub_dir) : stubPt(sb, c.to_nx, c.to_ny))
+      ? (c.to_stub_dir && toPt ? _stubFromDir(toPt, c.to_stub_dir) : stubPt(sb, c.to_nx, c.to_ny, toSide))
       : null;
 
     const rawPath = findOrthPath(sa, sb, fromStub || fromPt, toStub || toPt);
@@ -205,6 +391,8 @@ function renderCables() {
 
   drawJunctionMarkers();
   scheduleMinimap();
+  // Appareil sélectionné : les câbles viennent d'être recréés dans leur état normal, réappliquer son estompage (select.js).
+  if (typeof reapplySelCableDim === 'function') reapplySelCableDim();
 }
 
 // ── Redessiner en live pendant le drag d'un nœud ─────────────
@@ -219,6 +407,80 @@ function renderCables() {
 // voir getObstacles). Testé et dévié contre chacun de ces appareils tiers en séquence.
 // Sécu de régression : window._xNodeBypassPreview = false dans la console désactive
 // entièrement cette prévisualisation, retour au comportement d'avant (câble jamais dévié).
+// ── Raccordement d'UNE extremite de cable a son appareil deplace ──────────────
+// Extrait de redrawCablesMovingNode pour etre partage avec le deplacement d'un
+// GROUPE (redrawCablesMovingGroup ci-dessous) : la meme regle doit s'appliquer,
+// qu'on deplace un appareil seul, une selection au rectangle, ou une zone par son nom.
+// On repart toujours de l'instantane de debut de geste (snap), jamais du tracé courant :
+// pas de derive cumulative. Le coude voisin est recalcule comme l'intersection a angle
+// droit entre la nouvelle ancre et le point suivant du tracé, pris lui aussi dans
+// l'instantane — jamais une translation de l'ancien coude, qui entrainerait le segment
+// suivant au lieu de ne faire varier que la longueur du stub.
+function _patchCableEndFromSnap(c, bout, s, snap, pts) {
+  const n = snap.length;
+  const R = v => Math.round(v);
+  const debut = bout === 'from';
+  const nx = debut ? c.from_nx : c.to_nx;
+  const ny = debut ? c.from_ny : c.to_ny;
+  if (nx == null) return;
+  const port = debut ? c.from_port : c.to_port;
+  const side = port ? _findPortById(s, port)?.side : undefined;
+  const newAnc = edgePtFixed(s, nx, ny, side).map(R);
+  const dir = debut ? c.from_stub_dir : c.to_stub_dir;
+
+  if (debut) {
+    pts[0] = newAnc;
+    if (n >= 3) {
+      const wasH = dir ? (dir === 'left' || dir === 'right')
+                       : Math.abs(snap[1][1] - snap[0][1]) < 1;
+      const pivot = snap[2];
+      pts[1] = wasH ? [pivot[0], newAnc[1]] : [newAnc[0], pivot[1]];
+    }
+  } else {
+    pts[n - 1] = newAnc;
+    if (n >= 3) {
+      const wasH = dir ? (dir === 'left' || dir === 'right')
+                       : Math.abs(snap[n-2][1] - snap[n-1][1]) < 1;
+      const pivot = snap[n-3];
+      pts[n - 2] = wasH ? [pivot[0], newAnc[1]] : [newAnc[0], pivot[1]];
+    }
+  }
+}
+
+// ── Redessin pendant le deplacement d'un GROUPE d'appareils ──────────────────
+// Selection au rectangle, ou zone deplacee par son nom. Trois cas par cable :
+//  - ses deux extremites bougent  -> le trace est translate tel quel, coudes compris ;
+//  - une seule extremite bouge    -> seule cette extremite et son coude sont repris,
+//                                    exactement comme pour un appareil seul ;
+//  - aucune                       -> intact.
+// Rien n'est supprime : un trace fait a la main survit au deplacement. C'est ce qui
+// manquait au correctif du 2026-09-17, qui effacait les traces pour eviter que les
+// cables se detachent — le detachement venait en realite d'un appel par appareil
+// deplace, chacun repartant de l'instantane et defaisant le precedent.
+// Securite anti-regression : window._xGroupCablePaths = false -> ancien comportement
+// (traces effaces et recalcules), voir les appelants.
+function redrawCablesMovingGroup(ids, dx, dy) {
+  const bouges = ids instanceof Set ? ids : new Set(ids);
+  for (const c of APP.cables) {
+    const snap = APP.drag?.cableSnapshot?.[c.id];
+    if (!snap || snap.length < 2) continue;
+    const depart  = bouges.has(c.from);
+    const arrivee = bouges.has(c.to);
+    if (!depart && !arrivee) continue;
+
+    if (depart && arrivee) {
+      cableOverrides[c.id] = snap.map(p => [Math.round(p[0] + dx), Math.round(p[1] + dy)]);
+      continue;
+    }
+    const pts = snap.map(p => [...p]);
+    const sid = depart ? c.from : c.to;
+    const s   = APP.nodes[sid];
+    if (s) _patchCableEndFromSnap(c, depart ? 'from' : 'to', s, snap, pts);
+    cableOverrides[c.id] = pts;
+  }
+  redrawOnlyCables();
+}
+
 function redrawCablesMovingNode(sid) {
   const s = APP.nodes[sid];
   if (!s) return;
@@ -244,37 +506,18 @@ function redrawCablesMovingNode(sid) {
     // depuis l'instantané de début de glisser pour rester fixe pendant tout le
     // geste) — jamais une translation de l'ancien coude par le delta complet de
     // l'ancre, qui entraînait le segment suivant avec lui au lieu de ne faire
-    // varier que la longueur du premier stub. Même principe que
-    // _patchCablesForPortMove (déplacement de port/redimensionnement).
+    // varier que la longueur du premier stub. Même principe repris par
+    // _patchCablesForResize() pour le redimensionnement (plus bas dans ce fichier) —
+    // _patchCablesForPortMove() reste réservée aux ajustements ponctuels (édition
+    // d'appareil, recadrage), jamais un geste continu.
     // Câble à direction de sortie forcée (from_stub_dir/to_stub_dir) : PAS de
     // longueur fixe ici (contrairement à _stubFromDir(), utilisée à la création/à
     // l'édition manuelle) — seul l'axe imposé (down/up = vertical, left/right =
     // horizontal) remplace le calcul géométrique de wasH ; le stub s'étire donc
     // lui aussi librement pendant un glisser d'appareil, choix explicite pour ne
     // jamais entraîner le reste du tracé avec lui.
-    if (c.from === sid && c.from_nx != null) {
-      const newAnc = edgePtFixed(s, c.from_nx, c.from_ny).map(R);
-      pts[0] = newAnc;
-      if (n >= 3) {
-        const wasH = c.from_stub_dir
-          ? (c.from_stub_dir === 'left' || c.from_stub_dir === 'right')
-          : Math.abs(snap[1][1] - snap[0][1]) < 1;
-        const pivot = snap[2];
-        pts[1] = wasH ? [pivot[0], newAnc[1]] : [newAnc[0], pivot[1]];
-      }
-    }
-
-    if (c.to === sid && c.to_nx != null) {
-      const newAnc = edgePtFixed(s, c.to_nx, c.to_ny).map(R);
-      pts[n - 1] = newAnc;
-      if (n >= 3) {
-        const wasH = c.to_stub_dir
-          ? (c.to_stub_dir === 'left' || c.to_stub_dir === 'right')
-          : Math.abs(snap[n-2][1] - snap[n-1][1]) < 1;
-        const pivot = snap[n-3];
-        pts[n - 2] = wasH ? [pivot[0], newAnc[1]] : [newAnc[0], pivot[1]];
-      }
-    }
+    if (c.from === sid) _patchCableEndFromSnap(c, 'from', s, snap, pts);
+    if (c.to   === sid) _patchCableEndFromSnap(c, 'to',   s, snap, pts);
 
     cableOverrides[c.id] = pts;
 
@@ -342,17 +585,22 @@ function _patchCablesForPortMove(nid) {
   for (const c of APP.cables) {
     const pts = cableOverrides[c.id];
     if (!pts || pts.length < 2) continue;
+    // Extrémité en cours de glissement : ne pas la recaler sur son port (voir le même garde dans nodes.js, _onLoad).
+    if (window._xDragKeepHeldCable !== false && _endDragInProgress && _endDragInProgress.cid === c.id) continue;
     const n = pts.length;
 
     if (c.from === nid) {
-      let nx, ny;
-      if (c.from_port) { const p = s.ports.find(pp => pp.id === c.from_port); if (p) { nx = p.nx; ny = p.ny; } }
+      let nx, ny, side;
+      // Cherché dans ports ET portsRear (voir _findPortById) : un port déplacé peut
+      // appartenir à l'une ou l'autre vue — le restreindre à .ports seul, comme
+      // avant, faisait échouer silencieusement ce patch pour tout port Arrière.
+      if (c.from_port) { const f = _findPortById(s, c.from_port); if (f) { nx = f.port.nx; ny = f.port.ny; side = f.side; } }
       else if (c.from_nx != null) { nx = c.from_nx; ny = c.from_ny; }
       if (nx != null) {
         c.from_nx = nx; c.from_ny = ny;
         const oldAnc  = pts[0];
         const oldStub = pts[1];
-        const newAnc  = edgePtFixed(s, nx, ny).map(R);
+        const newAnc  = edgePtFixed(s, nx, ny, side).map(R);
         // Port inchangé → ne toucher à rien. Cette fonction ne doit patcher que ce
         // qu'un déplacement a réellement décalé : réécrire le stub à sa position
         // « canonique » depuis l'ancre écrase un coude légitime du tracé et rend le
@@ -392,8 +640,8 @@ function _patchCablesForPortMove(nid) {
     }
 
     if (c.to === nid) {
-      let nx, ny;
-      if (c.to_port) { const p = s.ports.find(pp => pp.id === c.to_port); if (p) { nx = p.nx; ny = p.ny; } }
+      let nx, ny, side;
+      if (c.to_port) { const f = _findPortById(s, c.to_port); if (f) { nx = f.port.nx; ny = f.port.ny; side = f.side; } }
       else if (c.to_nx != null) { nx = c.to_nx; ny = c.to_ny; }
       if (nx != null) {
         c.to_nx = nx; c.to_ny = ny;
@@ -402,7 +650,7 @@ function _patchCablesForPortMove(nid) {
         const m = pts.length;
         const oldAnc  = pts[m - 1];
         const oldStub = pts[m - 2];
-        const newAnc  = edgePtFixed(s, nx, ny).map(R);
+        const newAnc  = edgePtFixed(s, nx, ny, side).map(R);
         // Même garde qu'à l'extrémité « from » ci-dessus : port inchangé, on ne touche
         // à rien. C'est ici que les diagonales apparaissaient (câbles à 3 points dont
         // l'arrivée porte une direction de sortie forcée).
@@ -427,6 +675,57 @@ function _patchCablesForPortMove(nid) {
             }
           }
         }
+      }
+    }
+  }
+}
+
+// ── Patch câbles pendant un redimensionnement (geste continu) ──
+// Dédiée au resize, séparée de _patchCablesForPortMove() ci-dessus (réservée à ses 2
+// autres appelants, des ajustements PONCTUELS — édition d'appareil, recadrage — jamais
+// un geste répété à chaque frame). Reprend exactement le principe de
+// redrawCablesMovingNode() (déplacement d'appareil, plus haut dans ce fichier) : le
+// point adjacent au port qui bouge (le stub) est recalculé comme l'intersection à angle
+// droit entre la nouvelle ancre et le point SUIVANT, toujours lu depuis `snapshot`
+// (figé au tout début du geste, jamais depuis le résultat du tick précédent) — aucun
+// 3e point jamais touché, contrairement à _patchCablesForPortMove(). Bouge donc le
+// minimum de segments : le stub s'allonge/se raccourcit, le reste du tracé ne bouge
+// pas (comportement demandé le 2026-09-11, après avoir constaté qu'un appel répété de
+// _patchCablesForPortMove pendant le glissé faisait dériver puis disparaître le tracé).
+function _patchCablesForResize(nid, snapshot) {
+  const s = APP.nodes[nid];
+  if (!s || !snapshot) return;
+  const R = v => Math.round(v);
+
+  for (const c of APP.cables) {
+    const snap = snapshot[c.id];
+    const pts  = cableOverrides[c.id];
+    if (!snap || !pts || snap.length < 2 || pts.length !== snap.length) continue;
+    const n = snap.length;
+
+    if (c.from === nid && c.from_nx != null) {
+      const fromSide = c.from_port ? _findPortById(s, c.from_port)?.side : undefined;
+      const newAnc = edgePtFixed(s, c.from_nx, c.from_ny, fromSide).map(R);
+      pts[0] = newAnc;
+      if (n >= 3) {
+        const wasH = c.from_stub_dir
+          ? (c.from_stub_dir === 'left' || c.from_stub_dir === 'right')
+          : Math.abs(snap[1][1] - snap[0][1]) < 1;
+        const pivot = snap[2];
+        pts[1] = wasH ? [pivot[0], newAnc[1]] : [newAnc[0], pivot[1]];
+      }
+    }
+
+    if (c.to === nid && c.to_nx != null) {
+      const toSide = c.to_port ? _findPortById(s, c.to_port)?.side : undefined;
+      const newAnc = edgePtFixed(s, c.to_nx, c.to_ny, toSide).map(R);
+      pts[n - 1] = newAnc;
+      if (n >= 3) {
+        const wasH = c.to_stub_dir
+          ? (c.to_stub_dir === 'left' || c.to_stub_dir === 'right')
+          : Math.abs(snap[n - 2][1] - snap[n - 1][1]) < 1;
+        const pivot = snap[n - 3];
+        pts[n - 2] = wasH ? [pivot[0], newAnc[1]] : [newAnc[0], pivot[1]];
       }
     }
   }
@@ -470,6 +769,8 @@ function redrawOnlyCables() {
   drawJunctionMarkers();
   scheduleMinimap();
   if (typeof applyCanvasFilters === 'function') applyCanvasFilters();
+  // Appareil sélectionné : les câbles viennent d'être recréés dans leur état normal, réappliquer son estompage (select.js).
+  if (typeof reapplySelCableDim === 'function') reapplySelCableDim();
 }
 
 // ── Marqueurs de jonction IN+OUT (port dual partagé par 2 câbles) ─
@@ -496,9 +797,13 @@ function drawJunctionMarkers() {
     if (entries.length < 2) continue;
     const [nodeId, nxStr, nyStr] = key.split('|');
     const node = APP.nodes[nodeId];
-    if (!node?.ports) continue;
+    if (!node) continue;
     const nx = parseFloat(nxStr), ny = parseFloat(nyStr);
-    const port = node.ports.find(p => Math.abs(p.nx - nx) < 0.001 && Math.abs(p.ny - ny) < 0.001);
+    // Les DEUX faces : un port double (IN+OUT) posé sur la vue Arrière n'obtenait jamais
+    // ses triangles de jonction, alors que les deux câbles qui le partagent étaient bien
+    // dessinés — sur le canevas comme dans l'export PDF/PNG (2026-09-19).
+    const port = [...(node.ports || []), ...(node.portsRear || [])]
+      .find(p => Math.abs(p.nx - nx) < 0.001 && Math.abs(p.ny - ny) < 0.001);
     if (!port?.dual) continue;
     const { pts, end } = entries[0];
     const jp = end === 'from' ? pts[0] : pts[pts.length - 1];
@@ -674,7 +979,61 @@ function drawCable(c, pts, orphan = false) {
   p.classList.add('cable-visual', 'cp');
   p.style.pointerEvents = 'none';
   if (isSelected) p.dataset.selected = '1';
+
   _svg.appendChild(p);
+
+  // Occlusion Avant/Arrière : effacer, depuis le port, exactement le nombre de
+  // pixels réellement transparents avant le premier pixel opaque de l'image
+  // active (scan réel, pas un rectangle) dans la direction où le câble s'en
+  // éloigne — via pathLength + stroke-dasharray. Uniquement le path VISUEL (ph,
+  // la bande de capture cliquable plus bas, n'est pas affectée — le câble reste
+  // sélectionnable même là où il est visuellement caché).
+  if (pts.length >= 2) {
+    const _occl = _cableOcclusionInfo(c);
+    if (_occl.from || _occl.to) {
+      const totalLen = p.getTotalLength();
+      let n1 = 0, n2 = 0, _ghost = false;
+      // Sécu de régression : window._xOcclusionMultiBend = false (console) → ancien calcul, premier coude seulement.
+      const _multiBend = window._xOcclusionMultiBend !== false;
+      if (_occl.from) {
+        if (_multiBend) {
+          const o = _occlusionEraseMulti(_occl.from.node, _occl.from.sid, _occl.from.side, pts, true);
+          n1 = o.len; _ghost = _ghost || o.ghost;
+        } else {
+          // Sens du parcours : DU coude VERS le port (voir _occlusionEraseLength) —
+          // donc l'inverse de _dirBetween(pts[0], pts[1]).
+          const dir = _dirBetween(pts[1], pts[0]);
+          n1 = _occlusionEraseLength(_occl.from.node, _occl.from.sid, _occl.from.side, pts[0], pts[1], dir);
+        }
+      }
+      if (_occl.to) {
+        if (_multiBend) {
+          const o = _occlusionEraseMulti(_occl.to.node, _occl.to.sid, _occl.to.side, pts, false);
+          n2 = o.len; _ghost = _ghost || o.ghost;
+        } else {
+          const n = pts.length;
+          const dir = _dirBetween(pts[n - 2], pts[n - 1]);
+          n2 = _occlusionEraseLength(_occl.to.node, _occl.to.sid, _occl.to.side, pts[n - 1], pts[n - 2], dir);
+        }
+      }
+      if (_ghost) {
+        // Tracé jamais sorti du cadre de l'appareil : câble entier en « fantôme », sans effacement.
+        p.setAttribute('stroke-opacity', '0.5');
+        p.classList.add('cable-occl-ghost');
+      } else {
+        n1 = Math.min(n1, totalLen);
+        n2 = Math.min(n2, Math.max(0, totalLen - n1));
+        if (n1 > 0 || n2 > 0) {
+          const middle = Math.max(0, totalLen - n1 - n2);
+          p.setAttribute('pathLength', totalLen);
+          p.setAttribute('stroke-dasharray', `0 ${n1} ${middle} ${n2}`);
+          // Partie visible, relue par l'animation des routes (_resolveSegsForAnim, routes.js) : le point n'y circule que là.
+          p.dataset.visStart = n1;
+          p.dataset.visEnd   = totalLen - n2;
+        }
+      }
+    }
+  }
 
   // Stub sélectionné (direction OU coude) : segment surligné en cyan (épouse la courbure du coin)
   const _stubUiState = _stubSelState || _stubBendState;
@@ -904,8 +1263,10 @@ function setStubDir(dir) {
 
   // Réancrer les extrémités sur les coordonnées de port réelles (évite la dérive cumulative)
   const fromNode = APP.nodes[c.from], toNode = APP.nodes[c.to];
-  if (fromNode && c.from_nx != null) pts[0] = edgePtFixed(fromNode, c.from_nx, c.from_ny);
-  if (toNode   && c.to_nx   != null) pts[pts.length - 1] = edgePtFixed(toNode, c.to_nx, c.to_ny);
+  const _fromSide = c.from_port ? _findPortById(fromNode, c.from_port)?.side : undefined;
+  const _toSide   = c.to_port   ? _findPortById(toNode,   c.to_port)?.side   : undefined;
+  if (fromNode && c.from_nx != null) pts[0] = edgePtFixed(fromNode, c.from_nx, c.from_ny, _fromSide);
+  if (toNode   && c.to_nx   != null) pts[pts.length - 1] = edgePtFixed(toNode, c.to_nx, c.to_ny, _toSide);
 
   const stubIsH = (dir === 'left' || dir === 'right');
 
@@ -1062,8 +1423,10 @@ function setStubBend(dir) {
 
   // Réancrer les extrémités sur les coordonnées de port réelles (évite la dérive cumulative)
   const fromNode = APP.nodes[c.from], toNode = APP.nodes[c.to];
-  if (fromNode && c.from_nx != null) pts[0] = edgePtFixed(fromNode, c.from_nx, c.from_ny);
-  if (toNode   && c.to_nx   != null) pts[pts.length - 1] = edgePtFixed(toNode, c.to_nx, c.to_ny);
+  const _fromSide = c.from_port ? _findPortById(fromNode, c.from_port)?.side : undefined;
+  const _toSide   = c.to_port   ? _findPortById(toNode,   c.to_port)?.side   : undefined;
+  if (fromNode && c.from_nx != null) pts[0] = edgePtFixed(fromNode, c.from_nx, c.from_ny, _fromSide);
+  if (toNode   && c.to_nx   != null) pts[pts.length - 1] = edgePtFixed(toNode, c.to_nx, c.to_ny, _toSide);
 
   let tipPt, bendPt;
   if (st.end === 'from') {
@@ -1482,12 +1845,14 @@ function _orphanCableEnd(c, role) {
     pts[tipIdx] = [ox, oy];
   } else {
     // Pas de tracé existant (rare) : repli géométrique depuis la position du port.
-    const nid  = role === 'from' ? c.from : c.to;
-    const node = nid ? APP.nodes[nid] : null;
-    const nx   = role === 'from' ? c.from_nx : c.to_nx;
-    const ny   = role === 'from' ? c.from_ny : c.to_ny;
+    const nid    = role === 'from' ? c.from : c.to;
+    const node   = nid ? APP.nodes[nid] : null;
+    const nx     = role === 'from' ? c.from_nx : c.to_nx;
+    const ny     = role === 'from' ? c.from_ny : c.to_ny;
+    const portId = role === 'from' ? c.from_port : c.to_port;
+    const side   = portId ? _findPortById(node, portId)?.side : undefined;
     let ax = 0, ay = 0;
-    if (node && nx != null) { [ax, ay] = edgePtFixed(node, nx, ny); }
+    if (node && nx != null) { [ax, ay] = edgePtFixed(node, nx, ny, side); }
     else if (node) { ax = node.cx; ay = node.cy; }
     ox = ax + _ORPHAN_EJECT_OFFSET; oy = ay + _ORPHAN_EJECT_OFFSET;
   }
@@ -1542,7 +1907,10 @@ function _reattachRefTypes(cable, role) {
   const types = new Set([cable.type]);
   const nid = role === 'from' ? cable.from      : cable.to;
   const pid = role === 'from' ? cable.from_port : cable.to_port;
-  const cur = nid && pid ? (APP.nodes[nid]?.ports || []).find(p => p.id === pid) : null;
+  // _findPortById : les deux faces. Avec la seule liste Avant, une extrémité posée sur un
+  // port Arrière perdait ce repli, et des cibles pourtant légitimes étaient grisées et
+  // refusaient le câble (2026-09-19).
+  const cur = nid && pid ? _findPortById(APP.nodes[nid], pid)?.port : null;
   if (cur) types.add(cur.type);
   return [...types];
 }
@@ -1571,7 +1939,7 @@ function _markReattachTargets(cid, role) {
   for (const [sid, node] of Object.entries(APP.nodes)) {
     const el = document.getElementById(`n-${sid}`);
     if (!el) continue;
-    (node.ports || []).forEach(p => {
+    _displayedPortsOf(sid, node).ports.forEach(p => { // points de la vue affichée, Avant ou Arrière
       const dot = el.querySelector(`.port-dot-node[data-port-id="${p.id}"]`);
       if (dot) dot.classList.toggle('reattach-blocked', !accepts(sid, p));
     });
@@ -1614,12 +1982,13 @@ function _resolvePortSide(e, cid, sid, port, onSide) {
     (_n, _p, _t, _nx, _ny, side) => onSide(side));
 }
 
-// [DEBUG] Comme wLog, mais affiche aussi en direct dans la console DevTools (F12) —
-// wLog seul n'écrit que dans wires-activity.log, invisible tant qu'on ne rouvre pas
-// ce fichier. Préfixe fixe pour pouvoir filtrer la console sur "ORPHAN-DEBUG".
+// Journalise dans wires-activity.log comme partout ailleurs dans l'application, et
+// n'écrit en plus dans la console que si on le demande explicitement — sans ça, chaque
+// glissement d'extrémité remplissait la console d'une version livrée (relevé 2026-09-17).
+// Mettre window._xOrphanDebug = true pour retrouver le suivi en direct en cas de bug.
 function _odbg(action, data) {
   wLog(action, data);
-  console.log(`[ORPHAN-DEBUG] ${action}`, data || '');
+  if (window._xOrphanDebug === true) console.log(`[ORPHAN-DEBUG] ${action}`, data || '');
 }
 
 function _drawOrphanHandle(c, pts, idx, role) {
@@ -1669,6 +2038,11 @@ function _drawOrphanHandle(c, pts, idx, role) {
     // pushUndo() se termine par setDirty(), et un simple clic sur la poignée marquait
     // donc le projet comme modifié sans que l'extrémité ait bougé d'un pixel.
     let undoPushed = false;
+    // Position de départ de l'extrémité orpheline : restaurée si le geste est annulé
+    // (lâchée sur un appareil sans viser un de ses points, voir onUp).
+    const _startPt = [px, py];
+    const _startOrphanXY = role === 'from' ? [c.orphan_from_x, c.orphan_from_y] : [c.orphan_to_x, c.orphan_to_y];
+    _endDragInProgress = { cid: c.id, role }; // extrémité « dans la main » : jamais masquée pendant le geste (voir _cableOcclusionInfo)
 
     // Révéler ET activer les points de port réels pendant le glissement (même
     // élément .port-dot-node de 30x30px que le mode "Ajouter un câble", pas une
@@ -1677,16 +2051,23 @@ function _drawOrphanHandle(c, pts, idx, role) {
     document.getElementById('canvas-area')?.classList.add('orphan-reattach-active');
     // ...mais seuls les ports libres et de type compatible restent actifs.
     _markReattachTargets(c.id, role);
+    _markDragFlipBtns(c.id, role); // ↻ sur les appareils à Arrière qui peuvent recevoir cette extrémité
 
     let moveCount = 0;
 
     const onMove = ev => {
       try {
         moveCount++;
+        _dragFlipHover(ev.clientX, ev.clientY, c.id, role); // survol prolongé d'un ↻ : bascule Avant/Arrière de cet appareil
         const { x, y } = screenToCanvas(ev.clientX, ev.clientY);
         const ovPts = cableOverrides[c.id];
         if (!ovPts) {
-          _odbg('ORPHAN_DRAG_MOVE_NO_OVERRIDE', { cableId: c.id, moveCount });
+          // Bridé comme son voisin ci-dessous : sans tracé mémorisé, cette branche est
+          // prise à CHAQUE mouvement de souris et écrivait des centaines de lignes par
+          // seconde dans le journal d'activité.
+          if (moveCount === 1 || moveCount % 20 === 0) {
+            _odbg('ORPHAN_DRAG_MOVE_NO_OVERRIDE', { cableId: c.id, moveCount });
+          }
           return;
         }
         if (moveCount === 1 || moveCount % 20 === 0) {
@@ -1787,7 +2168,10 @@ function _drawOrphanHandle(c, pts, idx, role) {
         if (dotEl) {
           const sid  = dotEl.dataset.nodeId;
           const node = APP.nodes[sid];
-          const port = node?.ports?.find(p => p.id === dotEl.dataset.portId);
+          // Point affiché de l'Avant OU de l'Arrière (voir _displayedPortsOf) : chercher dans les deux listes.
+          const port = window._xReattachRearPorts === false
+            ? node?.ports?.find(p => p.id === dotEl.dataset.portId)
+            : (node ? _findPortById(node, dotEl.dataset.portId)?.port : null);
           if (node && port) { reattachToPort(e, sid, port); return; }
           _odbg('ORPHAN_DRAG_UP_DOT_LOOKUP_FAILED', { sid, hasNode: !!node, portId: dotEl.dataset.portId });
         }
@@ -1798,8 +2182,20 @@ function _drawOrphanHandle(c, pts, idx, role) {
         for (const [sid, node] of Object.entries(APP.nodes)) {
           if (x >= node.x - 20 && x <= node.x + node.w + 20 &&
               y >= node.y - 20 && y <= node.y + node.h + 20) {
-            const snappedPort = _snapToNearestPort(node, x, y);
+            const snappedPort = _snapToNearestPort(node, x, y, sid);
             if (snappedPort) { _odbg('ORPHAN_DRAG_UP_AREA_SNAP', { sid, portId: snappedPort.id }); reattachToPort(e, sid, snappedPort); return; }
+            // Lâchée sur l'appareil sans viser un de ses points : jamais de branchement au boîtier sans port
+            // (décision du 2026-09-15, voir aussi setupAnchorDrag) — l'extrémité revient à sa position de départ.
+            // Sécurité anti-régression : window._xNoPortlessAttach = false → ancien rattachement au boîtier.
+            if (window._xNoPortlessAttach !== false) {
+              _odbg('ORPHAN_DRAG_UP_AREA_NOPORT_CANCELLED', { cableId: c.id, sid });
+              if (undoPushed) APP.undo.pop();
+              if (cableOverrides[c.id]) cableOverrides[c.id][idx] = [..._startPt];
+              if (role === 'from') { c.orphan_from_x = _startOrphanXY[0]; c.orphan_from_y = _startOrphanXY[1]; }
+              else                 { c.orphan_to_x   = _startOrphanXY[0]; c.orphan_to_y   = _startOrphanXY[1]; }
+              redrawOnlyCables();
+              return;
+            }
             const nx = Math.max(0, Math.min(1, (x - node.x) / node.w));
             const ny = Math.max(0, Math.min(1, (y - node.y) / node.h));
             _odbg('ORPHAN_DRAG_UP_AREA_NOPORT', { sid, nx: nx.toFixed(2), ny: ny.toFixed(2) });
@@ -2019,7 +2415,10 @@ const PORT_SHOW_DIST = 120; // pixels canvas — distance pour révéler les dot
 
 function _showNearbyPortDots(canvasX, canvasY) {
   for (const [sid, node] of Object.entries(APP.nodes)) {
-    if (!node.ports || !node.ports.length) continue;
+    // Les DEUX faces : un appareil dont l'Avant n'a aucun port (une façade nue, l'ATEM
+    // par exemple) ne révélait jamais ses points, alors que sa vue Arrière en a
+    // (2026-09-19). La vue réellement affichée est choisie plus bas, au rendu.
+    if (!node.ports?.length && !node.portsRear?.length) continue;
     const cx = node.x + node.w / 2;
     const cy = node.y + node.h / 2;
     const d  = Math.hypot(canvasX - cx, canvasY - cy);
@@ -2034,16 +2433,92 @@ function _hideAllPortDots() {
   document.getElementById('canvas-area')?.classList.remove('reattach-active');
   document.querySelectorAll('.port-dot-node.reattach-blocked')
     .forEach(dot => dot.classList.remove('reattach-blocked'));
+  _dragFlipReset(); // fin de glissement : attente de bascule annulée, ↻ remasqués
+  _endDragInProgress = null; // l'extrémité n'est plus « dans la main » : masquage normal au prochain dessin
+}
+
+// ── ↻ au survol pendant un glissement d'extrémité ────────────
+// Demande du 2026-09-15 : pour passer un câble de l'Arrière à l'Avant (ou l'inverse) en un seul geste, le
+// bouton ↻ s'affiche pendant le glissement sur chaque appareil ayant une Arrière et au moins un port (Avant
+// ou Arrière) qui accepte cette extrémité — même principe que .cab-flip en mode Nouveau câble (newcable.js).
+// Garder l'extrémité DRAG_FLIP_DWELL ms au-dessus du bouton bascule la vue ; il faut ensuite quitter le
+// bouton pour pouvoir rebasculer (jamais d'aller-retour en boucle). La poignée capture le pointeur
+// (setupAnchorDrag) : aucun événement de survol n'arrive au bouton, d'où elementsFromPoint à chaque mouvement.
+// Sécurité anti-régression : window._xDragFlipHover = false → pas de ↻ pendant le glissement.
+const DRAG_FLIP_DWELL = 400; // ms
+let _dragFlip = { btn: null, sid: null, timer: null, lockSid: null };
+
+function _markDragFlipBtns(cid, role) {
+  if (window._xDragFlipHover === false) return;
+  const accepts = _reattachAcceptor(cid, role);
+  for (const [sid, node] of Object.entries(APP.nodes)) {
+    const el = document.getElementById(`n-${sid}`);
+    if (!el) continue;
+    const ok = !!node.imgRear && [...(node.ports || []), ...(node.portsRear || [])].some(p => accepts(sid, p));
+    el.classList.toggle('drag-flip', ok);
+  }
+}
+
+function _dragFlipHover(clientX, clientY, cid, role) {
+  if (window._xDragFlipHover === false) return;
+  const btn    = document.elementsFromPoint(clientX, clientY).find(el => el.classList?.contains('node-flip-btn'));
+  const nodeEl = btn?.closest('.node');
+  const sid    = nodeEl?.id?.startsWith('n-') ? nodeEl.id.slice(2) : null;
+  if (!btn || !sid || !nodeEl.classList.contains('drag-flip')) {
+    // Hors d'un ↻ utilisable : attente annulée, et une nouvelle bascule redevient possible.
+    if (_dragFlip.timer || _dragFlip.lockSid) _dragFlipClearWait(null);
+    return;
+  }
+  if (_dragFlip.lockSid === sid || _dragFlip.sid === sid) return; // déjà basculé sans avoir quitté le bouton, ou attente en cours
+  _dragFlipClearWait(null);
+  btn.classList.add('drag-flip-armed');
+  _dragFlip.btn = btn;
+  _dragFlip.sid = sid;
+  _dragFlip.timer = setTimeout(() => {
+    _dragFlip.timer = null;
+    if (typeof toggleNodeActiveView === 'function') toggleNodeActiveView(sid);
+    // renderOneNode vient de reconstruire l'appareil : réappliquer l'état du glissement (points, grisage, ↻).
+    document.getElementById(`n-${sid}`)?.classList.add('ports-visible');
+    _markReattachTargets(cid, role);
+    _markDragFlipBtns(cid, role);
+    _dragFlipClearWait(sid);
+  }, DRAG_FLIP_DWELL);
+}
+
+// Annule l'attente en cours ; lockSid = appareil qui vient d'être basculé (à quitter avant de rebasculer).
+function _dragFlipClearWait(lockSid) {
+  if (_dragFlip.timer) clearTimeout(_dragFlip.timer);
+  _dragFlip.btn?.classList.remove('drag-flip-armed');
+  _dragFlip = { btn: null, sid: null, timer: null, lockSid };
+}
+
+function _dragFlipReset() {
+  _dragFlipClearWait(null);
+  document.querySelectorAll('.node.drag-flip').forEach(el => el.classList.remove('drag-flip'));
 }
 
 // ── Snap au port le plus proche d'un nœud ────────────────────
 const PORT_SNAP_DIST = 30; // pixels canvas
 
-function _snapToNearestPort(node, canvasX, canvasY) {
-  if (!node.ports || !node.ports.length) return null;
+// Ports de la vue AFFICHÉE d'un appareil (Avant ou Arrière, voir _previewView) — ceux dont les points
+// sont réellement à l'écran pendant un glissement d'extrémité — avec le côté qui sert à les positionner
+// (edgePtFixed). Même règle que renderOneNode (nodes.js). Corrigé le 2026-09-15 : les deux glissements
+// d'extrémité (câble branché et câble orphelin) ne regardaient que node.ports — lâché sur un point de
+// l'Arrière, le câble s'accrochait au boîtier sans port (from_port/to_port vide) et n'était donc plus
+// caché derrière l'appareil (_cableOcclusionInfo exige un port).
+// Sécurité anti-régression : window._xReattachRearPorts = false → ports Avant seuls, comme avant.
+function _displayedPortsOf(sid, node) {
+  if (window._xReattachRearPorts === false) return { ports: node.ports || [], side: undefined };
+  const rear = typeof _previewView !== 'undefined' && _previewView[sid] === 'rear' && !!node.imgRear;
+  return rear ? { ports: node.portsRear || [], side: 'rear' } : { ports: node.ports || [], side: 'front' };
+}
+
+function _snapToNearestPort(node, canvasX, canvasY, sid = node.id) {
+  const { ports, side } = _displayedPortsOf(sid, node);
+  if (!ports.length) return null;
   let best = null, bestDist = Infinity;
-  node.ports.forEach(p => {
-    const [px, py] = edgePtFixed(node, p.nx, p.ny);
+  ports.forEach(p => {
+    const [px, py] = edgePtFixed(node, p.nx, p.ny, side);
     const d  = Math.hypot(canvasX - px, canvasY - py);
     if (d < bestDist) { bestDist = d; best = p; }
   });
@@ -2077,6 +2552,7 @@ function setupAnchorDrag(handle, cid, idx, role) {
       from_port: c.from_port, to_port: c.to_port,
       pts: (cableOverrides[cid] || []).map(p => [...p]),
     };
+    _endDragInProgress = { cid, role }; // extrémité « dans la main » : jamais masquée pendant le geste (voir _cableOcclusionInfo)
 
     const startCanvas = screenToCanvas(e.clientX, e.clientY);
     let moved = false;
@@ -2086,12 +2562,14 @@ function setupAnchorDrag(handle, cid, idx, role) {
     // peuvent pas accueillir cette extrémité (pleins ou de type incompatible).
     document.querySelectorAll('.node').forEach(el => el.classList.add('ports-visible'));
     _markReattachTargets(cid, role);
+    _markDragFlipBtns(cid, role); // ↻ sur les appareils à Arrière qui peuvent recevoir cette extrémité
     // Occupation figée pour toute la durée du geste : rien ne se débranche pendant
     // le glissement, et le magnétisme doit rester cohérent avec le grisage affiché.
     const accepts = _reattachAcceptor(cid, role);
 
     const onMove = e => {
       const { x, y } = screenToCanvas(e.clientX, e.clientY);
+      _dragFlipHover(e.clientX, e.clientY, cid, role); // survol prolongé d'un ↻ : bascule Avant/Arrière de cet appareil
       if (!moved) {
         if (Math.hypot(x - startCanvas.x, y - startCanvas.y) < 4 / APP.view.zoom) return;
         pushUndo();   // état d'avant, le tracé n'a encore rien subi
@@ -2107,9 +2585,10 @@ function setupAnchorDrag(handle, cid, idx, role) {
       // 2) Sinon → snap si port à moins de PORT_SNAP_DIST
       let bestDist = PORT_SNAP_DIST, bestPx = null, bestPy = null;
       for (const [sid, node] of Object.entries(APP.nodes)) {
-        for (const port of (node.ports || [])) {
+        const { ports: _shownPorts, side: _shownSide } = _displayedPortsOf(sid, node); // vue affichée : Avant ou Arrière
+        for (const port of _shownPorts) {
           if (!accepts(sid, port)) continue; // pas de magnétisme vers un port refusé
-          const [px, py] = edgePtFixed(node, port.nx, port.ny);
+          const [px, py] = edgePtFixed(node, port.nx, port.ny, _shownSide);
           const d = Math.hypot(x - px, y - py);
           if (d < bestDist) { bestDist = d; bestPx = px; bestPy = py; }
         }
@@ -2136,7 +2615,7 @@ function setupAnchorDrag(handle, cid, idx, role) {
         if (x >= node.x - 20 && x <= node.x + node.w + 20 &&
             y >= node.y - 20 && y <= node.y + node.h + 20) {
           targetSid = sid; targetNode = node;
-          targetPort = _snapToNearestPort(node, x, y);
+          targetPort = _snapToNearestPort(node, x, y, sid);
           break;
         }
       }
@@ -2152,8 +2631,39 @@ function setupAnchorDrag(handle, cid, idx, role) {
         showAnchorHandles(cid);
       };
 
-      // Pas de cible → annuler, restaurer état initial
-      if (!targetNode) { restore(); return; }
+      // Lâché dans une zone vide, hors de tout appareil : l'extrémité devient orpheline à l'endroit du lâcher
+      // (demande du 2026-09-15 — avant, elle revenait à sa place). Mêmes champs que _orphanCableEnd, tracé
+      // conservé ; Ctrl+Z la rebranche (instantané pris au premier déplacement).
+      // Sécurité anti-régression : window._xDropToOrphan = false → l'extrémité revient à sa place, comme avant.
+      if (!targetNode) {
+        if (window._xDropToOrphan === false) { restore(); return; }
+        const ox = Math.round(x), oy = Math.round(y);
+        const ovPts = cableOverrides[cid];
+        if (ovPts) ovPts[idx] = [ox, oy];
+        if (role === 'from') {
+          c.orphan_from = true; c.orphan_from_x = ox; c.orphan_from_y = oy;
+          c.from = null; c.from_port = null; c.from_side = null;
+        } else {
+          c.orphan_to = true; c.orphan_to_x = ox; c.orphan_to_y = oy;
+          c.to = null; c.to_port = null; c.to_side = null;
+        }
+        rebuildCM();
+        renderCables();
+        // Désélectionner plutôt que resélectionner : le panneau d'un câble orphelin afficherait « null » pour
+        // l'extrémité débranchée. Panneau refermé seulement hors étape de route en attente (closePanel annulerait
+        // alors le câble tout juste créé, voir _cancelPendingCable).
+        clearSelCable();
+        if (!document.getElementById('route-assign-prompt') && typeof closePanel === 'function') closePanel();
+        setDirty();
+        if (typeof refreshSidebar === 'function') refreshSidebar();
+        return;
+      }
+
+      // Appareil visé sans viser un de ses points → annuler, l'extrémité revient à sa place.
+      // Jamais de branchement au boîtier sans port (décision du 2026-09-15) : ce repli créait un câble relié
+      // à aucun port (from_port/to_port vide), donc non caché derrière un appareil ayant une vue Arrière.
+      // Sécurité anti-régression : window._xNoPortlessAttach = false → ancien rattachement au boîtier.
+      if (!targetPort && window._xNoPortlessAttach !== false) { restore(); return; }
 
       // Port visé plein ou de type incompatible : geste annulé, l'extrémité revient
       // exactement où elle était. On ne débranche jamais l'occupant, et on ne se
