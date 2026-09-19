@@ -1012,6 +1012,10 @@ h3{color:#fff}
 .license-column li.limited{color:#ffcf6a}
 .license-column li.missing{color:#ff6e6e}
 .license-column li.missing::before{content:"x";color:#ff6e6e}
+.license-column li .license-new{color:#ff6e6e;font-style:italic;font-weight:900;margin-right:3px}
+.license-column li .license-wave{width:15px;height:15px;margin-left:3px;vertical-align:-2px;overflow:visible}
+.license-column li .license-wave path{fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
+.license-more{margin:26px 0 0;text-align:center;color:var(--muted);font-style:italic;font-weight:600}
 .page-hero.compact.downloads-hero{padding-bottom:24px}
 .downloads-hero h1{display:inline-flex;align-items:flex-start;justify-content:center;gap:14px;font-size:clamp(36px,4vw,58px);margin-top:0;margin-bottom:0}
 .downloads-title-logo{width:auto;height:1.508em;max-width:none;flex:0 0 auto;object-fit:contain;transform:translateY(-.14em)}
