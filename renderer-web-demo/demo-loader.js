@@ -77,3 +77,39 @@ function _demoDisableImageSearch() {
 }
 _demoDisableImageSearch();
 document.addEventListener('DOMContentLoaded', _demoDisableImageSearch);
+
+
+// ── Scan du reseau : indisponible dans cette demo ────────────────────────────
+// Le bouton « Scanner le reseau » (#ip-ipaddr-scan, panel.js) interroge le reseau
+// local par Electron : une page web n'y a aucun acces, le bouchon repond toujours
+// rien et le visiteur clique dans le vide. On le neutralise comme la recherche
+// d'image en ligne (voir _demoDisableImageSearch plus haut).
+// Il est RECREE a chaque ouverture du panneau d'information : d'ou une regle de
+// style, qui s'applique a toutes ses versions futures, et un blocage a la capture
+// plutot qu'un reglage pose une seule fois au chargement.
+// Securite anti-regression : window._xDemoNetworkScan = true -> bouton laisse actif.
+function _demoDisableNetworkScan() {
+  if (window._xDemoNetworkScan === true) return;
+  if (!document.getElementById('demo-no-netscan')) {
+    const style = document.createElement('style');
+    style.id = 'demo-no-netscan';
+    style.textContent = '#ip-ipaddr-scan{opacity:.4;filter:grayscale(1);cursor:not-allowed}';
+    (document.head || document.documentElement).appendChild(style);
+  }
+  const vise = e => e.target && e.target.closest && e.target.closest('#ip-ipaddr-scan');
+  const bloquer = e => {
+    const b = vise(e);
+    if (!b) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  };
+  document.addEventListener('pointerdown', bloquer, true);
+  document.addEventListener('mousedown', bloquer, true);
+  document.addEventListener('click', bloquer, true);
+  document.addEventListener('pointerover', e => {
+    const b = vise(e);
+    if (b && !b.title) b.title = 'Network scan is not available in this demo';
+  }, true);
+}
+_demoDisableNetworkScan();
+document.addEventListener('DOMContentLoaded', _demoDisableNetworkScan);
