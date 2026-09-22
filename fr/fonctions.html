@@ -46,8 +46,8 @@ lang_es_href: "../es/fonctions.html"
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Share+Tech+Mono&amp;display=swap">
-  <link rel="stylesheet" href="../assets/css/site.css?v=20260716-15">
-  <script src="../assets/js/consent.js?v=20260716-2" defer=""></script>
+  <link rel="stylesheet" href="../assets/css/site.css?v={{ site.time | date: '%Y%m%d%H%M' }}">
+  <script src="../assets/js/consent.js?v={{ site.time | date: '%Y%m%d%H%M' }}" defer=""></script>
 </head>
 <body>
   {% include header-compact.html %}
@@ -65,7 +65,7 @@ lang_es_href: "../es/fonctions.html"
           <h2>Travaillez avec l'équipement que l'équipe reconnaît.</h2>
           <p>Importez des photos de caméras, mélangeurs, interfaces, racks et écrans. Recadrez, nettoyez et placez les connexions directement sur l'image pour que le plan reste lisible.</p>
         </div>
-        <figure><img src="../images/FR/configPorts-fr.png" alt="Configuration des ports dans Wires"></figure>
+        <figure><img src="../images/FR/configPorts-fr.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Configuration des ports dans Wires"></figure>
       </article>
 
       <article class="story-row reverse">
@@ -119,22 +119,22 @@ lang_es_href: "../es/fonctions.html"
       </div>
       <div class="use-case-grid">
         <article class="use-card">
-          <figure class="media-slot"><img src="../images/Streamers_et_studios.png" alt="Streamers and studios illustration"></figure>
+          <figure class="media-slot"><img src="../images/Streamers_et_studios.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Streamers and studios illustration"></figure>
           <h3>Streamers et studios</h3>
           <p>Préparez une carte claire des caméras, cartes de capture, mélangeurs, ordinateurs et écrans avant le direct.</p>
         </article>
         <article class="use-card">
-          <figure class="media-slot"><img src="../images/Eglises.png" alt="Churches and rooms illustration"></figure>
+          <figure class="media-slot"><img src="../images/Eglises.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Churches and rooms illustration"></figure>
           <h3>Églises et salles</h3>
           <p>Gardez les équipes bénévoles alignées avec une carte lisible des caméras, projecteurs, interfaces audio et régies.</p>
         </article>
         <article class="use-card">
-          <figure class="media-slot"><img src="../images/Salles_de_conference.png" alt="Conference rooms illustration"></figure>
+          <figure class="media-slot"><img src="../images/Salles_de_conference.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Conference rooms illustration"></figure>
           <h3>Salles de conférence</h3>
           <p>Documentez les appareils installés, prises murales, racks, écrans et convertisseurs pour simplifier le support.</p>
         </article>
         <article class="use-card">
-          <figure class="media-slot"><img src="../images/Petites_productions.png" alt="Small productions illustration"></figure>
+          <figure class="media-slot"><img src="../images/Petites_productions.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Small productions illustration"></figure>
           <h3>Petites productions</h3>
           <p>Construisez des plans réutilisables pour événements, locations, espaces de formation et setups broadcast compacts.</p>
         </article>
@@ -170,7 +170,7 @@ lang_es_href: "../es/fonctions.html"
         </article>
         <article class="video-card">
           <figure class="video-image-slot">
-            <img src="../images/export.png" alt="Export Wires vers PDF et HTML">
+            <img src="../images/export.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Export Wires vers PDF et HTML">
           </figure>
           <h3>Export et partage</h3>
           <p>Exportez des PDF et une visionneuse HTML interactive avec animation du signal, description des appareils et détail des routes de signal.</p>
@@ -202,4 +202,4 @@ lang_es_href: "../es/fonctions.html"
   </div>
 
 
-<script src="../assets/js/site-runtime.js"></script><script src="../assets/js/language-navigation.js"></script></body></html>
+<script src="../assets/js/site-runtime.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script><script src="../assets/js/language-navigation.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script></body></html>

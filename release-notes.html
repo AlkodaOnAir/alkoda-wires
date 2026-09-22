@@ -33,8 +33,8 @@ lang_es_href: "es/release-notes.html"
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Share+Tech+Mono&amp;display=swap">
-  <link rel="stylesheet" href="assets/css/site.css?v=20260921-1">
-  <script src="assets/js/consent.js?v=20260716-2" defer=""></script>
+  <link rel="stylesheet" href="assets/css/site.css?v={{ site.time | date: '%Y%m%d%H%M' }}">
+  <script src="assets/js/consent.js?v={{ site.time | date: '%Y%m%d%H%M' }}" defer=""></script>
 </head>
 <body>
   {% include header-compact.html %}
@@ -62,7 +62,7 @@ lang_es_href: "es/release-notes.html"
             <ul>
               <li><strong>Major Update:</strong> Front and Rear device views</li>
               <li><strong>Major Update:</strong> IP address per device, with optional local network scan</li>
-              <li>Application signed for Microsoft<img src="Logos/Windows_logo_PNG5.png" alt="Windows" style="height:.86em;width:auto;display:inline-block;vertical-align:-0.02em;margin-left:5px"> and Apple<img src="Logos/Apple-LogoPNG1.png" alt="Apple" style="height:1em;width:auto;display:inline-block;vertical-align:-0.1em;margin-left:5px"></li>
+              <li>Application signed for Microsoft<img src="Logos/Windows_logo_PNG5.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Windows" style="height:.86em;width:auto;display:inline-block;vertical-align:-0.02em;margin-left:5px"> and Apple<img src="Logos/Apple-LogoPNG1.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Apple" style="height:1em;width:auto;display:inline-block;vertical-align:-0.1em;margin-left:5px"></li>
               <li>Custom position for the device name</li>
               <li>Move a zone with all its contents</li>
               <li>Create a route by dragging a segment</li>
@@ -99,7 +99,7 @@ lang_es_href: "es/release-notes.html"
           <section class="release-group release-group-new">
             <h3>Still available</h3>
             <ul>
-              <li><strong>Major Update:</strong> Integrated <img alt="Search Image" src="images/EN/Boutons/search_image-en.png" style="height:31px;width:auto;display:inline-block;vertical-align:middle;margin:0 3px;border-radius:4px">: Wires finds your device's photo for you — type a model name, pick the photo, and it lands directly in the device setup, name already filled in.</li>
+              <li><strong>Major Update:</strong> Integrated <img alt="Search Image" src="images/EN/Boutons/search_image-en.png?v={{ site.time | date: '%Y%m%d%H%M' }}" style="height:31px;width:auto;display:inline-block;vertical-align:middle;margin:0 3px;border-radius:4px">: Wires finds your device's photo for you — type a model name, pick the photo, and it lands directly in the device setup, name already filled in.</li>
               <li>New "Unsorted" category for devices not yet organized — stays at the top of the list, disappears on its own once everything is sorted.</li>
               <li>New button to zoom around the cursor instead of the canvas center.</li>
               <li>Enlarged view to precisely adjust a device's cropping and connection points.</li>
@@ -129,7 +129,7 @@ lang_es_href: "es/release-notes.html"
           <section class="release-group release-group-new">
             <h3>What’s New</h3>
             <ul>
-              <li><strong>Major Update:</strong> Integrated <img alt="Search Image" src="images/EN/Boutons/search_image-en.png" style="height:31px;width:auto;display:inline-block;vertical-align:middle;margin:0 3px;border-radius:4px">: Wires finds your device's photo for you — type a model name, pick the photo, and it lands directly in the device setup, name already filled in.</li>
+              <li><strong>Major Update:</strong> Integrated <img alt="Search Image" src="images/EN/Boutons/search_image-en.png?v={{ site.time | date: '%Y%m%d%H%M' }}" style="height:31px;width:auto;display:inline-block;vertical-align:middle;margin:0 3px;border-radius:4px">: Wires finds your device's photo for you — type a model name, pick the photo, and it lands directly in the device setup, name already filled in.</li>
               <li>New "Unsorted" category for devices not yet organized — stays at the top of the list, disappears on its own once everything is sorted.</li>
               <li>New button to zoom around the cursor instead of the canvas center.</li>
               <li>Enlarged view to precisely adjust a device's cropping and connection points.</li>
@@ -293,4 +293,4 @@ lang_es_href: "es/release-notes.html"
   </script>
 
 
-<script src="assets/js/site-runtime.js"></script><script src="assets/js/language-navigation.js"></script></body></html>
+<script src="assets/js/site-runtime.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script><script src="assets/js/language-navigation.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script></body></html>

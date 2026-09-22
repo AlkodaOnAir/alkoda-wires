@@ -45,8 +45,8 @@ lang_es_href: "../es/try-it.html"
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Share+Tech+Mono&amp;display=swap">
-  <link rel="stylesheet" href="../assets/css/site.css?v=20260809-1">
-  <script src="../assets/js/consent.js?v=20260716-2" defer=""></script>
+  <link rel="stylesheet" href="../assets/css/site.css?v={{ site.time | date: '%Y%m%d%H%M' }}">
+  <script src="../assets/js/consent.js?v={{ site.time | date: '%Y%m%d%H%M' }}" defer=""></script>
 </head>
 <body>
   {% include header-compact.html %}
@@ -77,7 +77,7 @@ lang_es_href: "../es/try-it.html"
 
         <aside class="try-quick-guide" aria-label="Wires quick guide">
           <div class="try-guide-head">
-            <img class="try-guide-head-logo" src="../Logos/ico-transparent.png" alt="" aria-hidden="true">
+            <img class="try-guide-head-logo" src="../Logos/ico-transparent.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="" aria-hidden="true">
             <div>
               <small>AIDE RAPIDE</small>
               <h2>Commandes utiles</h2>
@@ -272,4 +272,4 @@ lang_es_href: "../es/try-it.html"
   {% include footer-compact.html %}
 
 
-<script src="../assets/js/site-runtime.js"></script><script src="../assets/js/language-navigation.js"></script></body></html>
+<script src="../assets/js/site-runtime.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script><script src="../assets/js/language-navigation.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script></body></html>

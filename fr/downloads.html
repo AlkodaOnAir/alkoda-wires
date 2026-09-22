@@ -46,8 +46,8 @@ lang_es_href: "../es/downloads.html"
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;family=Share+Tech+Mono&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../assets/css/site.css?v=20260716-13">
-  <script src="../assets/js/consent.js?v=20260716-2" defer=""></script>
+  <link rel="stylesheet" href="../assets/css/site.css?v={{ site.time | date: '%Y%m%d%H%M' }}">
+  <script src="../assets/js/consent.js?v={{ site.time | date: '%Y%m%d%H%M' }}" defer=""></script>
 </head>
 <body>
   {% include header-compact.html %}
@@ -55,9 +55,9 @@ lang_es_href: "../es/downloads.html"
   <main>
     <section class="page-hero compact downloads-hero">
       <h1>
-        <img class="downloads-title-logo downloads-title-logo-mirrored" src="../Logos/ico-transparent.png" alt="" aria-hidden="true">
+        <img class="downloads-title-logo downloads-title-logo-mirrored" src="../Logos/ico-transparent.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="" aria-hidden="true">
         <span>Télécharger Wires</span>
-        <img class="downloads-title-logo" src="../Logos/ico-transparent.png" alt="" aria-hidden="true">
+        <img class="downloads-title-logo" src="../Logos/ico-transparent.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="" aria-hidden="true">
       </h1>
     </section>
 
@@ -105,7 +105,7 @@ lang_es_href: "../es/downloads.html"
             <h2 id="example-download-title">Projet test</h2>
             <p>Ouvrez ce projet pour tester rapidement Wires.</p>
           </div>
-          <img class="example-download-preview" src="../images/wires-example-project.png" width="1920" height="1080" alt="Projet audiovisuel d’exemple ouvert dans Wires" loading="lazy">
+          <img class="example-download-preview" src="../images/wires-example-project.png?v={{ site.time | date: '%Y%m%d%H%M' }}" width="1920" height="1080" alt="Projet audiovisuel d’exemple ouvert dans Wires" loading="lazy">
           <a class="btn btn-primary" href="../test-project.wires" download="test-project.wires" data-direct-download="" data-download-platform="all_platforms" data-download-type="test_project">Télécharger le projet test</a>
         </aside>
       </div>
@@ -177,7 +177,7 @@ lang_es_href: "../es/downloads.html"
       <div class="download-signup-backdrop"></div>
       <div class="download-signup-dialog" role="dialog" aria-modal="true" aria-labelledby="download-signup-title">
         <button class="download-signup-close" type="button" data-download-signup-close="" aria-label="Fermer">×</button>
-        <img class="download-signup-logo" src="../Logos/Logo-Downloads-carré-transparent.png" alt="">
+        <img class="download-signup-logo" src="../Logos/Logo-Downloads-carré-transparent.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="">
         <h2 id="download-signup-title">Ne manquez pas les prochaines nouveautés de Wires.</h2>
         <!-- TODO: Verify that new YouTube tutorials can be linked to Brevo mailings. -->
         <p class="download-signup-intro">Recevez les nouvelles versions et les nouveaux tutoriels directement par e-mail.</p>
@@ -195,4 +195,4 @@ lang_es_href: "../es/downloads.html"
   {% include footer-downloads.html %}
 
 
-<script src="../assets/js/site-runtime.js"></script><script src="../assets/js/language-navigation.js"></script></body></html>
+<script src="../assets/js/site-runtime.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script><script src="../assets/js/language-navigation.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script></body></html>

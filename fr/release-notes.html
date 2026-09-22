@@ -33,8 +33,8 @@ lang_es_href: "../es/release-notes.html"
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Share+Tech+Mono&amp;display=swap">
-  <link rel="stylesheet" href="../assets/css/site.css?v=20260921-1">
-  <script src="../assets/js/consent.js?v=20260716-2" defer=""></script>
+  <link rel="stylesheet" href="../assets/css/site.css?v={{ site.time | date: '%Y%m%d%H%M' }}">
+  <script src="../assets/js/consent.js?v={{ site.time | date: '%Y%m%d%H%M' }}" defer=""></script>
 </head>
 <body>
   {% include header-compact.html %}
@@ -62,7 +62,7 @@ lang_es_href: "../es/release-notes.html"
             <ul>
               <li><strong>Update Majeur :</strong> Vues Avant et Arrière des appareils</li>
               <li><strong>Update Majeur :</strong> Adresse IP par appareil, avec scan du réseau local optionnel</li>
-              <li>Application signée pour Microsoft<img src="../Logos/Windows_logo_PNG5.png" alt="Windows" style="height:.86em;width:auto;display:inline-block;vertical-align:-0.02em;margin-left:5px"> et Apple<img src="../Logos/Apple-LogoPNG1.png" alt="Apple" style="height:1em;width:auto;display:inline-block;vertical-align:-0.1em;margin-left:5px"></li>
+              <li>Application signée pour Microsoft<img src="../Logos/Windows_logo_PNG5.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Windows" style="height:.86em;width:auto;display:inline-block;vertical-align:-0.02em;margin-left:5px"> et Apple<img src="../Logos/Apple-LogoPNG1.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Apple" style="height:1em;width:auto;display:inline-block;vertical-align:-0.1em;margin-left:5px"></li>
               <li>Position personnalisée du nom de l'appareil</li>
               <li>Déplacement d'une zone avec tout son contenu</li>
               <li>Création d'une route en glissant un segment</li>
@@ -99,7 +99,7 @@ lang_es_href: "../es/release-notes.html"
           <section class="release-group release-group-new">
             <h3>Toujours disponible</h3>
             <ul>
-              <li><strong>Update Majeur :</strong> <img alt="Search Image" src="../images/FR/Boutons/search_image-fr.png" style="height:31px;width:auto;display:inline-block;vertical-align:middle;margin:0 3px;border-radius:4px"> intégrée : Wires trouve la photo de votre appareil à votre place — tapez un modèle, choisissez la photo, elle arrive directement dans la configuration de l'appareil, nom déjà rempli.</li>
+              <li><strong>Update Majeur :</strong> <img alt="Search Image" src="../images/FR/Boutons/search_image-fr.png?v={{ site.time | date: '%Y%m%d%H%M' }}" style="height:31px;width:auto;display:inline-block;vertical-align:middle;margin:0 3px;border-radius:4px"> intégrée : Wires trouve la photo de votre appareil à votre place — tapez un modèle, choisissez la photo, elle arrive directement dans la configuration de l'appareil, nom déjà rempli.</li>
               <li>Nouvelle catégorie "Non classé" pour les appareils pas encore rangés — reste en haut de la liste, disparaît d'elle-même une fois tout classé.</li>
               <li>Nouveau bouton pour zoomer autour du curseur plutôt qu'au centre du canevas.</li>
               <li>Vue agrandie pour ajuster précisément le recadrage et les points de connexion d'un appareil.</li>
@@ -129,7 +129,7 @@ lang_es_href: "../es/release-notes.html"
           <section class="release-group release-group-new">
             <h3>Nouveautés</h3>
             <ul>
-              <li><strong>Update Majeur :</strong> <img alt="Search Image" src="../images/FR/Boutons/search_image-fr.png" style="height:31px;width:auto;display:inline-block;vertical-align:middle;margin:0 3px;border-radius:4px"> intégrée : Wires trouve la photo de votre appareil à votre place — tapez un modèle, choisissez la photo, elle arrive directement dans la configuration de l'appareil, nom déjà rempli.</li>
+              <li><strong>Update Majeur :</strong> <img alt="Search Image" src="../images/FR/Boutons/search_image-fr.png?v={{ site.time | date: '%Y%m%d%H%M' }}" style="height:31px;width:auto;display:inline-block;vertical-align:middle;margin:0 3px;border-radius:4px"> intégrée : Wires trouve la photo de votre appareil à votre place — tapez un modèle, choisissez la photo, elle arrive directement dans la configuration de l'appareil, nom déjà rempli.</li>
               <li>Nouvelle catégorie "Non classé" pour les appareils pas encore rangés — reste en haut de la liste, disparaît d'elle-même une fois tout classé.</li>
               <li>Nouveau bouton pour zoomer autour du curseur plutôt qu'au centre du canevas.</li>
               <li>Vue agrandie pour ajuster précisément le recadrage et les points de connexion d'un appareil.</li>
@@ -293,4 +293,4 @@ lang_es_href: "../es/release-notes.html"
   </script>
 
 
-<script src="../assets/js/site-runtime.js"></script><script src="../assets/js/language-navigation.js"></script></body></html>
+<script src="../assets/js/site-runtime.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script><script src="../assets/js/language-navigation.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script></body></html>

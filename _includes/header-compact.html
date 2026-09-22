@@ -1,6 +1,6 @@
 {% assign ui = site.data.interface[page.lang] %}<header class="site-header">
     <noscript><nav aria-label="Language" style="display:flex;align-items:center;gap:6px;font:700 13px Inter,system-ui,sans-serif"><a href="{{ page.lang_en_href }}" style="padding:6px 7px;border:1px solid var(--line);border-radius:7px">EN</a><a href="{{ page.lang_fr_href }}" style="padding:6px 7px;border:1px solid var(--line);border-radius:7px">FR</a><a href="{{ page.lang_es_href }}" style="padding:6px 7px;border:1px solid var(--line);border-radius:7px">ES</a></nav></noscript>
-    <a class="brand" href="{{ page.home_href }}" aria-label="Wires home"><img src="{{ page.asset_prefix }}Logos/Logo-horizontal-transparent.png" alt="Wires"></a>
+    <a class="brand" href="{{ page.home_href }}" aria-label="Wires home"><img src="{{ page.asset_prefix }}Logos/Logo-horizontal-transparent.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires"></a>
     <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="site-nav" aria-label="Main navigation">
       <a{% if page.nav_active == "home" %} class="active"{% endif %} href="{{ page.home_href }}">{{ ui.nav_home }}</a>

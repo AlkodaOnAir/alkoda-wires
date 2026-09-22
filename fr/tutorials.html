@@ -48,8 +48,8 @@ lang_es_href: "../es/tutorials.html"
   <link rel="preconnect" href="https://www.youtube-nocookie.com">
   <link rel="preconnect" href="https://i.ytimg.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Share+Tech+Mono&amp;display=swap">
-  <link rel="stylesheet" href="../assets/css/site.css?v=20260909-1">
-  <script src="../assets/js/consent.js?v=20260716-2" defer=""></script>
+  <link rel="stylesheet" href="../assets/css/site.css?v={{ site.time | date: '%Y%m%d%H%M' }}">
+  <script src="../assets/js/consent.js?v={{ site.time | date: '%Y%m%d%H%M' }}" defer=""></script>
 </head>
 <body>
   {% include header-compact.html %}
@@ -148,4 +148,4 @@ lang_es_href: "../es/tutorials.html"
 
   {% include footer-compact.html %}
 
-<script src="../assets/js/site-runtime.js"></script><script src="../assets/js/tutorials.js"></script><script src="../assets/js/language-navigation.js"></script></body></html>
+<script src="../assets/js/site-runtime.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script><script src="../assets/js/tutorials.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script><script src="../assets/js/language-navigation.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script></body></html>

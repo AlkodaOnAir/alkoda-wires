@@ -77,8 +77,8 @@ lang_es_href: "../es/index.html"
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Share+Tech+Mono&amp;display=swap">
-  <link rel="stylesheet" href="../assets/css/site.css?v=20260716-13">
-  <script src="../assets/js/consent.js?v=20260716-2" defer=""></script>
+  <link rel="stylesheet" href="../assets/css/site.css?v={{ site.time | date: '%Y%m%d%H%M' }}">
+  <script src="../assets/js/consent.js?v={{ site.time | date: '%Y%m%d%H%M' }}" defer=""></script>
 </head>
 <body>
   {% include header-index.html %}
@@ -94,7 +94,7 @@ lang_es_href: "../es/index.html"
         </div>
       </div>
       <figure class="hero-product">
-        <img src="../images/FR/wires-fr.png" alt="Interface Wires avec appareils et câblage de signal">
+        <img src="../images/FR/wires-fr.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Interface Wires avec appareils et câblage de signal">
       </figure>
     </section>
 
@@ -191,4 +191,4 @@ lang_es_href: "../es/index.html"
   {% include footer-index.html %}
 
 
-<script src="../assets/js/site-runtime.js"></script><script src="../assets/js/language-navigation.js"></script></body></html>
+<script src="../assets/js/site-runtime.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script><script src="../assets/js/language-navigation.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script></body></html>

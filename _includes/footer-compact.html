@@ -1,5 +1,5 @@
 {% assign ui = site.data.interface[page.lang] %}<footer class="site-footer">
-    <div><img src="{{ page.asset_prefix }}Logos/Logo-horizontal-transparent.png" alt="Wires"><p>{{ ui.footer_text }}</p></div>
+    <div><img src="{{ page.asset_prefix }}Logos/Logo-horizontal-transparent.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires"><p>{{ ui.footer_text }}</p></div>
     <nav aria-label="Footer navigation">
       <a href="{{ page.home_href }}">{{ ui.nav_home }}</a>
       <a href="{{ page.features_href }}">{{ ui.nav_features }}</a>

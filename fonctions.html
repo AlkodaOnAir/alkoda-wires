@@ -46,8 +46,8 @@ lang_es_href: "es/fonctions.html"
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Share+Tech+Mono&amp;display=swap">
-  <link rel="stylesheet" href="assets/css/site.css?v=20260716-15">
-  <script src="assets/js/consent.js?v=20260716-2" defer=""></script>
+  <link rel="stylesheet" href="assets/css/site.css?v={{ site.time | date: '%Y%m%d%H%M' }}">
+  <script src="assets/js/consent.js?v={{ site.time | date: '%Y%m%d%H%M' }}" defer=""></script>
 </head>
 <body>
   {% include header-compact.html %}
@@ -65,7 +65,7 @@ lang_es_href: "es/fonctions.html"
           <h2>Work with the equipment people recognize.</h2>
           <p>Import photos of cameras, switchers, interfaces, racks and screens. Crop them, clean them, and place connection points directly on the image so the plan stays readable for everyone.</p>
         </div>
-        <figure><img src="images/EN/configPorts-en.png" alt="Port configuration in Wires"></figure>
+        <figure><img src="images/EN/configPorts-en.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Port configuration in Wires"></figure>
       </article>
 
       <article class="story-row reverse">
@@ -119,22 +119,22 @@ lang_es_href: "es/fonctions.html"
       </div>
       <div class="use-case-grid">
         <article class="use-card">
-          <figure class="media-slot"><img src="images/Streamers_et_studios.png" alt="Streamers and studios illustration"></figure>
+          <figure class="media-slot"><img src="images/Streamers_et_studios.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Streamers and studios illustration"></figure>
           <h3>Streamers and studios</h3>
           <p>Prepare a clean map of cameras, capture cards, switchers, computers and screens before the live starts.</p>
         </article>
         <article class="use-card">
-          <figure class="media-slot"><img src="images/Eglises.png" alt="Churches and rooms illustration"></figure>
+          <figure class="media-slot"><img src="images/Eglises.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Churches and rooms illustration"></figure>
           <h3>Churches and rooms</h3>
           <p>Keep volunteer teams aligned with a readable signal map for cameras, projectors, audio interfaces and control desks.</p>
         </article>
         <article class="use-card">
-          <figure class="media-slot"><img src="images/Salles_de_conference.png" alt="Conference rooms illustration"></figure>
+          <figure class="media-slot"><img src="images/Salles_de_conference.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Conference rooms illustration"></figure>
           <h3>Conference rooms</h3>
           <p>Document installed equipment, wall plates, racks, displays and converters so support stays simple.</p>
         </article>
         <article class="use-card">
-          <figure class="media-slot"><img src="images/Petites_productions.png" alt="Small productions illustration"></figure>
+          <figure class="media-slot"><img src="images/Petites_productions.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Small productions illustration"></figure>
           <h3>Small productions</h3>
           <p>Build reusable plans for events, rentals, training rooms and compact broadcast setups.</p>
         </article>
@@ -170,7 +170,7 @@ lang_es_href: "es/fonctions.html"
         </article>
         <article class="video-card">
           <figure class="video-image-slot">
-            <img src="images/export.png" alt="Wires export to PDF and HTML">
+            <img src="images/export.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires export to PDF and HTML">
           </figure>
           <h3>Export and share</h3>
           <p>Export PDFs and an interactive HTML viewer with signal animation, device descriptions and signal-route details.</p>
@@ -202,4 +202,4 @@ lang_es_href: "es/fonctions.html"
   </div>
 
 
-<script src="assets/js/site-runtime.js"></script><script src="assets/js/language-navigation.js"></script></body></html>
+<script src="assets/js/site-runtime.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script><script src="assets/js/language-navigation.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script></body></html>

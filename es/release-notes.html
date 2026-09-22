@@ -33,8 +33,8 @@ lang_es_href: "release-notes.html"
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Share+Tech+Mono&amp;display=swap">
-  <link rel="stylesheet" href="../assets/css/site.css?v=20260921-1">
-  <script src="../assets/js/consent.js?v=20260716-2" defer=""></script>
+  <link rel="stylesheet" href="../assets/css/site.css?v={{ site.time | date: '%Y%m%d%H%M' }}">
+  <script src="../assets/js/consent.js?v={{ site.time | date: '%Y%m%d%H%M' }}" defer=""></script>
 </head>
 <body>
   {% include header-compact.html %}
@@ -62,7 +62,7 @@ lang_es_href: "release-notes.html"
             <ul>
               <li><strong>Gran Actualización:</strong> Vistas frontal y trasera de los aparatos</li>
               <li><strong>Gran Actualización:</strong> Dirección IP por aparato, con escaneo opcional de la red local</li>
-              <li>Aplicación firmada para Microsoft<img src="../Logos/Windows_logo_PNG5.png" alt="Windows" style="height:.86em;width:auto;display:inline-block;vertical-align:-0.02em;margin-left:5px"> y Apple<img src="../Logos/Apple-LogoPNG1.png" alt="Apple" style="height:1em;width:auto;display:inline-block;vertical-align:-0.1em;margin-left:5px"></li>
+              <li>Aplicación firmada para Microsoft<img src="../Logos/Windows_logo_PNG5.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Windows" style="height:.86em;width:auto;display:inline-block;vertical-align:-0.02em;margin-left:5px"> y Apple<img src="../Logos/Apple-LogoPNG1.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Apple" style="height:1em;width:auto;display:inline-block;vertical-align:-0.1em;margin-left:5px"></li>
               <li>Posición personalizada del nombre del aparato</li>
               <li>Desplazamiento de una zona con todo su contenido</li>
               <li>Creación de una ruta arrastrando un segmento</li>
@@ -99,7 +99,7 @@ lang_es_href: "release-notes.html"
           <section class="release-group release-group-new">
             <h3>Aún disponible</h3>
             <ul>
-              <li><strong>Gran Actualización:</strong> <img alt="Search Image" src="../images/ES/Boutons/search_image-es.png" style="height:31px;width:auto;display:inline-block;vertical-align:middle;margin:0 3px;border-radius:4px"> integrada: Wires encuentra la foto de tu aparato por ti — escribe un modelo, elige la foto, y llega directamente a la configuración del aparato, con el nombre ya completado.</li>
+              <li><strong>Gran Actualización:</strong> <img alt="Search Image" src="../images/ES/Boutons/search_image-es.png?v={{ site.time | date: '%Y%m%d%H%M' }}" style="height:31px;width:auto;display:inline-block;vertical-align:middle;margin:0 3px;border-radius:4px"> integrada: Wires encuentra la foto de tu aparato por ti — escribe un modelo, elige la foto, y llega directamente a la configuración del aparato, con el nombre ya completado.</li>
               <li>Nueva categoría "Sin clasificar" para los aparatos aún sin organizar — se mantiene arriba de la lista y desaparece por sí sola una vez que todo está clasificado.</li>
               <li>Nuevo botón para hacer zoom alrededor del cursor en lugar del centro del lienzo.</li>
               <li>Vista ampliada para ajustar con precisión el recorte y los puntos de conexión de un aparato.</li>
@@ -129,7 +129,7 @@ lang_es_href: "release-notes.html"
           <section class="release-group release-group-new">
             <h3>Novedades</h3>
             <ul>
-              <li><strong>Gran Actualización:</strong> <img alt="Search Image" src="../images/ES/Boutons/search_image-es.png" style="height:31px;width:auto;display:inline-block;vertical-align:middle;margin:0 3px;border-radius:4px"> integrada: Wires encuentra la foto de tu aparato por ti — escribe un modelo, elige la foto, y llega directamente a la configuración del aparato, con el nombre ya completado.</li>
+              <li><strong>Gran Actualización:</strong> <img alt="Search Image" src="../images/ES/Boutons/search_image-es.png?v={{ site.time | date: '%Y%m%d%H%M' }}" style="height:31px;width:auto;display:inline-block;vertical-align:middle;margin:0 3px;border-radius:4px"> integrada: Wires encuentra la foto de tu aparato por ti — escribe un modelo, elige la foto, y llega directamente a la configuración del aparato, con el nombre ya completado.</li>
               <li>Nueva categoría "Sin clasificar" para los aparatos aún sin organizar — se mantiene arriba de la lista y desaparece por sí sola una vez que todo está clasificado.</li>
               <li>Nuevo botón para hacer zoom alrededor del cursor en lugar del centro del lienzo.</li>
               <li>Vista ampliada para ajustar con precisión el recorte y los puntos de conexión de un aparato.</li>
@@ -293,4 +293,4 @@ lang_es_href: "release-notes.html"
   </script>
 
 
-<script src="../assets/js/site-runtime.js"></script><script src="../assets/js/language-navigation.js"></script></body></html>
+<script src="../assets/js/site-runtime.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script><script src="../assets/js/language-navigation.js?v={{ site.time | date: '%Y%m%d%H%M' }}"></script></body></html>
