@@ -1147,6 +1147,7 @@ h3{color:#fff}
 .download-signup-status{margin:2px 0 0;color:var(--accent);font-size:13px;line-height:1.45;text-align:center}
 .example-download{padding:30px 28px;display:flex;align-items:stretch;justify-content:center;flex-direction:column;gap:28px;border:1px solid rgba(0,212,255,.45);border-radius:20px;background:linear-gradient(160deg,rgba(0,212,255,.16),rgba(17,29,50,.82));box-shadow:var(--shadow)}
 .example-download h2{margin:0 0 8px;color:var(--text);font-size:24px}
+.example-download h2 .example-new{font-size:.5em;font-style:italic;font-weight:800;color:#ff0000;vertical-align:middle;margin-right:.5em}
 .example-download p{margin:0;color:var(--muted);font-size:16px;line-height:1.6}
 .example-download-preview{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#04080e}
 .example-download .btn{justify-content:center;width:100%;white-space:nowrap}
