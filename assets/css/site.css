@@ -1124,6 +1124,11 @@ h3{color:#fff}
 .download-list{min-width:0;display:grid;gap:14px}
 .download-row{display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:center;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:rgba(17,29,50,.72);box-shadow:var(--shadow)}
 .download-row h3{margin:0 0 5px;color:var(--accent);font-size:20px}
+/* Logo de la plateforme devant son nom (2026-09-24). La premiere cellule de la
+   grille devient une ligne : le logo garde sa taille, le titre prend le reste. */
+.download-row .download-id{display:flex;align-items:center;gap:14px;min-width:0}
+.download-row .download-id h3{margin:0}
+.download-logo{flex:0 0 auto;width:30px;height:30px;object-fit:contain}
 .download-version{color:var(--muted);font-weight:800;white-space:nowrap}
 .download-row .btn{color:#fff;white-space:nowrap}
 .download-row .btn:hover{background:rgba(255,255,255,.05);color:var(--accent);transform:none}
