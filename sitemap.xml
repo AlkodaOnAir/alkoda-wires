@@ -211,36 +211,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://alkoda-wires.com/release-notes.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://alkoda-wires.com/release-notes.html" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://alkoda-wires.com/fr/release-notes.html" />
-    <xhtml:link rel="alternate" hreflang="es" href="https://alkoda-wires.com/es/release-notes.html" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://alkoda-wires.com/release-notes.html" />
-    <lastmod>2026-08-24</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://alkoda-wires.com/fr/release-notes.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://alkoda-wires.com/release-notes.html" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://alkoda-wires.com/fr/release-notes.html" />
-    <xhtml:link rel="alternate" hreflang="es" href="https://alkoda-wires.com/es/release-notes.html" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://alkoda-wires.com/release-notes.html" />
-    <lastmod>2026-08-24</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://alkoda-wires.com/es/release-notes.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://alkoda-wires.com/release-notes.html" />
-    <xhtml:link rel="alternate" hreflang="fr" href="https://alkoda-wires.com/fr/release-notes.html" />
-    <xhtml:link rel="alternate" hreflang="es" href="https://alkoda-wires.com/es/release-notes.html" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://alkoda-wires.com/release-notes.html" />
-    <lastmod>2026-08-24</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://alkoda-wires.com/terms-of-service-wires.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://alkoda-wires.com/terms-of-service-wires.html" />
     <xhtml:link rel="alternate" hreflang="fr" href="https://alkoda-wires.com/fr/terms-of-service-wires.html" />

@@ -1031,11 +1031,17 @@ h3{color:#fff}
 }
 .downloads-release-link:hover{color:#fff}
 
-.release-notes-hero{padding-bottom:44px}
-.release-notes-hero .eyebrow{color:var(--accent)}
-.release-notes-wrap{
-  padding:32px max(24px,calc((100vw - 1120px) / 2)) 96px;
+/* Notes de version, rapatriees dans la page de telechargement le 2026-09-25 :
+   la section porte l'en-tete centre et les marges, comme les autres sections de
+   la page ; la liste des versions garde la largeur qu'elle avait sur son
+   ancienne page. `scroll-margin-top` aligne sur `.install-section` : sans lui,
+   l'arrivee par un lien ancre glisse le titre sous l'en-tete fixe. */
+.release-notes-section{
+  padding:88px max(24px,calc((100vw - var(--max)) / 2)) 96px;
+  scroll-margin-top:72px;
+  background:linear-gradient(180deg,rgba(7,11,18,.2),rgba(16,26,43,.2));
 }
+.release-notes-wrap{max-width:1120px;margin:0 auto;padding:0}
 .release-entry{
   overflow:hidden;
   border:1px solid rgba(0,210,255,.28);
@@ -1059,7 +1065,7 @@ h3{color:#fff}
   font-size:12px;
   letter-spacing:.18em;
 }
-.release-entry-header h2{margin:0;font-size:clamp(30px,4vw,44px)}
+.release-entry-header h3{margin:0;font-size:clamp(30px,4vw,44px);line-height:1.05;letter-spacing:-.026em}
 .release-status{
   padding:8px 13px;
   border:1px solid rgba(0,210,255,.4);
@@ -1082,9 +1088,9 @@ h3{color:#fff}
   border-radius:16px;
   background:rgba(255,255,255,.025);
 }
-.release-group h3{margin:0 0 20px;font-size:22px}
-.release-group-new h3{color:var(--accent)}
-.release-group-fixes h3{color:#8ea2bd}
+.release-group h4{margin:0 0 20px;font-size:22px}
+.release-group-new h4{color:var(--accent)}
+.release-group-fixes h4{color:#8ea2bd}
 .release-group ul{display:grid;gap:13px;margin:0;padding:0;list-style:none}
 .release-group li{
   position:relative;
@@ -1118,7 +1124,6 @@ h3{color:#fff}
   box-shadow:none;
 }
 .release-group-fixes li::before{background:#71839b;box-shadow:none}
-.release-actions{padding:0 34px 34px;text-align:center}
 .downloads-list-heading{max-width:1240px;margin:0 auto 24px;color:var(--text);font-size:18px;font-weight:700;line-height:1.4;text-align:left}
 .downloads-layout{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:stretch}
 .download-list{min-width:0;display:grid;gap:14px}
@@ -1157,7 +1162,11 @@ h3{color:#fff}
 .example-download-preview{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#04080e}
 .example-download .btn{justify-content:center;width:100%;white-space:nowrap}
 .install-section{padding-top:72px;padding-bottom:72px;scroll-margin-top:72px;background:linear-gradient(180deg,rgba(16,26,43,.56),rgba(7,11,18,.2))}
-.install-grid{max-width:980px;margin:0 auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+/* Une seule colonne depuis le 2026-09-25 : les encadres macOS et Linux ont ete
+   retires, ils ne disaient plus que l'evidence une fois l'application notarisee.
+   Celui de Windows, seul rescape, prend donc toute la largeur au lieu de laisser
+   un vide a sa droite. */
+.install-grid{max-width:980px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:18px}
 .install-card{display:flex;flex-direction:column;padding:28px;border:1px solid var(--line);border-radius:16px;scroll-margin-top:96px;background:rgba(17,29,50,.72)}
 .install-card h2{margin:0 0 18px;font-size:24px;line-height:1.2}
 .install-card p{margin:0 0 16px;color:var(--muted)}
@@ -1421,9 +1430,8 @@ h3{color:#fff}
   .video-link video{height:auto}
   .audience-visual,.audience-placeholder{min-height:260px}
   .site-footer{align-items:flex-start;flex-direction:column}
-  .release-notes-wrap{padding:20px 16px 64px}
+  .release-notes-section{padding:56px 16px 64px}
   .release-entry-header{align-items:flex-start;flex-direction:column;padding:24px}
   .release-columns{padding:20px}
   .release-group{padding:20px}
-  .release-actions{padding:0 20px 24px}
 }
