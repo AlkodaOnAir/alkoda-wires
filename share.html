@@ -1,5 +1,160 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wires Cloud</title>
+<!-- La page d'un lien Wires Cloud (1.6.0, 07-10) : UNE SEULE PAGE, indépendante (ni menu ni pied
+     du site), trois langues dans la page avec son propre sélecteur, comme la page d'Alkoda On Air.
+     Jamais indexée, jamais de référent.
+     ⚠️ PAGE ASSEMBLÉE par D:\Sandbox\share-src\assembler_share.py : modifier share.source.html. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Share+Tech+Mono&amp;display=swap">
+<style>
+:root{--bg:#070b12;--text:#eef4ff;--muted:#a8b6cc;--accent:#00d2ff;--line-soft:rgba(255,255,255,.09)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;line-height:1.6;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;
+  background:radial-gradient(circle at 50% -10%,rgba(0,210,255,.18),transparent 34%),linear-gradient(180deg,#05080e 0%,#08111e 48%,#04070c 100%)}
+h1{margin:0;font-weight:800;letter-spacing:-.02em}
+a{color:inherit;text-decoration:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:12px 22px;border-radius:999px;
+  border:1px solid transparent;font-weight:850;font-size:14px;transition:.18s ease}
+.btn:hover{transform:translateY(-2px)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#2fa6ff);color:#03101c}
+.btn-secondary{background:rgba(255,255,255,.05);border-color:var(--line-soft);color:#fff}
+/* La page d'un lien Wires Cloud (share.html#jeton) — 1.6.0, 07-10. Page INDÉPENDANTE : ni menu
+   ni pied du site ; la carte au milieu de l'écran, le sélecteur de langue en haut à droite. */
+.share-page main{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.share-hero{display:flex;justify-content:center;width:100%;padding:70px 20px 40px}
+
+/* Le sélecteur de langue, comme sur le site d'Alkoda On Air : drapeau, nom, liste des autres. */
+.ps-langue{position:fixed;top:18px;right:20px;z-index:10}
+.ps-langue-bouton{display:flex;align-items:center;gap:8px;padding:6px 11px;border-radius:8px;cursor:pointer;
+  font:500 13px/1 inherit;font-family:inherit;color:var(--text,#eef4ff);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);opacity:.9}
+.ps-langue-bouton:hover{opacity:1;border-color:var(--accent,#00d2ff)}
+.ps-fleche{font-size:10px;opacity:.55}
+.ps-drapeau{display:inline-flex;line-height:0}
+.ps-drapeau svg{border-radius:2px}
+.ps-langue-liste{position:absolute;top:calc(100% + 6px);right:0;min-width:140px;padding:4px;border-radius:8px;
+  background:#0d1627;border:1px solid rgba(255,255,255,.14);box-shadow:0 12px 30px rgba(0,0,0,.45)}
+.ps-langue-liste[hidden]{display:none}
+.ps-langue-opt{display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:none;border-radius:6px;cursor:pointer;
+  background:none;color:var(--text,#eef4ff);font:500 13px/1 inherit;font-family:inherit;white-space:nowrap}
+.ps-langue-opt[hidden]{display:none}
+.ps-langue-opt:hover{background:rgba(255,255,255,.08)}
+.ps-langue-bouton:focus-visible,.ps-langue-opt:focus-visible{outline:2px solid var(--accent,#00d2ff);outline-offset:2px}
+.share-carte{
+  width:100%;max-width:620px;margin:0 auto;padding:38px 34px 30px;text-align:center;
+  border:1px solid rgba(0,210,255,.28);border-radius:18px;
+  background:linear-gradient(180deg,rgba(0,210,255,.07),rgba(0,210,255,.01) 55%),rgba(16,26,43,.82);
+  box-shadow:0 24px 70px rgba(0,0,0,.45);
+}
+.ps-logo{display:block;height:46px;width:auto;margin:0 auto 14px}
+.ps-kicker{margin:0 0 10px;font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#9cacc1}
+.share-carte .ps-nom{margin:0 0 10px;font-size:clamp(28px,5vw,40px);line-height:1.15;color:#fff;overflow-wrap:anywhere;min-height:1.15em}
+.ps-par{margin:0;font-size:17px;font-weight:600;color:var(--text,#eef4ff)}
+.ps-fin{margin:4px 0 0;font-size:14px;color:var(--muted,#a8b6cc)}
+.ps-boutons{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:26px}
+.ps-boutons .btn{min-width:210px;justify-content:center}
+/* Un <button> ne prend pas la police de la page : la même que le lien d'à côté. */
+.ps-charger{font-family:inherit;cursor:pointer}
+.ps-charger[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.ps-etat{margin:18px 0 0;font-size:14px;color:var(--muted,#a8b6cc)}
+.ps-etat.ps-fait{color:#3ddc84}
+.ps-etat.ps-refus{color:#ff8a6b}
+.ps-aide{margin:22px 0 0;font-size:13px;color:var(--muted,#a8b6cc)}
+.share-carte.ps-attente .ps-nom{color:transparent}
+.share-carte.ps-invalide .ps-nom,.share-carte.ps-invalide .ps-par,.share-carte.ps-invalide .ps-fin{display:none}
+@media(max-width:560px){.share-carte{padding:28px 20px 24px}.ps-boutons .btn{width:100%}}
+</style>
+</head><body class="share-page">
+<div id="ps-langue" class="ps-langue">
+  <button type="button" id="ps-langue-bouton" class="ps-langue-bouton" aria-haspopup="true" aria-expanded="false">
+    <span class="ps-drapeau" id="ps-langue-drapeau"></span><span id="ps-langue-nom"></span><span class="ps-fleche">▾</span>
+  </button>
+  <div id="ps-langue-liste" class="ps-langue-liste" hidden>
+    <button type="button" class="ps-langue-opt" data-langue="fr"><span class="ps-drapeau"></span><span>Français</span></button>
+    <button type="button" class="ps-langue-opt" data-langue="en"><span class="ps-drapeau"></span><span>English</span></button>
+    <button type="button" class="ps-langue-opt" data-langue="es"><span class="ps-drapeau"></span><span>Español</span></button>
+  </div>
+</div>
+<main>
+  <section class="share-hero">
+    <div id="share" class="share-carte">
+      <img class="ps-logo" src="Logos/Logo.WIRES-CLOUD.png" alt="Wires Cloud">
+      <p class="ps-kicker" data-i18n="kicker"></p>
+      <h1 class="ps-nom"></h1>
+      <p class="ps-par"></p>
+      <p class="ps-fin"></p>
+      <div class="ps-boutons">
+        <button type="button" class="btn btn-primary ps-charger" data-i18n="load" disabled></button>
+        <a class="btn btn-secondary ps-telecharger" data-i18n="download" href="downloads.html"></a>
+      </div>
+      <p class="ps-etat" role="status" hidden></p>
+      <p class="ps-aide" data-i18n="hint"></p>
+    </div>
+  </section>
+</main>
+<script>
+// Les textes des trois langues ($p : pseudo ; $d : date ; $n : pourcentage ; $f : fichier ; $m : minutes).
+const TEXTES = {
+  "en": {
+    "title": "Shared Wires project",
+    "description": "A Wires project shared with you through Wires Cloud.",
+    "kicker": "Shared with Wires Cloud",
+    "shared_by": "Shared by $p",
+    "until": "Link valid until $d",
+    "load": "Load the project",
+    "download": "Download Wires",
+    "hint": "The project opens in Wires, free in the Free edition.",
+    "loading": "Reading the link…",
+    "progress": "Loading… $n%",
+    "done": "Project loaded: $f",
+    "invalid": "This link is no longer valid. Ask the person who sent it for a new link.",
+    "busy": "Too many requests for this link. Try again in $m min.",
+    "error": "The project could not be loaded. Try again later."
+  },
+  "fr": {
+    "title": "Projet Wires partagé",
+    "description": "Un projet Wires partagé avec vous par Wires Cloud.",
+    "kicker": "Partagé avec Wires Cloud",
+    "shared_by": "Partagé par $p",
+    "until": "Lien valable jusqu'au $d",
+    "load": "Charger le projet",
+    "download": "Télécharger Wires",
+    "hint": "Le projet s'ouvre dans Wires, gratuit en version Free.",
+    "loading": "Lecture du lien…",
+    "progress": "Chargement… $n %",
+    "done": "Projet chargé : $f",
+    "invalid": "Ce lien n'est plus valable. Demandez un nouveau lien à la personne qui vous l'a envoyé.",
+    "busy": "Trop de demandes pour ce lien. Réessayez dans $m min.",
+    "error": "Le projet n'a pas pu être chargé. Réessayez plus tard."
+  },
+  "es": {
+    "title": "Proyecto de Wires compartido",
+    "description": "Un proyecto de Wires compartido con usted a través de Wires Cloud.",
+    "kicker": "Compartido con Wires Cloud",
+    "shared_by": "Compartido por $p",
+    "until": "Enlace válido hasta el $d",
+    "load": "Cargar el proyecto",
+    "download": "Descargar Wires",
+    "hint": "El proyecto se abre en Wires, gratis en la versión Free.",
+    "loading": "Leyendo el enlace…",
+    "progress": "Cargando… $n %",
+    "done": "Proyecto cargado: $f",
+    "invalid": "Este enlace ya no es válido. Pida un nuevo enlace a la persona que se lo envió.",
+    "busy": "Demasiadas solicitudes para este enlace. Inténtelo de nuevo en $m min.",
+    "error": "No se pudo cargar el proyecto. Inténtelo más tarde."
+  }
+};
 /* ═══════════════════════════════════════════════════════════════
-   partage.js — la page d'un lien Wires Cloud (alkoda-wires.com/partage.html#jeton)
+   share.html — la page d'un lien Wires Cloud (alkoda-wires.com/share.html#jeton)
    Wires by Alkoda © 2026
 
    1.6.0, sa demande du 07-10 : le propriétaire d'un projet Wires Cloud crée un
@@ -12,8 +167,8 @@
    seul site. Le jeton est après le # : le navigateur ne l'envoie jamais de
    lui-même ; la page le passe dans le corps de ses demandes.
 
-   ⚠️ FICHIER ASSEMBLÉ par assembler_partage.py (D:\Sandbox\site-partage-src) :
-   modifier partage.source.js, jamais partage.js. Le code qui refait le projet
+   ⚠️ PAGE ASSEMBLÉE par assembler_share.py (D:\Sandbox\share-src) :
+   modifier share.source.html, jamais share.html. Le code qui refait le projet
    est recopié TEL QUEL de Wires (cloud-depot.js, library.js), comme dans
    l'onglet Cloud de la page de statistiques.
 ═══════════════════════════════════════════════════════════════ */
@@ -27,7 +182,7 @@
   const FORMAT_DOCUMENT = 'wires-cloud-document';
   const VERSION_DOCUMENT = 1;
 
-  // Recopiées TELLES QUELLES par assembler_partage.py — ne pas les retoucher ici :
+  // Recopiées TELLES QUELLES par assembler_share.py — ne pas les retoucher ici :
   //   cloud-depot.js : FACES, SUFFIXES, estImageEmbarquee, estInterne, octetsDeDataUrl, _ascii, formatReel, _empreinteOctets, empreinte, _recadrer, reconstruireFace, reconstruireProjet ;
   //   library.js     : detourageIsole, _removeBgCanvas.
   // `global` y désigne ce dont elles se servent dans la fenêtre de Wires ;
@@ -473,71 +628,127 @@
     return (propre || 'projet') + '.wires';
   }
 
+  // ── Les langues : une seule page pour les trois (sa demande du 07-10, « comme on faisait
+  // avant » — le site d'Alkoda On Air) : la langue de l'adresse (?lang=, laissée par les
+  // anciennes adresses fr/ et es/), sinon celle déjà choisie sur le site, sinon celle du
+  // navigateur ; un sélecteur à drapeaux la change sur place.
+  const LANGUES = {
+    fr: { nom: 'Français', date: 'fr-FR', telecharger: 'fr/downloads.html',
+          drapeau: '<svg width="22" height="15" viewBox="0 0 3 2" aria-hidden="true"><rect width="1" height="2" fill="#002395"/><rect x="1" width="1" height="2" fill="#fff"/><rect x="2" width="1" height="2" fill="#ED2939"/></svg>' },
+    en: { nom: 'English', date: 'en-GB', telecharger: 'downloads.html',
+          drapeau: '<svg width="22" height="15" viewBox="0 0 60 30" aria-hidden="true"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="4"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/></svg>' },
+    es: { nom: 'Español', date: 'es-ES', telecharger: 'es/downloads.html',
+          drapeau: '<svg width="22" height="15" viewBox="0 0 3 2" aria-hidden="true"><rect width="3" height="2" fill="#AA151B"/><rect y=".5" width="3" height="1" fill="#F1BF00"/></svg>' },
+  };
+  const CLE_LANGUE = 'wires_lang';   // la même que le site : une langue choisie là-bas vaut ici
+
+  function langueDeDepart() {
+    const demandee = new URLSearchParams(location.search).get('lang');
+    if (LANGUES[demandee]) return demandee;
+    try { const l = localStorage.getItem(CLE_LANGUE); if (LANGUES[l]) return l; } catch (e) {}
+    const n = String(navigator.language || '').slice(0, 2).toLowerCase();
+    return LANGUES[n] ? n : 'en';
+  }
+
   // ── La page ──
   function monter(options) {
-    const racine = document.getElementById('partage');
+    const racine = document.getElementById('share');
     if (!racine) return;
     const serveur = (options && options.serveur) || appelerServeur;
-    let textes = {};
-    try { textes = JSON.parse(racine.dataset.textes || '{}'); } catch (e) {}
+    const tous = TEXTES;
+    let langue = langueDeDepart();
     const t = (cle, valeurs) => Object.entries(valeurs || {}).reduce(
-      (s, [k, v]) => s.replace('$' + k, () => String(v)), textes[cle] || cle);
-    const langue = document.documentElement.lang || 'en';
+      (s, [k, v]) => s.replace('$' + k, () => String(v)), ((tous[langue] || tous.en || {})[cle]) || cle);
     const dateLongue = iso => {
       const d = new Date(iso);
-      return isNaN(d) ? '' : d.toLocaleDateString(langue === 'fr' ? 'fr-FR' : langue === 'es' ? 'es-ES' : 'en-GB',
-        { day: 'numeric', month: 'long', year: 'numeric' });
+      return isNaN(d) ? '' : d.toLocaleDateString(LANGUES[langue].date, { day: 'numeric', month: 'long', year: 'numeric' });
     };
     const $ = sel => racine.querySelector(sel);
     const nom = $('.ps-nom'), par = $('.ps-par'), fin = $('.ps-fin'), etat = $('.ps-etat');
     const charger = $('.ps-charger');
     const jeton = decodeURIComponent((location.hash || '').replace(/^#/, '').trim());
 
-    const dire = (texte, sorte) => {
-      etat.textContent = texte || '';
-      etat.hidden = !texte;
-      etat.className = 'ps-etat' + (sorte ? ' ps-' + sorte : '');
-    };
+    // Ce qui est affiché se garde en clés, pour se réécrire dans une autre langue.
+    let infos = null;                 // { nom, proprietaire, expireLe } rendus par « voir »
+    let message = null;               // { cle, valeurs, sorte }
+    const dire = (cle, valeurs, sorte) => { message = cle ? { cle, valeurs, sorte } : null; ecrire(); };
     const refus = r => {
-      if (r && r.code === 'lien_invalide') return t('invalid');
-      if (r && r.code === 'trop_de_demandes') return t('busy', { m: Math.max(1, Math.ceil((Number(r.reessayerDans) || 60) / 60)) });
-      return t('error');
+      if (r && r.code === 'lien_invalide') return ['invalid'];
+      if (r && r.code === 'trop_de_demandes') return ['busy', { m: Math.max(1, Math.ceil((Number(r.reessayerDans) || 60) / 60)) }];
+      return ['error'];
     };
-    const invalide = texte => {
+
+    function ecrire() {
+      document.documentElement.lang = langue;
+      document.title = (infos && infos.nom ? infos.nom + ' — ' : '') + t('title');
+      document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+      const lien = document.querySelector('.ps-telecharger');
+      if (lien) lien.href = LANGUES[langue].telecharger;
+      if (infos) {
+        nom.textContent = infos.nom || '';
+        par.textContent = t('shared_by', { p: infos.proprietaire || '?' });
+        fin.textContent = t('until', { d: dateLongue(infos.expireLe) });
+      }
+      etat.textContent = message ? t(message.cle, message.valeurs) : '';
+      etat.hidden = !message;
+      etat.className = 'ps-etat' + (message && message.sorte ? ' ps-' + message.sorte : '');
+      // Le sélecteur : la langue en cours sur le bouton, les deux autres dans la liste.
+      const bouton = document.getElementById('ps-langue-bouton');
+      if (bouton) {
+        document.getElementById('ps-langue-drapeau').innerHTML = LANGUES[langue].drapeau;
+        document.getElementById('ps-langue-nom').textContent = LANGUES[langue].nom;
+        document.querySelectorAll('.ps-langue-opt').forEach(o => {
+          o.hidden = o.dataset.langue === langue;
+          o.querySelector('.ps-drapeau').innerHTML = LANGUES[o.dataset.langue].drapeau;
+        });
+      }
+    }
+
+    function changerLangue(l) {
+      if (!LANGUES[l]) return;
+      langue = l;
+      try { localStorage.setItem(CLE_LANGUE, l); } catch (e) {}
+      ecrire();
+    }
+    const bouton = document.getElementById('ps-langue-bouton');
+    const liste = document.getElementById('ps-langue-liste');
+    if (bouton && liste) {
+      const fermer = () => { liste.hidden = true; bouton.setAttribute('aria-expanded', 'false'); };
+      bouton.addEventListener('click', e => {
+        e.stopPropagation();
+        liste.hidden = !liste.hidden;
+        bouton.setAttribute('aria-expanded', String(!liste.hidden));
+      });
+      liste.addEventListener('click', e => {
+        const o = e.target.closest('.ps-langue-opt');
+        if (o) { changerLangue(o.dataset.langue); fermer(); }
+      });
+      document.addEventListener('click', e => { if (!e.target.closest('#ps-langue')) fermer(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') fermer(); });
+    }
+
+    const invalide = rais => {
       racine.classList.add('ps-invalide');
+      infos = null;
       nom.textContent = '';
       par.textContent = '';
       fin.textContent = '';
       charger.disabled = true;
-      dire(texte, 'refus');
+      dire(rais[0], rais[1], 'refus');
     };
 
-    // Changer de langue : la page de l'autre langue, AVEC le jeton (le changement sur place du
-    // site, language-navigation.js, perdrait le # et la page remplie par ce script).
-    document.addEventListener('click', e => {
-      const a = e.target.closest('a.lang-opt[href]');
-      if (!a || !jeton) return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      const url = new URL(a.getAttribute('href'), location.href);
-      url.hash = encodeURIComponent(jeton);
-      location.assign(url.href);
-    }, true);
-
-    if (!jeton) { invalide(t('invalid')); return; }
+    ecrire();
+    if (!jeton) { invalide(['invalid']); return; }
     racine.classList.add('ps-attente');
-    dire(t('loading'));
+    dire('loading');
 
     (async () => {
       const r = await serveur('voir', jeton);
       racine.classList.remove('ps-attente');
       if (!r || !r.ok) { invalide(refus(r)); return; }
-      nom.textContent = r.nom || '';
-      par.textContent = t('shared_by', { p: r.proprietaire || '?' });
-      fin.textContent = t('until', { d: dateLongue(r.expireLe) });
-      document.title = (r.nom ? r.nom + ' — ' : '') + document.title;
+      infos = { nom: r.nom, proprietaire: r.proprietaire, expireLe: r.expireLe };
       charger.disabled = false;
-      dire('');
+      dire(null);
     })();
 
     let enCours = false;
@@ -545,16 +756,16 @@
       if (enCours) return;
       enCours = true;
       charger.disabled = true;
-      dire(t('progress', { n: 0 }));
+      dire('progress', { n: 0 });
       try {
         const r = await serveur('charger', jeton);
-        if (!r || !r.ok) { dire(refus(r), 'refus'); return; }
+        if (!r || !r.ok) { const x = refus(r); dire(x[0], x[1], 'refus'); return; }
         const total = (r.document && r.document.octets || 0)
           + (r.images || []).reduce((s, im) => s + (Number(im.octets) || 0), 0);
         let lus = 0;
         const progres = n => {
           lus += n;
-          if (total > 0) dire(t('progress', { n: Math.min(99, Math.round(lus * 100 / total)) }));
+          if (total > 0) dire('progress', { n: Math.min(99, Math.round(lus * 100 / total)) });
         };
         const { projet } = await reconstruire(r, progres);
         const fichier = nomDeFichier(r.nom);
@@ -566,10 +777,10 @@
         a.click();
         a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 60000);
-        dire(t('done', { f: fichier }), 'fait');
-        global.__partageDernier = { fichier, projet };   // pour le banc d'essai
+        dire('done', { f: fichier }, 'fait');
+        global.__shareDernier = { fichier, projet };   // pour le banc d'essai
       } catch (e) {
-        dire(t('error'), 'refus');
+        dire('error', null, 'refus');
       } finally {
         enCours = false;
         charger.disabled = racine.classList.contains('ps-invalide');
@@ -577,10 +788,12 @@
     });
   }
 
-  global.Partage = { monter, reconstruire, fichierWires, _wires: WiresFormat };
+  global.Share = { monter, reconstruire, fichierWires, _wires: WiresFormat };
   // Le banc d'essai monte la page lui-même, avec un faux serveur.
-  if (!global.__partageManuel) {
+  if (!global.__shareManuel) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => monter());
     else monter();
   }
 })(window);
+</script>
+</body></html>
