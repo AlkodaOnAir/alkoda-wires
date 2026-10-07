@@ -1,0 +1,18 @@
+{% assign ps = site.data.partage[page.lang] %}
+<main>
+  <section class="page-hero compact partage-hero">
+    <div id="partage" class="partage-carte" data-textes='{{ ps | jsonify | escape }}'>
+      <img class="ps-logo" src="{{ page.asset_prefix }}Logos/Logo.WIRES-CLOUD.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Cloud">
+      <p class="ps-kicker">{{ ps.kicker }}</p>
+      <h1 class="ps-nom"></h1>
+      <p class="ps-par"></p>
+      <p class="ps-fin"></p>
+      <div class="ps-boutons">
+        <button type="button" class="btn btn-primary ps-charger" disabled>{{ ps.load }}</button>
+        <a class="btn btn-secondary ps-telecharger" href="{{ page.downloads_href }}">{{ ps.download }}</a>
+      </div>
+      <p class="ps-etat" role="status" hidden></p>
+      <p class="ps-aide">{{ ps.hint }}</p>
+    </div>
+  </section>
+</main>
