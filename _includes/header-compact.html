@@ -10,6 +10,7 @@
       <a{% if page.nav_active == "help" %} class="active"{% endif %} href="{{ page.help_href }}">{{ ui.nav_help }}</a>
       <a href="{{ page.contact_href }}">{{ ui.nav_contact }}</a>
       <a{% if page.nav_active == "license" %} class="active"{% endif %} href="{{ page.license_href }}">{{ ui.nav_license }}</a>
+      <a class="nav-preview{% if page.nav_active == 'preview' %} active{% endif %}" href="licence-preview.html">{{ ui.nav_preview }}</a>
       <a class="nav-cta js-download" href="{{ page.downloads_href }}">{{ ui.nav_download }}</a>
       <div id="lang-selector" class="lang-selector">
         <button id="lang-toggle" class="lang-toggle" type="button" aria-label="Change language" aria-expanded="false"><span id="lang-flag"{% if page.lang_span_classes %} class="lang-flag"{% endif %}></span><span id="lang-name"{% if page.lang_span_classes %} class="lang-name"{% endif %}></span><span class="lang-arrow">v</span></button>

@@ -1,0 +1,138 @@
+{% assign lp = site.data.licence_preview[page.lang] %}
+{% assign logo_base = page.asset_prefix | append: 'Logos/' %}
+<main>
+  <section class="page-hero compact license-preview-hero">
+    <div class="lic-coming-banner" role="note">
+      <strong>{{ lp.coming_title }}</strong>
+      <span>{{ lp.coming_text }}</span>
+    </div>
+    <h1>{{ lp.hero }}</h1>
+    <div class="lic-annonce">
+      <p><b>{{ lp.intro_lead }}</b></p>
+      <p>{{ lp.cloud_before }}
+        <img class="lic-annonce-logo cloud" src="{{ logo_base }}Logo.WIRES-CLOUD.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Cloud"> {{ lp.cloud_after }}
+        <img class="lic-annonce-logo" src="{{ logo_base }}Neon-PRO.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Pro"> {{ lp.cloud_between }}
+        <img class="lic-annonce-logo" src="{{ logo_base }}Neon-ENT.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Ent.">{{ lp.cloud_end }}</p>
+      <p>{{ lp.free_before }} <img class="lic-annonce-logo" src="{{ logo_base }}Neon-FREE.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Free"> {{ lp.free_after }}</p>
+      <p>{{ lp.fast_before }} <img class="lic-annonce-logo" src="{{ logo_base }}Neon-FAST.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Fast">{{ lp.fast_after }}</p>
+      <p class="lic-pionniers">{{ lp.pioneers }}</p>
+      <p class="lic-pionniers-gain">{{ lp.pioneers_q }}<br>{{ lp.pioneers_gain }}<span class="lic-etoile">*</span>.</p>
+    </div>
+  </section>
+
+  <section class="license-table-section">
+    <div class="license-table">
+      <div class="license-column free">
+        <div class="license-column-heading">
+          <p class="license-target">{{ lp.target_free }}</p>
+          <img class="license-plan-logo" src="{{ logo_base }}Neon-FREE.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Free">
+          <div class="license-price-block license-free-meta">
+            <span class="license-price-note">{{ lp.free_forever }}</span>
+            <span class="license-price-note">{{ lp.no_account }}</span>
+          </div>
+        </div>
+        <div class="lic-propre"><ul>
+          <li class="lic-vide" aria-hidden="true">&nbsp;</li>
+          {% for feature in lp.free_features %}<li{% if feature.class %} class="{{ feature.class }}"{% endif %}>{% if feature.new %}<span class="license-new">new</span> {% endif %}{{ feature.text }}</li>{% endfor %}
+        </ul></div>
+        <div class="lic-actions">
+          <a class="btn btn-secondary license-card-action license-card-action-stacked" href="{{ page.downloads_href }}">
+            <span>{{ lp.download }}</span><span class="license-card-platforms">Windows, Mac, Linux</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="license-column fast">
+        <div class="license-column-heading">
+          <p class="license-target">{{ lp.target_fast }}</p>
+          <img class="license-plan-logo" src="{{ logo_base }}Neon-FAST.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Fast">
+          <div class="license-price-block">
+            <span class="license-price">15€<span class="lic-etoile">**</span></span>
+            <span class="license-price-note">{{ lp.price_fast_duration }}</span>
+            <span class="license-price-note">{{ lp.one_time }}</span>
+            <span class="license-price-note">{{ lp.one_computer }}</span>
+          </div>
+        </div>
+        <div class="lic-propre"><ul>
+          <li class="lic-reprise">{{ lp.all_free }}</li>
+          <li class="lic-reprise lic-version lic-version-space" aria-hidden="true">{{ lp.versions }}<span class="lic-etoile">***</span></li>
+          <li>{{ lp.unlimited }}</li>
+          <li>{{ lp.pdf_pro }}</li>
+          <li><span class="license-new">new</span> {{ lp.network_scan }}</li>
+          <li>{{ lp.import_subprojects }}</li>
+          <li class="missing">{{ lp.no_cloud }}</li>
+        </ul></div>
+        <div class="lic-actions"><span class="btn btn-secondary license-card-action lic-coming-soon" aria-disabled="true">{{ lp.coming_soon }}</span></div>
+      </div>
+
+      <div class="license-column pro">
+        <div class="license-column-heading">
+          <p class="license-target">{{ lp.target_pro }}</p>
+          <img class="license-plan-logo" src="{{ logo_base }}Neon-PRO.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Pro">
+          <div class="license-price-block">
+            <span class="license-price">49€<span class="lic-etoile">**</span></span>
+            <span class="license-price-note">{{ lp.pro_duration }}</span>
+            <span class="license-price-note lic-renewal">{{ lp.renewal }}</span>
+            <span class="license-price-note">{{ lp.two_computers }}</span>
+          </div>
+        </div>
+        <div class="lic-propre"><ul>
+          <li class="lic-reprise">{{ lp.all_free }}</li>
+          <li class="lic-reprise lic-version">{{ lp.versions }}<span class="lic-etoile">***</span></li>
+          <li>{{ lp.unlimited }}</li>
+          <li>{{ lp.pdf_pro }}</li>
+          <li><span class="license-new">new</span> {{ lp.network_scan }}</li>
+          <li>{{ lp.import_subprojects }}</li>
+          <li class="license-cloud-access"><span class="license-new">new</span> {{ lp.cloud_access }} <img class="license-cloud-logo" src="{{ logo_base }}Logo.WIRES-CLOUD.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Cloud"></li>
+          <li class="license-cloud-detail"><span class="license-storage-value">{{ lp.storage_2_value }}</span> {{ lp.storage_2 }}</li>
+          <li class="license-cloud-detail">{{ lp.share_project }}</li>
+          <li class="license-cloud-detail">{{ lp.online_backup }}</li>
+        </ul></div>
+        <div class="lic-actions"><span class="btn btn-primary license-card-action lic-coming-soon" aria-disabled="true">{{ lp.coming_soon }}</span></div>
+      </div>
+
+      <div class="license-column entreprise">
+        <div class="license-column-heading">
+          <p class="license-target">{{ lp.target_ent }}</p>
+          <img class="license-plan-logo" src="{{ logo_base }}Neon-ENT.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Ent.">
+          <div class="license-price-block">
+            <span class="license-price">449€<span class="lic-etoile">**</span></span>
+            <span class="license-price-note">{{ lp.ent_duration }}</span>
+            <span class="license-price-note lic-renewal">{{ lp.renewal }}</span>
+            <span class="license-price-note">{{ lp.ten_computers }}</span>
+          </div>
+        </div>
+        <div class="lic-propre"><ul>
+          <li class="lic-reprise">{{ lp.all_free }}</li>
+          <li class="lic-reprise lic-version">{{ lp.versions }}<span class="lic-etoile">***</span></li>
+          <li>{{ lp.unlimited }}</li>
+          <li>{{ lp.pdf_pro }}</li>
+          <li><span class="license-new">new</span> {{ lp.network_scan }}</li>
+          <li>{{ lp.import_subprojects }}</li>
+          <li class="license-cloud-access"><span class="license-new">new</span> {{ lp.cloud_access }} <img class="license-cloud-logo" src="{{ logo_base }}Logo.WIRES-CLOUD.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Cloud"></li>
+          <li class="license-cloud-detail"><span class="license-storage-value">{{ lp.storage_20_value }}</span> {{ lp.storage_20 }}</li>
+          <li class="license-cloud-detail">{{ lp.share_project }}</li>
+          <li class="license-cloud-detail">{{ lp.online_backup }}</li>
+          <li class="license-cloud-detail">{{ lp.collaborative }}</li>
+        </ul>
+        <p class="lic-commun plus">{{ lp.plus }}</p>
+        <ul><li>{{ lp.catalog }}</li><li>{{ lp.support }}</li><li>{{ lp.invoice }}</li></ul></div>
+        <div class="lic-actions">
+          <span class="btn btn-secondary license-card-action lic-coming-soon" aria-disabled="true">{{ lp.coming_soon }}</span>
+          <span class="btn lic-btn-devis lic-coming-soon" aria-disabled="true">{{ lp.quote_soon }}</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="lic-taxes">* {{ lp.coupon_note }}<br>** {{ lp.tax_note }}<br>*** {{ lp.subscription_note }}<br><br>{{ lp.more_seats }} <a href="mailto:contact@alkoda-wires.com">{{ lp.write_us }}</a>.</p>
+    <p class="license-more">{{ lp.more_features }}</p>
+    <p class="lic-ailleurs">{{ lp.elsewhere_before }} <b>{{ lp.elsewhere_bold }}</b><br>{{ lp.elsewhere_after }}</p>
+
+    <div class="lic-couverture">
+      <h3>{{ lp.stop_title }}</h3>
+      <p>{{ lp.stop_p1 }}</p>
+      <p>{{ lp.stop_p2 }}</p>
+      <div class="lic-rassurance"><p>{{ lp.stop_p3 }}</p></div>
+    </div>
+  </section>
+</main>

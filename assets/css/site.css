@@ -1435,3 +1435,12 @@ h3{color:#fff}
   .release-columns{padding:20px}
   .release-group{padding:20px}
 }
+
+/* Temporary link to the Wires 1.6 plan preview. It always stays readable. */
+.site-nav .nav-preview{color:#69e7ff;text-shadow:0 0 7px rgba(0,210,255,.28);animation:nav-preview-pulse 1.6s ease-in-out infinite}
+.site-nav .nav-preview:hover,.site-nav .nav-preview.active{color:#fff;text-shadow:0 0 11px rgba(0,210,255,.7)}
+@keyframes nav-preview-pulse{
+  0%,100%{color:#69e7ff;text-shadow:0 0 5px rgba(0,210,255,.25)}
+  50%{color:#c8f7ff;text-shadow:0 0 12px rgba(0,210,255,.78)}
+}
+@media(prefers-reduced-motion:reduce){.site-nav .nav-preview{animation:none}}

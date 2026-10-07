@@ -1,0 +1,251 @@
+en:
+  title: "Upcoming Wires plans | Free, Fast, Pro and Ent."
+  description: "Preview the Free, Fast, Pro and Ent. plans coming with Wires 1.6.0, including Wires Cloud and the benefits reserved for early Wires Pro buyers."
+  coming_title: "New Wires plans — coming soon"
+  coming_text: "This page presents the plans launching with Wires 1.6.0. They are not available yet."
+  hero: "Choose the options that fit your projects."
+  intro_lead: "Starting with version 1.6.0, Wires will also offer subscription plans."
+  cloud_before: "Many users asked to save and share their projects online."
+  cloud_after: "was created to meet that need. With"
+  cloud_between: "and"
+  cloud_end: "subscriptions, all updates are included for the duration of the subscription, without being limited to one major version. Major new features are also in development for <strong>Wires 2.0.0</strong>..."
+  free_before: "The"
+  free_after: "edition keeps growing too. <strong>Wires 1.6.0</strong> adds device IP addresses, image rotation, custom device-name positioning, custom titles for PDF exports, and a <strong>Pack List</strong> with a counter. Image Search also remains available at no charge."
+  fast_before: "We have also considered those who occasionally need every local Wires feature. That is why we offer"
+  fast_after: ", a 30-day license with a one-time payment."
+  pioneers: "To thank Wires' early adopters, every <strong>Wires Pro</strong> license purchased before version 1.6.0 launches remains valid for every 1.X.X version and includes <strong>12 months</strong> of Wires Pro at no charge when Wires 2.0.0 launches."
+  pioneers_q: "Already bought Wires Pro 1.5.0, or buying it now?"
+  pioneers_gain: "You will get Wires 1.6 Pro and receive 12 months of subscription at no charge when Wires 2.0.0 launches"
+  target_free: "To discover Wires"
+  target_fast: "For occasional needs"
+  target_pro: "For regular use"
+  target_ent: "For team use"
+  free_forever: "Free forever"
+  no_account: "No account required"
+  download: "Download Wires"
+  coming_soon: "Coming soon"
+  quote_soon: "Quotes coming soon"
+  all_free: "All Free features"
+  versions: "New versions included"
+  unlimited: "Unlimited devices"
+  pdf_pro: "PDF export 75–600 dpi"
+  network_scan: "Local network scan"
+  import_subprojects: "Import subprojects"
+  no_cloud: "No Wires Cloud"
+  cloud_access: "Access to"
+  storage_2_value: "2 GB"
+  storage_20_value: "20 GB"
+  storage_2: "of storage included"
+  storage_20: "of storage included"
+  share_project: "Full project sharing"
+  online_backup: "Optional online backup"
+  collaborative: "Collaborative work"
+  plus: "In addition"
+  catalog: "We add your missing equipment to the image catalog"
+  support: "Support within 48 business hours, by email or in a private Discord channel"
+  invoice: "Company invoice, quote and bank transfer available on request"
+  price_fast_duration: "<b class=\"lic-duree\">30</b>-day license"
+  one_time: "One-time payment"
+  one_computer: "1 computer"
+  pro_duration: "<b class=\"lic-duree\">1</b>-year subscription"
+  ent_duration: "<b class=\"lic-duree\">1</b>-year subscription"
+  renewal: "Renewal can be cancelled<br>at any time"
+  two_computers: "2 computers, one person"
+  ten_computers: "10 computers"
+  coupon_note: "A 100% discount coupon will be sent when Wires 2.0.0 launches."
+  tax_note: "Prices exclude tax. Tax is added at checkout where applicable."
+  subscription_note: "For the duration of the subscription."
+  more_seats: "More than 10 computers?"
+  write_us: "Contact us"
+  more_features: "… and many more features"
+  elsewhere_before: "Zones, Pack List, signal routes, Interactive HTML Canvas:"
+  elsewhere_bold: "all of these are included in Wires Free."
+  elsewhere_after: "Elsewhere, these are paid features."
+  stop_title: "Subscription ended? Your projects stay with you."
+  stop_p1: "Wires automatically switches to Free. You can still open, view and edit every project stored on your computer, even if it already contains more than 10 devices. You can also edit existing devices and their images with Image Search."
+  stop_p2: "With Wires Free, you can create and complete projects with up to 10 devices, contribute to the image catalog, and export documents as 75 dpi PDFs. Wires remains available offline, with no time limit."
+  stop_p3: "You can start a paid plan again at any time to immediately restore its features and Wires Cloud."
+  free_features:
+    - { text: "10 devices per project", class: "limited" }
+    - { text: "PDF export 75 dpi", class: "limited" }
+    - { text: "Zones" }
+    - { text: "Front / Rear views ↻" }
+    - { text: "Signal route animation" }
+    - { text: "Text labels" }
+    - { text: "Interactive HTML Canvas" }
+    - { text: "Custom colors" }
+    - { text: "IP address per device", new: true }
+    - { text: "Device-name positioning", new: true }
+    - { text: "Image rotation", new: true }
+    - { text: "Pack List with counter", new: true }
+    - { text: "Animated wireless connections" }
+    - { text: "Improved online image search", new: true }
+    - { text: "Resizable geometric shapes", new: true }
+
+fr:
+  title: "Prochaines offres Wires | Free, Fast, Pro et Ent."
+  description: "Découvrez en avant-première les offres Free, Fast, Pro et Ent. prévues avec Wires 1.6.0, Wires Cloud et l'avantage réservé aux pionniers de Wires Pro."
+  coming_title: "Nouvelles offres Wires — disponibles prochainement"
+  coming_text: "Cette page présente les offres qui accompagneront la sortie de Wires 1.6.0. Elles ne sont pas encore disponibles."
+  hero: "Choisissez les options adaptées à vos projets."
+  intro_lead: "À partir de la version 1.6.0, Wires propose également des offres par abonnement."
+  cloud_before: "De nombreux utilisateurs souhaitaient pouvoir sauvegarder et partager leurs projets en ligne."
+  cloud_after: "a été créé pour répondre à cette demande. Avec les abonnements"
+  cloud_between: "et"
+  cloud_end: ", toutes les mises à jour sont incluses pendant la durée de l’abonnement, sans limitation à une version majeure. De grandes nouveautés sont également en préparation pour <strong>Wires 2.0.0</strong>..."
+  free_before: "La version"
+  free_after: "continue elle aussi de s’enrichir. <strong>Wires 1.6.0</strong> ajoute notamment l’adresse IP des appareils, la rotation des images, le positionnement personnalisé du nom des appareils, des titres personnalisés pour les exports PDF et une <strong>Liste de Paquetage</strong> avec compteur. La recherche d’images reste également accessible gratuitement."
+  fast_before: "Nous avons également pensé à ceux qui ont ponctuellement besoin de toutes les fonctionnalités locales de Wires. C’est pourquoi nous proposons"
+  fast_after: ", une licence de 30 jours à paiement unique."
+  pioneers: "Pour remercier les pionniers de Wires, toutes les licences <strong>Wires Pro</strong> achetées avant la sortie de la version 1.6.0 restent valables pour toutes les versions 1.X.X et donnent droit à <strong>12 mois</strong> de Wires Pro offerts dès la sortie de Wires 2.0.0."
+  pioneers_q: "Vous avez déjà acheté Wires Pro 1.5.0 ou vous l’achetez maintenant ?"
+  pioneers_gain: "Vous obtiendrez 1.6 Pro et gagnerez 12 mois d’abonnement offerts dès la sortie de Wires 2.0.0"
+  target_free: "Pour découvrir Wires"
+  target_fast: "Pour un besoin ponctuel"
+  target_pro: "Pour un usage régulier"
+  target_ent: "Pour un usage en équipe"
+  free_forever: "Gratuit pour toujours"
+  no_account: "Aucun compte à créer"
+  download: "Télécharger Wires"
+  coming_soon: "Bientôt disponible"
+  quote_soon: "Devis bientôt disponible"
+  all_free: "Toutes les fonctions de Free"
+  versions: "Nouvelles versions incluses"
+  unlimited: "Appareils illimités"
+  pdf_pro: "Export PDF 75-600 dpi"
+  network_scan: "Scan du réseau local"
+  import_subprojects: "Importation de sous-projets"
+  no_cloud: "Sans Wires Cloud"
+  cloud_access: "Accès à"
+  storage_2_value: "2 Go"
+  storage_20_value: "20 Go"
+  storage_2: "de stockage inclus"
+  storage_20: "de stockage inclus"
+  share_project: "Partage du projet complet"
+  online_backup: "Sauvegarde optionnelle en ligne"
+  collaborative: "Travail collaboratif"
+  plus: "En plus"
+  catalog: "Nous ajoutons votre matériel manquant au catalogue d'images"
+  support: "Assistance sous 48 h ouvrées, par mail ou sur un canal Discord privé"
+  invoice: "Facture au nom de la société, devis et virement sur demande"
+  price_fast_duration: "Licence <b class=\"lic-duree\">30</b> jours"
+  one_time: "Paiement unique"
+  one_computer: "1 poste"
+  pro_duration: "Abonnement <b class=\"lic-duree\">1</b> an"
+  ent_duration: "Abonnement <b class=\"lic-duree\">1</b> an"
+  renewal: "Renouvellement annulable<br>à tout moment"
+  two_computers: "2 postes, une seule personne"
+  ten_computers: "10 postes"
+  coupon_note: "Un coupon de réduction de 100 % sera envoyé à la sortie de Wires 2.0.0."
+  tax_note: "Prix hors taxes. La taxe de votre pays est ajoutée au paiement lorsqu'elle s'applique."
+  subscription_note: "Pendant la durée de l’abonnement."
+  more_seats: "Plus de 10 postes ?"
+  write_us: "Écrivez-nous"
+  more_features: "… et bien d'autres fonctionnalités"
+  elsewhere_before: "Zones, Liste de Paquetage, routes de signal, canevas HTML interactif :"
+  elsewhere_bold: "tout cela est inclus dans la version gratuite de Wires."
+  elsewhere_after: "Ailleurs, ce sont des fonctions payantes."
+  stop_title: "Votre abonnement s’arrête ? Vos projets restent avec vous."
+  stop_p1: "Wires passe automatiquement en version Free. Vous continuez à ouvrir, consulter et modifier tous les projets enregistrés sur votre ordinateur, même s’ils contiennent déjà plus de 10 appareils. Vous pouvez également modifier les appareils existants et leurs images grâce à la recherche d’images."
+  stop_p2: "Avec Wires Free, vous pouvez créer et compléter des projets jusqu’à 10 appareils, contribuer au catalogue d’images et exporter vos documents en PDF à 75 dpi. Wires reste utilisable hors connexion, sans limite de durée."
+  stop_p3: "Vous pourrez reprendre une offre payante à tout moment pour retrouver immédiatement ses fonctionnalités et Wires Cloud."
+  free_features:
+    - { text: "10 appareils par projet", class: "limited" }
+    - { text: "Export PDF 75 dpi", class: "limited" }
+    - { text: "Zones" }
+    - { text: "Vues Avant / Arrière ↻" }
+    - { text: "Animation des routes de signal" }
+    - { text: "Connexions sans fil animées" }
+    - { text: "Étiquettes texte" }
+    - { text: "Canevas HTML interactif" }
+    - { text: "Couleurs personnalisées" }
+    - { text: "Adresse IP par appareil", new: true }
+    - { text: "Position du nom d’un appareil", new: true }
+    - { text: "Rotation des images", new: true }
+    - { text: "Recherche d'images améliorée", new: true }
+    - { text: "Formes géométriques redimensionnables", new: true }
+    - { text: "Liste de Paquetage avec compteur", new: true }
+
+es:
+  title: "Próximas ofertas de Wires | Free, Fast, Pro y Ent."
+  description: "Descubre las ofertas Free, Fast, Pro y Ent. que llegarán con Wires 1.6.0, Wires Cloud y la ventaja reservada a los primeros compradores de Wires Pro."
+  coming_title: "Nuevas ofertas de Wires — próximamente"
+  coming_text: "Esta página presenta las ofertas que acompañarán el lanzamiento de Wires 1.6.0. Todavía no están disponibles."
+  hero: "Elige las opciones que mejor se adapten a tus proyectos."
+  intro_lead: "A partir de la versión 1.6.0, Wires también ofrecerá planes de suscripción."
+  cloud_before: "Muchos usuarios querían poder guardar y compartir sus proyectos en línea."
+  cloud_after: "se ha creado para responder a esta necesidad. Con las suscripciones"
+  cloud_between: "y"
+  cloud_end: ", todas las actualizaciones están incluidas durante la suscripción, sin quedar limitadas a una versión principal. También se están preparando grandes novedades para <strong>Wires 2.0.0</strong>..."
+  free_before: "La versión"
+  free_after: "también sigue enriqueciéndose. <strong>Wires 1.6.0</strong> añade la dirección IP de los dispositivos, la rotación de imágenes, la posición personalizada del nombre de los dispositivos, títulos personalizados para las exportaciones PDF y una <strong>Lista de Material</strong> con contador. La Búsqueda de imágenes también sigue disponible gratuitamente."
+  fast_before: "También hemos pensado en quienes necesitan puntualmente todas las funciones locales de Wires. Por eso ofrecemos"
+  fast_after: ", una licencia de 30 días con un pago único."
+  pioneers: "Para agradecer a los pioneros de Wires, todas las licencias de <strong>Wires Pro</strong> compradas antes del lanzamiento de la versión 1.6.0 seguirán siendo válidas para todas las versiones 1.X.X e incluirán <strong>12 meses</strong> de Wires Pro gratis cuando se lance Wires 2.0.0."
+  pioneers_q: "¿Ya has comprado Wires Pro 1.5.0 o vas a comprarlo ahora?"
+  pioneers_gain: "Obtendrás Wires 1.6 Pro y recibirás 12 meses de suscripción gratis cuando se lance Wires 2.0.0"
+  target_free: "Para descubrir Wires"
+  target_fast: "Para una necesidad puntual"
+  target_pro: "Para un uso habitual"
+  target_ent: "Para trabajar en equipo"
+  free_forever: "Gratis para siempre"
+  no_account: "Sin crear una cuenta"
+  download: "Descargar Wires"
+  coming_soon: "Próximamente"
+  quote_soon: "Presupuestos próximamente"
+  all_free: "Todas las funciones de Free"
+  versions: "Nuevas versiones incluidas"
+  unlimited: "Dispositivos ilimitados"
+  pdf_pro: "Exportar PDF 75–600 dpi"
+  network_scan: "Escaneo de la red local"
+  import_subprojects: "Importación de subproyectos"
+  no_cloud: "Sin Wires Cloud"
+  cloud_access: "Acceso a"
+  storage_2_value: "2 GB"
+  storage_20_value: "20 GB"
+  storage_2: "de almacenamiento incluidos"
+  storage_20: "de almacenamiento incluidos"
+  share_project: "Compartir el proyecto completo"
+  online_backup: "Copia de seguridad opcional en línea"
+  collaborative: "Trabajo colaborativo"
+  plus: "Además"
+  catalog: "Añadimos el equipo que falta al catálogo de imágenes"
+  support: "Asistencia en un plazo de 48 horas laborables, por correo o en un canal privado de Discord"
+  invoice: "Factura a nombre de la empresa, presupuesto y transferencia bancaria previa solicitud"
+  price_fast_duration: "Licencia de <b class=\"lic-duree\">30</b> días"
+  one_time: "Pago único"
+  one_computer: "1 equipo"
+  pro_duration: "Suscripción de <b class=\"lic-duree\">1</b> año"
+  ent_duration: "Suscripción de <b class=\"lic-duree\">1</b> año"
+  renewal: "Renovación cancelable<br>en cualquier momento"
+  two_computers: "2 equipos, una sola persona"
+  ten_computers: "10 equipos"
+  coupon_note: "Se enviará un cupón de descuento del 100 % cuando se lance Wires 2.0.0."
+  tax_note: "Precios sin impuestos. Los impuestos se añaden al pagar cuando corresponde."
+  subscription_note: "Durante el periodo de suscripción."
+  more_seats: "¿Más de 10 equipos?"
+  write_us: "Escríbenos"
+  more_features: "… y muchas más funciones"
+  elsewhere_before: "Zonas, Lista de Material, rutas de señal, Lienzo HTML Interactivo:"
+  elsewhere_bold: "todo está incluido en Wires Free."
+  elsewhere_after: "En otras soluciones, son funciones de pago."
+  stop_title: "¿Termina tu suscripción? Tus proyectos se quedan contigo."
+  stop_p1: "Wires pasa automáticamente a Free. Puedes seguir abriendo, consultando y modificando todos los proyectos guardados en tu ordenador, aunque ya contengan más de 10 dispositivos. También puedes modificar los dispositivos existentes y sus imágenes mediante la Búsqueda de imágenes."
+  stop_p2: "Con Wires Free, puedes crear y completar proyectos de hasta 10 dispositivos, contribuir al catálogo de imágenes y exportar documentos PDF a 75 dpi. Wires sigue funcionando sin conexión y sin límite de tiempo."
+  stop_p3: "Puedes volver a contratar una oferta de pago en cualquier momento para recuperar inmediatamente sus funciones y Wires Cloud."
+  free_features:
+    - { text: "10 dispositivos por proyecto", class: "limited" }
+    - { text: "Exportar PDF 75 dpi", class: "limited" }
+    - { text: "Zonas" }
+    - { text: "Vistas frontal / trasera ↻" }
+    - { text: "Animación de rutas de señal" }
+    - { text: "Conexiones inalámbricas animadas" }
+    - { text: "Etiquetas de texto" }
+    - { text: "Lienzo HTML Interactivo" }
+    - { text: "Colores personalizados" }
+    - { text: "Dirección IP por dispositivo", new: true }
+    - { text: "Rotación de imágenes", new: true }
+    - { text: "Lista de Material con contador", new: true }
+    - { text: "Búsqueda de imágenes en línea mejorada", new: true }
+    - { text: "Formas geométricas redimensionables", new: true }
+    - { text: "Posición del nombre de un dispositivo", new: true }

@@ -1,0 +1,430 @@
+/* ── Propre à cette maquette ────────────────────────────────────────────
+     Free occupe toute la première ligne. Les trois offres payantes restent
+     comparables côte à côte sur la ligne suivante. */
+  .license-table{grid-template-columns:repeat(3,minmax(0,372px));}
+  @media(max-width:980px){ .license-table{grid-template-columns:minmax(0,440px);} }
+
+  .license-plan-logo{
+    width:auto;
+    height:48px;
+    max-width:112px;
+    object-fit:contain;
+    object-position:left center;
+  }
+
+  /* ⚠️ Tes listes portent `flex:1` et `display:grid` : elles s'étirent pour
+     remplir la colonne, et l'espace en trop est réparti ENTRE les lignes. Les
+     colonnes n'ayant pas le même nombre d'items, les lignes équivalentes ne
+     tombent pas à la même hauteur et la comparaison devient illisible. On
+     laisse donc les lignes à leur hauteur naturelle. */
+  /* ⚠️ L'en-tête met le titre et le bloc de prix sur une même ligne, sans
+     repli. « Entreprise » est bien plus long que « Free » : la note de droite
+     débordait du cadre. On autorise le repli, et on raccourcit les notes. */
+  /* ⚠️ L'en-tête met le titre et le bloc de prix sur une même ligne. « Entreprise »
+     mesure 163 px contre 69 pour « Free » : à trois colonnes, la note de droite
+     débordait du cadre. On récupère la place sur le corps du titre et sur
+     l'écart, plutôt qu'en laissant le prix passer sous le titre — un repli sur
+     une seule colonne décalerait toute sa liste et casserait la comparaison.
+     Le repli reste autorisé, en dernier recours. */
+  .license-column h2{font-size:32px;}
+  /* Hauteur d'en-tête identique pour les trois : les colonnes n'ont ni le même
+     nombre de mentions ni un grand prix affiché, et sans ça leurs listes ne
+     démarrent pas à la même ligne. */
+  .license-column-heading{gap:14px; flex-wrap:wrap; min-height:126px;}
+  .license-target{
+    flex:0 0 100%;
+    margin:0 0 2px;
+    color:#9cacc1;
+    font-family:'Share Tech Mono', monospace;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.1em;
+    line-height:1.3;
+    text-transform:uppercase;
+  }
+  .license-price-block{min-width:0;}
+  /* ⚠️ site.css décale les mentions de Free de 61 px, pour qu'elles tombent en
+     face de celles des colonnes payantes. Cette valeur avait été calée quand
+     Free n'avait que deux mentions ; avec trois, elle descend l'en-tête de 21 px
+     et la liste de Free ne démarre plus à la même ligne que les autres. Le bon
+     décalage, c'est la hauteur de la ligne de prix (38 px) plus l'écart (2 px). */
+  .license-free-meta{padding-top:40px;}
+  /* La durée de couverture est le chiffre qui sépare vraiment les deux formules
+     payantes : il doit se lire avant le reste de la mention. `line-height:1`
+     l'empêche d'agrandir sa ligne — sinon l'en-tête grandit et les trois
+     colonnes se désalignent à nouveau. */
+  .lic-duree{font-size:17px; font-weight:900; color:var(--text, #fff); line-height:1;}
+
+  /* ⚠️ Entreprise porte un bloc « En plus » que les deux autres n'ont pas : en
+     empilement libre, son « Dans toutes les options » tombe plus bas que celui
+     des voisines. Les colonnes empruntent donc les lignes du tableau (subgrid),
+     et chaque étage se cale sur la plus haute des trois. Aucune hauteur n'est
+     écrite en dur : le jour où une ligne s'ajoute, l'alignement suit. */
+  .license-column{display:grid; grid-template-rows:subgrid; grid-row:span 3;}
+  .lic-propre{display:flex; flex-direction:column;}
+  .license-column ul{align-content:start;}
+
+  .license-column.free{
+    grid-column:1 / -1;
+    grid-row:auto;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    grid-template-rows:auto auto;
+    column-gap:38px;
+  }
+  .license-column.free .license-column-heading{
+    grid-column:1 / 3;
+    grid-row:1;
+  }
+  .license-column.free .lic-propre{
+    grid-column:1 / -1;
+    grid-row:2;
+  }
+  .license-column.free .license-column-heading{min-height:0;margin-bottom:24px;align-items:center;}
+  .license-column.free .license-free-meta{padding-top:0;}
+  .license-column.free .lic-propre ul{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px 38px;
+  }
+  .license-column.free li.lic-vide{display:none;}
+  .license-column.free .lic-actions{
+    grid-column:3;
+    grid-row:1;
+    width:100%;
+    justify-self:stretch;
+    align-self:end;
+    padding-bottom:24px;
+  }
+  .license-column.free .license-card-action{
+    margin-top:0;
+  }
+
+  @media(max-width:980px){
+    .license-column.free{
+      grid-column:1;
+      grid-template-columns:1fr;
+      grid-template-rows:auto auto auto;
+    }
+    .license-column.free .license-column-heading,
+    .license-column.free .lic-propre,
+    .license-column.free .lic-actions{
+      grid-column:1;
+      grid-row:auto;
+    }
+    .license-column.free .lic-propre ul{grid-template-columns:1fr;}
+    .license-column.free .lic-actions{width:100%;padding-bottom:0;}
+    .license-column.free .license-card-action{margin-top:28px;}
+  }
+  /* Un fond légèrement teinté par formule : le regard distingue les trois
+     colonnes avant même de lire. Très discret — la couleur descend en
+     s'éteignant, pour que le bas des colonnes reste identique et que la
+     comparaison ne soit pas gênée par un écart de contraste. */
+  .license-column.free{
+    --plan-rgb:226,232,240;
+    --button-rgb:0,170,220;
+    --button-text:#b9e7f2;
+  }
+  .license-column.fast{
+    --plan-rgb:255,174,38;
+    --button-rgb:224,139,35;
+    --button-text:#ead5b3;
+    --accent-text:#efc07b;
+  }
+  .license-column.pro{
+    --plan-rgb:82,255,88;
+    --button-rgb:52,190,94;
+    --button-text:#bde9c8;
+    --accent-text:#8ad9a5;
+  }
+  .license-column.entreprise{
+    --plan-rgb:42,153,255;
+    --button-rgb:58,126,220;
+    --button-text:#c4d6f2;
+    --accent-text:#91bbed;
+  }
+  .license-table .license-column{
+    border-color:rgba(var(--plan-rgb),.32);
+    background:
+      linear-gradient(180deg,rgba(var(--plan-rgb),.055),rgba(var(--plan-rgb),.016) 38%,transparent 74%),
+      rgba(16,26,43,.82);
+    box-shadow:
+      inset 0 0 0 1px rgba(var(--plan-rgb),.025),
+      0 18px 52px rgba(0,0,0,.25),
+      0 0 28px rgba(var(--plan-rgb),.035);
+  }
+  .license-table .license-column .license-card-action{
+    border-color:rgba(255,255,255,.12);
+    background:#172236;
+    background-image:linear-gradient(180deg,rgba(255,255,255,.035),transparent);
+    color:#eef4ff;
+    box-shadow:
+      inset 3px 0 0 rgba(var(--button-rgb),.82),
+      0 7px 18px rgba(0,0,0,.16);
+  }
+  .license-table .license-column .license-card-action:hover{
+    color:#fff;
+    border-color:rgba(var(--button-rgb),.42);
+    background:#1a2940;
+    background-image:linear-gradient(180deg,rgba(255,255,255,.045),transparent);
+    box-shadow:
+      inset 3px 0 0 rgba(var(--button-rgb),1),
+      0 8px 20px rgba(0,0,0,.2);
+    filter:none;
+  }
+  .license-card-action .license-button-logo{
+    display:block;
+    width:auto;
+    height:26px;
+    max-width:80%;
+    object-fit:contain;
+    transform:translateY(-4px);
+  }
+  .license-card-action:has(.license-button-logo){gap:10px;}
+  .license-column li.license-cloud-access{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .license-cloud-logo{
+    display:block;
+    width:auto;
+    height:34px;
+    max-width:150px;
+    object-fit:contain;
+    transform:translateY(-6px);
+  }
+  .license-column li.license-cloud-detail{
+    padding-left:52px;
+  }
+  .license-column li.license-cloud-detail::before{
+    content:"•";
+    left:30px;
+    color:#72d9f2;
+    font-weight:700;
+  }
+  .license-storage-value{color:var(--accent-text); font-weight:900;}
+  .license-column.entreprise .lic-btn-devis{
+    border-color:rgba(42,153,255,.32);
+    color:#9fcfff;
+  }
+  .license-column.entreprise .lic-btn-devis:hover{
+    border-color:rgba(42,153,255,.58);
+    color:#fff;
+  }
+  /* Une seule teinte d'accent, volontairement adoucie, relie le prix au renvoi
+     vers Free. Les néons restent réservés aux logos et ne contaminent plus le
+     texte avec de l'orange criard ou du vert bouteille. */
+  .license-column.fast .license-price,
+  .license-column.pro .license-price,
+  .license-column.entreprise .license-price{
+    color:var(--accent-text);
+  }
+
+  /* Sépare ce qui distingue les formules de ce qu'elles ont en commun. Sans
+     lui, on ne sait pas quand on a fini de comparer. */
+  .lic-commun{
+    margin:22px 0 12px; padding-top:16px;
+    border-top:1px solid rgba(255,255,255,.09);
+    font-family:'Share Tech Mono', monospace; font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--muted, #8ea2bd);
+  }
+  .license-column.entreprise .lic-commun.plus{
+    color:#ff7a3d;
+    border-top-color:rgba(255,122,61,.25);
+    font-family:inherit;
+    font-size:16px;
+    font-weight:800;
+    letter-spacing:0;
+    text-transform:none;
+  }
+
+  /* ⚠️ Hiérarchie inversée dans site.css : les deux teintes les plus lumineuses
+     du tableau (#ffcf6a pour les limites, #ff6e6e pour les absences) sont
+     toutes les deux dans la colonne gratuite, pendant que ce qu'on ACHÈTE est
+     écrit en gris éteint. L'œil va donc à la colonne qui ne rapporte rien.
+     On garde le sens des couleurs — ambre = bridé, rouge = absent — mais on
+     fait suivre la luminosité à la valeur : le blanc devient la teinte la plus
+     claire de la page, et il n'existe que dans les colonnes payantes. */
+  .license-column.fast .lic-propre li,
+  .license-column.pro .lic-propre li,
+  .license-column.entreprise .lic-propre li{color:#fff;}
+  /* Free ne garde AUCUNE couleur à lui : l'ambre et le rouge étaient les deux
+     seules teintes qu'aucune autre colonne ne portait, et c'est ça qui faisait
+     revenir l'œil dessus — même éteintes. Le vert du ✓ reste, mais il
+     n'appartient à personne : toutes les colonnes et la bande l'utilisent.
+     Ce qui dit la limite, du coup, c'est le mot lui-même, face au blanc de la
+     colonne payante juste à côté. */
+  .license-column li.limited{color:var(--muted, #8ea2bd);}
+  .license-column li.missing{color:#6f7f97;}
+  .license-column li.missing::before{color:#6f7f97;}
+
+  /* align-self:start — ce sont les boutons PRINCIPAUX qui doivent tomber sur la
+     même ligne. Sans ça la grille étire le conteneur et le bouton unique de Free
+     grandirait jusqu'à la hauteur des deux boutons d'Entreprise. */
+  /* Ce n'est pas une fonction de plus, mais le socle commun des offres
+     payantes. Une même couleur de structure la distingue des fonctions en
+     blanc et évite de la confondre avec le prix propre à chaque formule. */
+  .license-table .license-column .lic-propre li.lic-reprise{
+    padding-left:0;
+    color:#72d9f2;
+    font-weight:800;
+  }
+  .license-column li.lic-reprise::before{content:none;}
+  .license-column li.lic-vide{padding-left:0;}
+  .license-column li.lic-vide::before{content:none;}
+  /* Les deux mentions bleues forment un seul petit bloc. La seconde se
+     rapproche de la première, puis laisse une respiration légèrement plus
+     grande avant la liste. Fast réserve exactement le même espace, sans texte. */
+  .license-column li.lic-version{margin-top:-10px; margin-bottom:4px; white-space:nowrap;}
+  .license-column li.lic-version-space{visibility:hidden;}
+  .license-price-note.lic-renewal{white-space:normal; line-height:1.25;}
+
+  .lic-coming-banner{
+    max-width:980px;
+    margin:0 auto 34px;
+    padding:18px 24px;
+    border:1px solid rgba(0,210,255,.48);
+    border-radius:14px;
+    background:rgba(0,210,255,.075);
+    box-shadow:0 0 28px rgba(0,210,255,.08);
+    color:var(--text, #fff);
+    font-size:17px;
+    line-height:1.5;
+  }
+  .lic-coming-banner strong{display:block;color:var(--cyan, #64dcf4);font-size:20px;}
+  .lic-coming-banner span{color:var(--muted, #9cacc1);}
+  .license-table .license-column .license-card-action.lic-coming-soon{
+    cursor:default;
+    color:var(--button-text);
+    opacity:.82;
+    transform:none;
+  }
+  .license-table .license-column .license-card-action.lic-coming-soon:hover{
+    border-color:rgba(var(--button-rgb),.28);
+    box-shadow:
+      inset 3px 0 0 rgba(var(--button-rgb),.82),
+      0 10px 24px rgba(0,0,0,.14);
+    transform:none;
+  }
+
+  .lic-actions{display:flex; flex-direction:column; gap:10px; align-self:start;}
+  /* Le second bouton reste second : pas de fond, texte discret. Il s'adresse
+     à la minorité qui a besoin d'un bon de commande. */
+  .lic-btn-devis{
+    width:100%; margin:0; background:transparent;
+    border-color:var(--line, #1f2c44); color:var(--muted, #8ea2bd);
+    font-size:13px; font-weight:700;
+  }
+  .lic-btn-devis:hover{color:#fff; border-color:rgba(255,122,61,.55); transform:none;}
+
+  .lic-etoile{font-size:.58em; font-weight:700; color:var(--muted, #8ea2bd); margin-left:1px;
+              position:relative; top:-.45em;}
+  .lic-ailleurs{
+    max-width:760px; margin:16px auto 0; text-align:center;
+    font-size:15px; line-height:1.65; color:var(--muted, #8ea2bd);
+  }
+  .lic-ailleurs b{color:#fff; font-weight:600;}
+
+  .lic-taxes a{color:var(--cyan, #00d2ff); text-decoration:none; border-bottom:1px solid rgba(0,210,255,.35);}
+  .lic-taxes a:hover{border-bottom-color:var(--cyan, #00d2ff);}
+  .lic-taxes{
+    max-width:640px; margin:26px auto 0; text-align:center;
+    font-size:14px; line-height:1.6; color:var(--muted, #8ea2bd);
+  }
+
+  /* Ce qui est commun aux trois formules — dix lignes — était répété dans
+     chaque colonne : 478 px de hauteur, trois fois, sans rien apporter à la
+     comparaison. Dit une seule fois sur toute la largeur, ça devient l'argument
+     de la page au lieu d'un remplissage. Sa largeur suit celle du tableau
+     (3×372 + 2×20 d'écart) pour que les bords tombent juste. */
+  .lic-annonce{
+    max-width:1156px; margin:30px auto 0; padding:26px 34px;
+    border:1px solid rgba(0,210,255,.3); border-radius:14px;
+    background:rgba(0,150,200,.08); text-align:left;
+  }
+  .lic-annonce p{margin:0; font-size:16px; line-height:1.7; color:var(--muted, #8ea2bd); text-align:left;}
+  .lic-annonce p:first-child{padding-bottom:15px; border-bottom:1px solid rgba(0,210,255,.18); font-size:18px; line-height:1.45;}
+  .lic-annonce p + p{margin-top:15px; font-size:15px;}
+  .lic-annonce p.lic-pionniers{padding-top:15px; border-top:1px solid rgba(0,210,255,.18); color:#d7e0ee; font-weight:600;}
+  .lic-annonce p.lic-pionniers-gain{margin-top:9px; color:var(--cyan, #00d2ff); font-size:16px; font-weight:800; text-align:center;}
+  .lic-annonce b{color:#fff; font-weight:700;}
+  .lic-annonce strong{color:inherit; font-weight:800;}
+  .lic-annonce-logo{
+    display:inline-block; width:auto; height:25px; margin:0 4px;
+    object-fit:contain; vertical-align:-7px;
+  }
+  .lic-annonce-logo.cloud{height:29px; vertical-align:-4px;}
+
+  .lic-bande{
+    max-width:1156px; margin:40px auto 0; padding:32px 38px 26px;
+    border:1px solid var(--line, #1f2c44); border-radius:18px;
+    background:rgba(16,26,43,.52);
+  }
+  .lic-bande h2{margin:0; font-size:26px; color:#fff; text-align:center;}
+  .lic-bande-sous{
+    margin:10px auto 28px; max-width:740px; text-align:center;
+    font-size:15px; line-height:1.65; color:var(--muted, #8ea2bd);
+  }
+  .lic-bande-sous b{color:#fff; font-weight:600;}
+  /* auto-fit plutôt qu'un nombre de colonnes figé : la bande se repose toute
+     seule quand la fenêtre rétrécit, sans point de rupture à maintenir. */
+  .lic-bande-liste{
+    list-style:none; margin:0; padding:0;
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(238px,1fr)); gap:13px 26px;
+  }
+  .lic-bande-liste li{position:relative; padding-left:30px; color:var(--muted, #8ea2bd); font-weight:700;}
+  .lic-bande-liste li::before{content:"✓"; position:absolute; left:0; color:var(--green, #3ddc84); font-weight:900;}
+  .lic-bande-liste .license-new{color:#ff6e6e; font-style:italic; font-weight:900; margin-right:3px;}
+  .lic-bande .license-more{margin:24px 0 0;}
+
+  .lic-couverture{
+    max-width:900px; margin:34px auto 0; padding:26px 30px;
+    border:1px solid var(--line, #1f2c44); border-radius:16px;
+    background:rgba(16,26,43,.45);
+  }
+  .lic-couverture h3{margin:0 0 14px; font-size:21px; color:#fff;}
+  .lic-couverture p{margin:0 0 14px; font-size:16px; line-height:1.65; color:var(--muted, #8ea2bd);}
+  .lic-couverture p:last-child{margin-bottom:0;}
+  .lic-couverture strong{color:#fff; font-weight:600;}
+  .lic-tarifs{display:flex; gap:26px; flex-wrap:wrap; margin-bottom:16px;}
+  .lic-tarifs div{font-size:15px; color:var(--muted, #8ea2bd);}
+  .lic-tarifs b{display:block; font-size:19px; color:var(--cyan, #00d2ff); font-weight:800;}
+  .lic-tarifs div.ent b{color:#ff7a3d;}
+  .lic-rassurance{margin-top:18px; padding-top:16px; border-top:1px solid rgba(255,255,255,.08);}
+
+  .lic-ailleurs{
+    max-width:900px; margin:22px auto 0; text-align:center;
+    font-size:15px; color:var(--muted, #8ea2bd);
+  }
+  .lic-ailleurs b{color:#fff; font-weight:600;}
+  .maquette{
+    max-width:900px; margin:0 auto 26px; padding:10px 14px;
+    border:1px dashed rgba(0,210,255,.35); border-radius:10px;
+    font-family:'Share Tech Mono', monospace; font-size:12px; color:#8ea2bd;
+  }
+/* Adaptation mobile uniquement — la base bureau ci-dessus reste inchangée. */
+@media(max-width:560px){
+  .lic-coming-banner{margin-bottom:26px;padding:16px 18px;font-size:15px}
+  .lic-coming-banner strong{font-size:17px}
+  .lic-annonce{margin-top:24px;padding:20px 18px}
+  .lic-annonce p{font-size:15px;line-height:1.58}
+  .lic-annonce p:first-child{font-size:16px;line-height:1.4}
+  .lic-annonce p + p{margin-top:12px;font-size:14px}
+  .lic-annonce p.lic-pionniers{padding-top:12px}
+  .lic-annonce-logo{height:22px;vertical-align:-6px}
+  .lic-annonce-logo.cloud{height:26px;vertical-align:-4px}
+  .license-table-section{padding-top:20px}
+  .license-table{grid-template-columns:minmax(0,1fr)}
+  .license-column{padding:24px 20px;border-radius:16px}
+  .license-column-heading{min-height:0;gap:10px;margin-bottom:20px}
+  .license-plan-logo{height:44px;max-width:104px}
+  .license-price-note{white-space:normal}
+  .license-column li{padding-left:27px}
+  .license-column li.lic-version{white-space:normal}
+  .license-column li.license-cloud-access{flex-wrap:wrap}
+  .license-cloud-logo{height:30px;max-width:132px}
+  .license-column li.license-cloud-detail{padding-left:45px}
+  .license-column li.license-cloud-detail::before{left:25px}
+  .lic-taxes,.lic-ailleurs{font-size:13px}
+  .lic-couverture{padding:22px 20px}
+}
