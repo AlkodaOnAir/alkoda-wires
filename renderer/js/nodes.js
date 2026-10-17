@@ -1110,6 +1110,8 @@ function setupNodeDrag(el, sid) {
     APP.drag.type   = 'node';
     APP.drag.id     = sid;
     APP.drag.moved  = false;
+    APP.drag.sx     = e.clientX; // point d'appui, pour le seuil de déplacement (pointermove)
+    APP.drag.sy     = e.clientY;
     APP.drag.ox     = screenToCanvas(e.clientX, e.clientY).x - s.x;
     APP.drag.oy     = screenToCanvas(e.clientX, e.clientY).y - s.y;
 
@@ -1140,6 +1142,11 @@ function setupNodeDrag(el, sid) {
 
   el.addEventListener('pointermove', e => {
     if (!APP.drag.active || APP.drag.type !== 'node' || APP.drag.id !== sid) return;
+    // DÉMO DU SITE SEULEMENT (2026-10-17) : en plein écran, Chrome envoie un mouvement de 0 px entre
+    // l'appui et le relâchement ; sans seuil, il passait pour un déplacement et le clic ne sélectionnait
+    // plus l'appareil. Même seuil de 3 px que zones/textes/câbles. À reporter dans Wires (backlog).
+    if (!APP.drag.moved && window._xNodeClickThreshold !== false &&
+        Math.hypot(e.clientX - APP.drag.sx, e.clientY - APP.drag.sy) < 3) return;
     const { x, y } = screenToCanvas(e.clientX, e.clientY);
     const s = APP.nodes[sid];
 
