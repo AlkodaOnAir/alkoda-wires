@@ -34,7 +34,7 @@ function _showStartupScreen(){
 }
 const _realSetLang=setLang;
 setLang=function(e){_realSetLang("en")};
-const LICENSE={init:async()=>({isPro:!0,hasKey:!0,isExpired:!1}),initUI:()=>{},isPro:()=>!0,gate:(e,t)=>t(),showGate:()=>{},showPaywall:()=>{},getStatus:()=>({isPro:!0,hasKey:!0,isExpired:!1})};
+const LICENSE={init:async()=>({isPro:!0,hasKey:!0,isExpired:!1}),initUI:()=>{},isPro:()=>!0,can:()=>!0,gate:(e,t)=>t(),showGate:()=>{},showPaywall:()=>{},getStatus:()=>({isPro:!0,hasKey:!0,isExpired:!1})};
 
 // --- stubs démo web : modules about-ui.js / export.js / update.js omis du bundle ---
 // (sans ça, app.js bootstrap plante sur ABOUT.init()/initExportDialog() avant initFileIO,
@@ -43,6 +43,9 @@ const LICENSE={init:async()=>({isPro:!0,hasKey:!0,isExpired:!1}),initUI:()=>{},i
 const ABOUT={init:()=>{}};
 function initExportDialog(){}
 function _checkForUpdate(){}
+// 1.6.0 (11-10) : Ctrl+S, Ctrl+O et le menu de Wires appellent l'enregistrement, l'ouverture et
+// l'export, absents de la démo — sans effet ici plutôt qu'une erreur.
+function saveFile(){}function saveFileAs(){}function ouvrirUnProjet(){}function closeProject(){}function openExportModal(){}
 
 // locales.js donne des chemins relatifs à l'app réelle (assets/search/...) ;
 // cette page vit un niveau plus bas (renderer-web-demo/), d'où le préfixe.

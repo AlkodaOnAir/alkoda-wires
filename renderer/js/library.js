@@ -1108,6 +1108,7 @@ function _resetAddDeviceState() {
   // l'image du DERNIER appareil édité pour la comparaison de groupe d'image.
   _rmbgOriginal = null;
   _currentShape = null;
+  _shapeSrc     = null;
   _searchProduct = null; // un nom rapporté par une recherche abandonnée ne doit pas survivre
   _anPorts      = [];
   _rmbgEditNodeId  = null;
@@ -1229,6 +1230,71 @@ function _searchProductOfNode(node) {
   return brand && model ? { brand, model } : null;
 }
 
+// ── Marqueur d'origine : l'adresse catalogue d'une image piochée ────────
+//
+// Quand une image vient de la recherche, on retient d'où elle vient. À
+// l'enregistrement en ligne, un appareil qui porte cette adresse n'envoie
+// AUCUN octet : le serveur a déjà l'image, il suffit de la désigner, avec la
+// tolérance et le recadrage. Voir `cloud-depot.js`.
+//
+// ⚠️ L'adresse est reliée À L'IMAGE, jamais suivie à travers l'interface. C'est
+// ce qui rend le marqueur sûr : `_rmbgOriginal` est réassigné à onze endroits
+// (import disque, ré-import, retour de l'éditeur externe, forme, restauration
+// d'un état…). En suivre la valeur demanderait de n'en oublier aucun — et un
+// seul oubli ferait rouvrir un projet avec une photo que l'utilisateur n'a
+// jamais choisie. Ici, dès que l'image change, la recherche dans le registre
+// échoue et le marqueur ne s'écrit pas. Il s'efface de lui-même.
+const _SRC_MAX = 40; // un projet dépasse rarement quelques dizaines d'images
+const _srcParImage = new Map();
+
+// ⛔ Wires ne garde QUE LE CHEMIN, jamais l'adresse complète.
+//
+// Deux raisons, et aucune n'est le nom de domaine :
+//
+//   • **Wires ne télécharge jamais une image du catalogue lui-même.** Son rendu
+//     n'a pas le droit de faire un appel réseau (`connect-src 'none'`) ; c'est
+//     le serveur qui va chercher l'image. Lui passer le chemin suffit : il sait
+//     où sont ses propres fichiers. Wires n'a donc aucun besoin de connaître
+//     l'adresse de base, ni de se la faire servir.
+//
+//   • **Rien n'est figé dans les projets des utilisateurs.** Un marqueur vit
+//     dans leurs fichiers pour des années : y inscrire une adresse complète
+//     rendrait l'hébergement définitif, et en changer casserait les images de
+//     tous les projets déjà enregistrés.
+//
+// ✅ La vérification « c'est bien une image du catalogue » appartient à Search,
+// qui ne transmet d'adresse que si elle est déjà sur Cloudflare (voir
+// `isCloudflareImageUrl`). Wires n'a donc qu'à découper, sans rien connaître de
+// l'hôte — et sans constante qui se périmerait.
+//
+// ⚠️ Le chemin n'est qu'une INDICATION, jamais une preuve. Search ré-encode en
+// PNG une image de format inhabituel (`originalImageBuffer`) : l'image de
+// l'appareil n'est alors plus le fichier du catalogue. Au dépôt en ligne,
+// l'image reste désignée par son empreinte et le serveur vérifie que le
+// fichier à ce chemin a bien la même ; sinon, Wires envoie la sienne
+// (cloud-depot.js).
+
+function _retenirSrcImage(dataUrl, src) {
+  if (typeof dataUrl !== 'string' || !dataUrl || typeof src !== 'string' || !src) return;
+  let chemin;
+  try {
+    const u = new URL(src);
+    if (u.protocol !== 'https:') return;
+    chemin = u.pathname.replace(/^\/+/, '');
+  } catch (e) { return; } // pas une adresse : on n'en fait rien
+  if (!chemin) return;
+  _srcParImage.set(dataUrl, chemin);
+  // Borne simple : la Map garde l'ordre d'insertion, on retire les plus anciennes.
+  while (_srcParImage.size > _SRC_MAX) {
+    _srcParImage.delete(_srcParImage.keys().next().value);
+  }
+}
+
+// L'adresse de cette image, ou null si ce n'est pas (ou plus) celle du catalogue.
+function _srcDeLImage(dataUrl) {
+  return (typeof dataUrl === 'string' && _srcParImage.get(dataUrl)) || null;
+}
+
 // Enregistre sur l'appareil (ou l'équipement créé) le produit choisi dans la recherche pendant
 // cet ajout ou cette modification. Aucune recherche utilisée : il garde celui qu'il avait.
 function _storeSearchProductOn(target) {
@@ -1248,7 +1314,7 @@ function _storeSearchProductOn(target) {
 function _startAddDeviceFlow() {
   if (typeof _routeStepPending === 'function' && _routeStepPending()) return; // câble en attente de sa route
   const nodeCount = Object.keys(APP.nodes).filter(id => id !== 'internet').length;
-  if (!LICENSE.isPro() && nodeCount >= 10) {
+  if (!LICENSE.can('devices') && nodeCount >= 10) {   // Fast : appareils illimités (offres du 04-10)
     LICENSE.showGate('devices');
     return;
   }
@@ -1280,7 +1346,11 @@ function _enterRearIfSecondImagePick() {
 // Titre de la fenêtre de choix d'image selon la vue qui recevra l'image :
 // « ⚙ IMAGE AVANT » pour la première image d'un nouvel appareil, « ⚙ IMAGE ARRIÈRE »
 // pour « + Ajouter une deuxième image », la vue de l'onglet actif pour « Remplacer l'image ».
+// La vue qui recevra l'image choisie (08-10) : la recherche en ligne en a besoin pour
+// la deuxième image (voir _openDeviceSearch).
+let _pickImageSide = 'front';
 function _setPickImageTitle(side) {
+  _pickImageSide = side === 'rear' ? 'rear' : 'front';
   const el = document.querySelector('#modal-pick-image .modal-title');
   if (!el) return;
   const key = side === 'rear' ? 'pick_image_title_rear' : 'pick_image_title_front';
@@ -1320,6 +1390,7 @@ function openEditNodeModal(sid) {
   // sinon une marque restée d'une modification précédente du même appareil ferait relire à _applyEditToNode
   // la tolérance et les vues d'une Configuration qui n'a pas servi cette fois.
   delete document.getElementById('modal-remove-bg')?.dataset.usedForEdit;
+  delete document.getElementById('modal-remove-bg')?.dataset.imageKept;
 
   const modal  = document.getElementById('modal-add-node');
   const catSel = document.getElementById('an-cat');
@@ -1356,6 +1427,8 @@ function openEditNodeModal(sid) {
   _rmbgOriginal      = node.img_original || node.img || null;
   _currentShape      = node.shape || null;
   _currentShapeColor = node.shapeColor || '#6B7280';
+  _shapeAspect       = node.shapeAspect || _defaultShapeAspect(node.shape);
+  _shapeQuarter      = node.shapeQuarter || 0;
   _anPorts           = (node.ports || []).map(p => ({ ...p }));
   _lastAppliedBB     = null; // recalculé si on repasse par la configuration image
   // Onglets Avant/Arrière de CET appareil, préparés comme au double-clic : sans ça, Configuration
@@ -1380,6 +1453,18 @@ let _shortEdited       = false;
 let _searchProduct     = null;
 let _currentShape      = null;    // forme générique active ('rectangle','square','circle','triangle') ou null
 let _currentShapeColor = '#6B7280'; // couleur de fond de la forme active
+// Format de la forme active (largeur/hauteur). Donne par le cadre de la preview,
+// qui sur une forme ne recadre pas mais fixe ses proportions (_reshapeCurrentShape).
+let _shapeAspect       = 1;
+// Orientation de la forme : quarts de tour vers la gauche (0..3). Enregistree avec elle,
+// sinon un changement de couleur la redessinerait dans son sens d'origine.
+let _shapeQuarter      = 0;
+// Image EXACTE de la forme actuellement affichee. Si _rmbgOriginal ne lui correspond
+// plus, c'est qu'une vraie photo a ete chargee sans que l'etat de forme soit remis a
+// zero — ca existe depuis toujours (la re-importation depuis l'editeur externe, par
+// exemple), mais depuis que le cadre donne son format, relacher une poignee dans cet
+// etat REGENERAIT une forme par-dessus la photo (signale le 2026-09-23).
+let _shapeSrc          = null;
 let _anPorts      = [];       // [{ id, nx, ny, type }]
 let _pendingPort = null;     // { nx, ny } en attente de type
 const _portRowOpeners = {};  // portId → fn() ouvre le dropdown de type
@@ -1793,10 +1878,22 @@ function _applyCropFieldEdit(key, commit) {
 
   if (w < MIN) w = MIN;
   if (h < MIN) h = MIN;
-  x = Math.max(0, Math.min(x, _imgNatW - MIN));
-  y = Math.max(0, Math.min(y, _imgNatH - MIN));
-  w = Math.min(w, _imgNatW - x);
-  h = Math.min(h, _imgNatH - y);
+  // Memes bornes que les poignees : le cadre peut sortir de l'image (marge transparente).
+  if (!_cropAlignOn() || window._xCropOutside === false) {
+    x = Math.max(0, Math.min(x, _imgNatW - MIN));
+    y = Math.max(0, Math.min(y, _imgNatH - MIN));
+    w = Math.min(w, _imgNatW - x);
+    h = Math.min(h, _imgNatH - y);
+  } else {
+    // Memes bornes que les poignees : le plus grand des deux contient l'autre en entier.
+    w = Math.min(w, _imgNatW * 4);
+    h = Math.min(h, _imgNatH * 4);
+    const cb = _cropContentBox();
+    x = (w >= cb.w) ? Math.max(cb.x + cb.w - w, Math.min(x, cb.x))
+                    : Math.max(0, Math.min(x, _imgNatW - w));
+    y = (h >= cb.h) ? Math.max(cb.y + cb.h - h, Math.min(y, cb.y))
+                    : Math.max(0, Math.min(y, _imgNatH - h));
+  }
 
   _cropRect = { x, y, w, h };
   _updateCropOverlay();
@@ -1877,6 +1974,7 @@ function _toggleRmbgCropExpand() {
   _rmbgExpandBackdrop().style.display = 'block';
   if (btn) { btn.innerHTML = RMBG_COLLAPSE_ICON; btn.removeAttribute('data-i18n-title'); btn.title = t('close'); }
   _rmbgExpandMode = 'crop';
+  _updateShapeChrome();  // les champs de marges n'ont rien a faire la sur une forme
   _updateCropOverlay(); // repositionne le cadre dans son nouveau contexte + rafraîchit les champs
 }
 
@@ -2227,6 +2325,31 @@ function _portTypeLocked(portId) {
                            || (c.to   === nid && c.to_port   === portId));
 }
 
+// Types encore possibles pour un port sur lequel un cable est branche. Le verrou
+// ci-dessus repondait « aucun », ce qui etait plus strict que Wires lui-meme : une
+// prise USB-C accepte tres bien un cable USB-A, mais on ne pouvait pas renommer la
+// prise a l'interieur de cette meme famille (signale le 2026-09-23). On reprend donc
+// exactement la compatibilite utilisee pour brancher (_typeFitsCable, cables.js) :
+// USB-A et USB-C restent interchangeables, les prises audio analogiques entre elles
+// aussi, et tout le reste reste fige comme avant.
+// Renvoie null quand le port est libre : tout est permis.
+// Securite anti-regression : window._xPortTypeFamily = false -> type fige des qu'un
+// cable est branche, comme avant.
+function _portTypeChoices(portId, typeActuel) {
+  const nid = _editedNodeIdForPorts();
+  if (!nid) return null;
+  const branches = APP.cables.filter(c => (c.from === nid && c.from_port === portId)
+                                       || (c.to   === nid && c.to_port   === portId));
+  if (!branches.length) return null;
+  const ok = new Set([typeActuel]);   // son type actuel, toujours propose
+  if (window._xPortTypeFamily === false || typeof _typeFitsCable !== 'function') return ok;
+  const tous = [...PORT_CONNECTOR_TYPES, ...USER_CABLE_TYPES.map(ct => ct.id)];
+  for (const tp of tous) {
+    if (branches.every(c => _typeFitsCable(tp, c.type))) ok.add(tp);
+  }
+  return ok;
+}
+
 function _renderPortList(scrollToLast = false) {
   const list = document.getElementById('rmbg-ports-list');
   if (!list) return;
@@ -2271,7 +2394,7 @@ function _renderPortList(scrollToLast = false) {
   // tête de liste au lieu de rester à sa place naturelle en fin de série.
   // Numérotation sur tout l'appareil : le plus petit numéro libre, faces confondues (_nextFreePortLabel).
   _anPorts.forEach(p => {
-    if (!p.label) p.label = _portNumAcrossSides() ? _nextFreePortLabel() : String(_origIndex.get(p) + 1);
+    if (!p.label) { p.label = _portNumAcrossSides() ? _nextFreePortLabel() : String(_origIndex.get(p) + 1); _rmbgAutoLabels.set(p.id, p.label); }
   });
 
   // Tri par numérotation (p.label) — MAIS un port actuellement en conflit
@@ -2294,7 +2417,8 @@ function _renderPortList(scrollToLast = false) {
     row.className = 'port-list-item';
     row.dataset.portId = String(p.id);
     row.style.background = (_rmbgActivePortListId === p.id) ? '#1a2d50' : '';
-    const typeLocked = _portTypeLocked(p.id);
+    const typeChoices = _portTypeChoices(p.id, p.type);
+    const typeLocked  = !!typeChoices && typeChoices.size <= 1;
 
     // Carré coloré indicateur (couleur du type de câble)
     const dot = document.createElement('div');
@@ -2351,7 +2475,7 @@ function _renderPortList(scrollToLast = false) {
     // de suite lisible, plutôt qu'un champ vide ; librement modifiable ensuite.
     // Écrit aussi dans p.label tout de suite (pas juste affiché) : sinon rien
     // n'est réellement enregistré tant que l'utilisateur n'a pas interagi.
-    if (!p.label) p.label = String(_fallbackNum);
+    if (!p.label) { p.label = String(_fallbackNum); _rmbgAutoLabels.set(p.id, p.label); }
     nameInput.value = p.label;
     nameInput.style.cssText = `
       flex:0 0 34px;min-width:0;width:34px;
@@ -2408,6 +2532,7 @@ function _renderPortList(scrollToLast = false) {
     `;
 
     const _addTypeOpt = (tp) => {
+      if (typeChoices && !typeChoices.has(tp)) return;   // incompatible avec le cable branche
       const opt = document.createElement('div');
       opt.style.cssText = `
         display:flex;align-items:center;gap:6px;
@@ -2431,18 +2556,22 @@ function _renderPortList(scrollToLast = false) {
 
     PORT_CONNECTOR_TYPES.forEach(_addTypeOpt);
 
-    // Types câbles custom déjà créés
-    if (USER_CABLE_TYPES.length) {
+    // Types câbles custom déjà créés — filtrés d'abord, sinon un port occupé
+    // pouvait afficher un séparateur seul, sans aucune option en dessous.
+    const _customs = [...USER_CABLE_TYPES].map(ct => ct.id)
+      .filter(id => !typeChoices || typeChoices.has(id))
+      .sort((a, b) => a.localeCompare(b));
+    if (_customs.length) {
       const sep = document.createElement('div');
       sep.style.cssText = 'height:1px;background:#1e2d45;margin:4px 0';
       selDrop.appendChild(sep);
-      [...USER_CABLE_TYPES].sort((a, b) => a.id.localeCompare(b.id)).forEach(ct => _addTypeOpt(ct.id));
+      _customs.forEach(_addTypeOpt);
     }
 
     // Option "Personnalisé..."
     const _sepCustom = document.createElement('div');
     _sepCustom.style.cssText = 'height:1px;background:#1e2d45;margin:4px 0';
-    selDrop.appendChild(_sepCustom);
+    if (!typeChoices) selDrop.appendChild(_sepCustom);
 
     const customOpt = document.createElement('div');
     customOpt.style.cssText = `
@@ -2487,7 +2616,9 @@ function _renderPortList(scrollToLast = false) {
         if (ev.key === 'Escape') { done = true; selBtn.innerHTML = _makeOption(p.type); }
       });
     });
-    selDrop.appendChild(customOpt);
+    // Port occupé : pas de type inventé sur place, rien ne garantirait qu'il
+    // convienne au câble déjà branché.
+    if (!typeChoices) selDrop.appendChild(customOpt);
 
     document.body.appendChild(selDrop);
 
@@ -2544,15 +2675,29 @@ function _renderPortList(scrollToLast = false) {
       dualBtn.style.cssText = `
         display:${isWireless ? 'none' : ''};
         background:${p.dual ? 'rgba(0,212,255,.15)' : 'transparent'};
-        border:1px solid ${p.dual ? 'rgba(0,212,255,.4)' : '#1e2d45'};
-        color:${p.dual ? '#00d4ff' : '#2a3a55'};
+        border:1px solid ${p.dual ? 'rgba(0,212,255,.4)' : 'rgba(122,144,176,.5)'};
+        // Inactif : meme gris attenue que la croix de suppression voisine. Le bleu
+        // sombre precedent (#2a3a55) disparaissait sur le fond d'une ligne
+        // selectionnee (#1a2d50) — signale le 2026-09-20.
+        color:${p.dual ? '#00d4ff' : 'var(--textdim)'};
         border-radius:3px; padding:1px 5px; cursor:pointer;
         font-size:13px; flex-shrink:0; transition:all .15s;
       `;
     };
     _dualStyle();
-    dualBtn.addEventListener('click', e => {
+    dualBtn.addEventListener('click', async e => {
       e.stopPropagation();
+      // Passer un port en IN + OUT DEBRANCHE le cable qui s'y trouve : le port change
+      // de mode d'occupation et l'application ne peut pas deviner si ce cable arrive
+      // en IN ou part en OUT (voir invalidatedPortIds dans _applyEditToNode, et la
+      // note du manuel). On previent donc avant la bascule, jamais apres.
+      // _portTypeLocked(id) repond deja exactement a « un cable est branche sur ce
+      // port » : on le reutilise plutot que d'ecrire un second test.
+      // Securite anti-regression : window._xDualConfirm = false -> bascule directe.
+      if (!p.dual && window._xDualConfirm !== false && _portTypeLocked(p.id)) {
+        const ok = await showConfirm(t('port_dual_confirm'), { ok: t('port_dual_confirm_ok') });
+        if (!ok) return;
+      }
       p.dual = !p.dual;
       _dualStyle();
       _refreshRmbgApplyLabel();
@@ -2713,6 +2858,8 @@ function _rmbgStateDiffers(node) {
     original: _rmbgOriginal, ports: _anPorts,
     tol: tolEl ? +tolEl.value : null,
     shape: _currentShape, shapeColor: _currentShapeColor,
+    shapeAspect: _shapeAspect,
+    shapeQuarter: _shapeQuarter,
   };
   const sideState = side => (_rmbgActiveSide === side ? live : _rmbgSideBundles[side]);
 
@@ -2752,9 +2899,23 @@ function _rmbgPortsDiffer(oldList, newList) {
     if (Math.abs((op.ny || 0) - (np.ny || 0)) > 1e-6) return true;
     if ((op.type || '') !== (np.type || ''))  return true;
     if (!!op.dual !== !!np.dual)              return true;
-    if ((op.label || '') !== (np.label || '')) return true;
+    if ((op.label || '') !== (np.label || '') && !_rmbgIsAutoLabel(op, np)) return true;
   }
   return false;
+}
+
+// Numéros donnés par la fenêtre elle-même à un point enregistré SANS nom (appareils
+// d'avant la 1.5.0) : _renderPortList les écrit dans le point pour l'afficher et le
+// trier. Ce n'est pas une modification de l'utilisateur — sans cette mémoire, ces
+// appareils affichaient « Appliquer » dès l'ouverture (signalé le 10-10, projet Valise :
+// 33 appareils sur 37). Clé = l'identifiant du point (les points sont RECOPIÉS à chaque
+// changement d'onglet Avant/Arrière) ; vidée à chaque ouverture (_openRmbgModal). Un
+// « Appliquer » fait pour une autre raison enregistre ces numéros avec le reste.
+// Sécurité anti-régression : window._xAutoLabelNoChange = false → ancien comportement.
+const _rmbgAutoLabels = new Map();
+function _rmbgIsAutoLabel(oldPort, newPort) {
+  if (window._xAutoLabelNoChange === false) return false;
+  return !oldPort.label && !!newPort.label && _rmbgAutoLabels.get(newPort.id) === newPort.label;
 }
 
 // Ancienne comparaison, gardée seulement pour window._xStateDiffersPerSide = false.
@@ -2871,16 +3032,32 @@ function _shapeStrokeColor(hex) {
   return _hslToHex(h, Math.min(100, s + 10), Math.min(90, l + 32));
 }
 
+// Proportion de depart d'une forme : le rectangle est propose en paysage, les
+// autres en carre. Sert de valeur par defaut partout ou aucun format n'a ete
+// enregistre sur l'appareil.
+function _defaultShapeAspect(shape) { return shape === 'rectangle' ? 960 / 640 : 1; }
+
+// Bornes du format : au-dela la forme devient une ligne, et le PNG demesure.
+function _clampShapeAspect(a) {
+  const v = (typeof a === 'number' && isFinite(a) && a > 0) ? a : 1;
+  return Math.max(0.15, Math.min(6.5, v));
+}
+
 // ── Génère un PNG canvas pour une forme générique (niveau module) ──
-function _generateShapePng(shape, name, color = '#6B7280') {
-  const isRect = shape === 'rectangle';
-  const w = isRect ? 960 : 640;
-  const h = 640;
-  const canvas = document.createElement('canvas');
+// aspect = largeur/hauteur voulue. Omis, on reprend la proportion d'origine de
+// la forme, donc exactement le rendu d'avant (rectangle 960x640, reste 640x640).
+function _generateShapePng(shape, name, color = '#6B7280', aspect, quarter = 0) {
+  const ratio = _clampShapeAspect(aspect == null ? _defaultShapeAspect(shape) : aspect);
+  const q = ((Math.round(quarter || 0) % 4) + 4) % 4; // quarts de tour vers la gauche
+  let h = 640;
+  let w = Math.max(40, Math.round(h * ratio));
+  let canvas = document.createElement('canvas');
   canvas.width  = w;
   canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  const pad = 40;
+  let ctx = canvas.getContext('2d');
+  // Marge proportionnelle au plus petit cote : 40 px sur les deux formats d'origine
+  // (960x640 comme 640x640), et une forme tres etroite n'est plus mangee par ses marges.
+  const pad = Math.max(10, Math.round(Math.min(w, h) / 16));
   ctx.fillStyle   = color;
   ctx.strokeStyle = _shapeStrokeColor(color);
   ctx.lineWidth   = 6;
@@ -2893,8 +3070,8 @@ function _generateShapePng(shape, name, color = '#6B7280') {
     ctx.lineTo(pad, h - pad);
     ctx.closePath();
   } else {
-    const r = 24;
     const x = pad, y = pad, bw = w - pad * 2, bh = h - pad * 2;
+    const r = Math.max(2, Math.min(24, bw / 2, bh / 2));
     ctx.moveTo(x + r, y);
     ctx.lineTo(x + bw - r, y); ctx.arcTo(x + bw, y, x + bw, y + r, r);
     ctx.lineTo(x + bw, y + bh - r); ctx.arcTo(x + bw, y + bh, x + bw - r, y + bh, r);
@@ -2904,6 +3081,23 @@ function _generateShapePng(shape, name, color = '#6B7280') {
   }
   ctx.fill();
   ctx.stroke();
+
+  // Orientation : on fait tourner la FORME seule, jamais le nom, qui est ecrit
+  // ensuite et doit rester lisible. Pour un rectangle ou un cercle cela revient a
+  // echanger largeur et hauteur ; un triangle, lui, pointe vraiment sur le cote.
+  if (q) {
+    const pivote = q % 2 === 1;
+    const rot = document.createElement('canvas');
+    rot.width  = pivote ? h : w;
+    rot.height = pivote ? w : h;
+    const rc = rot.getContext('2d');
+    rc.translate(rot.width / 2, rot.height / 2);
+    rc.rotate(-q * Math.PI / 2);           // negatif = sens inverse des aiguilles
+    rc.drawImage(canvas, -w / 2, -h / 2);
+    rc.setTransform(1, 0, 0, 1, 0, 0);
+    canvas = rot; ctx = rc; w = rot.width; h = rot.height;
+  }
+
   if (name) {
     const wrapText = (text, mw) => {
       const words = text.split(' ');
@@ -2931,7 +3125,7 @@ function _generateShapePng(shape, name, color = '#6B7280') {
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
 
-    if (shape === 'triangle') {
+    if (shape === 'triangle' && !q) {
       // Rectangle virtuel ancré à la base du triangle.
       // Pour N lignes, le haut du bloc est à textBottomY - N*lineH.
       // La largeur disponible = largeur du triangle à cette hauteur - marges.
@@ -2990,7 +3184,7 @@ function _generateShapePng(shape, name, color = '#6B7280') {
       finalLines.forEach((line, i) => ctx.fillText(line, w / 2, finalStartY + i * lineH));
 
     } else {
-      // Rectangle, carré, cercle : bloc centré verticalement
+      // Rectangle, carré, cercle, et toute forme tournée : bloc centré verticalement
       const maxTextW  = w - pad * 4;
       let fontSize = Math.min(80, Math.max(24, Math.floor(w / (name.length * 0.65))));
       let lines = [];
@@ -3320,10 +3514,17 @@ function setupAddNodeModal() {
     // en attente et étaient enregistrés par la fenêtre de modification.
     _anSetupSnapshot = (_anEditNodeId && window._xEditSideAware !== false) ? {
       ports: _anPorts.map(p => ({ ...p })), original: _rmbgOriginal, imgData: _anImgData,
-      shape: _currentShape, shapeColor: _currentShapeColor, bb: _lastAppliedBB,
+      shape: _currentShape, shapeColor: _currentShapeColor, shapeAspect: _shapeAspect, shapeQuarter: _shapeQuarter, bb: _lastAppliedBB,
       activeSide: _rmbgActiveSide, bundles: { ..._rmbgSideBundles },
     } : null;
     _openRmbgModal(_rmbgOriginal || _anImgData);
+    // Image de CET appareil rechargee telle quelle : etat de reference depuis le crayon,
+    // pas une modification - meme raisonnement que openNodePortsEditor (double-clic), qui
+    // remet ce drapeau a faux juste apres l'ouverture. Sans ca, valider regenerait toujours
+    // l'image depuis ce chemin (voir _rmbgSideImageUnchanged). Un re-import, lui, releve le
+    // drapeau dans _openRmbgModal et n'est donc pas concerne.
+    const _refNode = _anEditNodeId ? APP.nodes[_anEditNodeId] : null;
+    if (_refNode && _rmbgOriginal === (_refNode.img_original || _refNode.img)) _rmbgTouched = false;
   });
 
 
@@ -3550,11 +3751,14 @@ function _anFinalizeConfirm(name, short, cat) {
       cat,
       img:          frontData.img,
       img_original: frontData.img_original,
+      img_src:      _srcDeLImage(frontData.img_original),
       rmbg_tol:     frontData.tol,
       rmbg_crop:    frontData.crop,
       ports:        frontData.ports,
       shape:        frontData.shape || null,
       shapeColor:   frontData.shape ? frontData.shapeColor : null,
+      shapeAspect:  frontData.shape ? frontData.shapeAspect : null,
+      shapeQuarter: frontData.shape ? frontData.shapeQuarter : null,
       w: _iw, h: _ih,
       // Cadre du contenu visible, calculé sur les pixels opaques de l'image finale
       // (voir _alphaBBFromCanvas) plutôt qu'une valeur fixe : c'est ce rectangle qui
@@ -3566,10 +3770,11 @@ function _anFinalizeConfirm(name, short, cat) {
     if (rearData) {
       eq.imgRear          = rearData.img;
       eq.imgRear_original = rearData.img_original;
+      eq.imgRear_src      = _srcDeLImage(rearData.img_original);
       eq.rmbg_tolRear      = rearData.tol;
       eq.rmbg_cropRear     = rearData.crop;
       eq.portsRear         = rearData.ports;
-      if (rearData.shape) { eq.shapeRear = rearData.shape; eq.shapeColorRear = rearData.shapeColor; }
+      if (rearData.shape) { eq.shapeRear = rearData.shape; eq.shapeColorRear = rearData.shapeColor; eq.shapeAspectRear = rearData.shapeAspect; eq.shapeQuarterRear = rearData.shapeQuarter; }
     }
     // Produit trouvé par la recherche : gardé sur l'appareil, pour pré-remplir la recherche
     // d'une image ajoutée ou remplacée plus tard, même après fermeture (voir _searchProductOfNode).
@@ -3636,24 +3841,43 @@ function _applyEditToNode(sid, { name, short, cat }) {
   node.cat   = cat;
   node._nameEd = true;
   node._shortEd = true;
+  const _origAvant  = node.img_original || null;   // avant ecrasement, pour le recalcul du cadre
+  const _imgAvant   = node.img || null;
   node.img          = _anImgData || null;
+  // Image Avant changee (forme devenue photo, autre photo, autre recadrage) : le cadre
+  // d'obstacle du routage (bb) decrivait l'ANCIENNE image. Remis a recalculer au rendu,
+  // comme le fait l'Appliquer du double-clic (audit du 10-10).
+  // Securite anti-regression : window._xEditRefitBB = false -> ancien cadre garde.
+  if (window._xEditRefitBB !== false && (node.img || null) !== _imgAvant) node.bbAuto = false;
   node.img_original = _rmbgOriginal || null;
+  node.img_src      = _srcDeLImage(node.img_original); // marqueur d'origine, voir _retenirSrcImage
+  _rendreCadreAuto(node, _origAvant);
   node.ports        = _anPorts.map(p => ({ id: p.id, nx: p.nx, ny: p.ny, type: p.type, dual: p.dual || false, label: p.label || null }));
   node.shape        = _currentShape || null;
   node.shapeColor   = _currentShape ? _currentShapeColor : null;
+  node.shapeAspect  = _currentShape ? _shapeAspect : null;
+  node.shapeQuarter = _currentShape ? _shapeQuarter : null;
   // Tolérance de détourage : seulement si l'Image Setup a été ouvert pendant cette
   // modification — sinon le curseur affiche encore la valeur d'un autre appareil.
-  if (document.getElementById('modal-remove-bg')?.dataset.usedForEdit === sid) {
+  if (document.getElementById('modal-remove-bg')?.dataset.usedForEdit === sid
+      && document.getElementById('modal-remove-bg')?.dataset.imageKept !== '1') {
     node.rmbg_tol = +document.getElementById('rmbg-tol').value;
     node.rmbg_crop = _cropRectAsFractions();
   }
   if (rearData && !rearDeleted) {
     node.imgRear          = rearData.img;
     node.imgRear_original = rearData.img_original;
+    node.imgRear_src      = _srcDeLImage(rearData.img_original);
     node.rmbg_tolRear     = rearData.tol;
     node.rmbg_cropRear    = rearData.crop;
     node.portsRear        = rearData.ports;
-    if (rearData.shape) { node.shapeRear = rearData.shape; node.shapeColorRear = rearData.shapeColor; }
+    // Toujours ecrit, jamais seulement pose : sans le `|| null`, une face passee de
+    // forme a image restait declaree comme forme dans le fichier, et la fenetre
+    // repassait en mode forme a la reouverture (signale le 2026-09-23).
+    node.shapeRear        = rearData.shape || null;
+    node.shapeColorRear   = rearData.shape ? rearData.shapeColor   : null;
+    node.shapeAspectRear  = rearData.shape ? rearData.shapeAspect  : null;
+    node.shapeQuarterRear = rearData.shape ? rearData.shapeQuarter : null;
   }
   _storeSearchProductOn(node); // produit choisi dans la recherche pendant cette modification
   if (frontFromRear) {
@@ -3746,10 +3970,20 @@ function _saveActiveRmbgSide() {
   _rmbgSideBundles[_rmbgActiveSide] = {
     original: _rmbgOriginal, result: _rmbgResult, canvas: _rmbgCanvas,
     cropRect: _cropRect, portsImgCropRect: _portsImgCropRect, pendingCropFrac: _pendingCropFrac,
+    // Base et angle de rotation : propres a CE cote, sinon changer d'onglet
+    // ferait repartir la rotation de l'image deja tournee de l'autre vue.
+    rotBase: _rotBase, rotQuarter: _rotQuarter,
+    // Position de l'image dans son cadre : propre a CE cote. Sans la ranger ici, elle restait
+    // une variable unique partagee — changer d'onglet appliquait le decalage de l'Arriere a
+    // l'image Avant, dont le cadre se retrouvait de travers (signale le 2026-09-20).
+    imgOff: { ..._imgOff },
     imgNatW: _imgNatW, imgNatH: _imgNatH,
     ports: _anPorts.map(p => ({ ...p })),
     tol: +document.getElementById('rmbg-tol').value,
     shape: _currentShape, shapeColor: _currentShapeColor,
+    // Format de la forme : propre a CE cote, comme sa couleur.
+    shapeAspect: _shapeAspect,
+    shapeQuarter: _shapeQuarter,
     // Cadre auto-détecté (voir _lastAppliedBB, tout en bas du fichier) — sans le
     // ranger ici, il reste une variable UNIQUE partagée par les deux côtés :
     // finaliser l'Avant après être passé par l'Arrière lui aurait silencieusement
@@ -3775,11 +4009,18 @@ function _loadRmbgSide(side) {
   _cropRect         = b ? b.cropRect         : null;
   _portsImgCropRect = b ? b.portsImgCropRect : null;
   _pendingCropFrac  = b ? b.pendingCropFrac  : null;
+  _rotBase          = b ? (b.rotBase || b.original) : null;
+  _rotQuarter       = b ? (b.rotQuarter || 0)   : 0;
+  _rotBusy          = false;
+  _imgOff           = (b && b.imgOff) ? { ...b.imgOff } : { x: 0, y: 0 };
   _imgNatW = b ? b.imgNatW : 0;
   _imgNatH = b ? b.imgNatH : 0;
   _anPorts = b ? b.ports.map(p => ({ ...p })) : [];
   _currentShape      = b ? b.shape      : null;
   _currentShapeColor = b ? b.shapeColor : '#6B7280';
+  _shapeAspect       = b ? (b.shapeAspect || _defaultShapeAspect(b.shape)) : 1;
+  _shapeQuarter      = b ? (b.shapeQuarter || 0) : 0;
+  _shapeSrc          = _currentShape ? _rmbgOriginal : null;
   _lastAppliedBB     = b ? b.bb : null;
   _setSlider('rmbg-tol', b ? b.tol : 1);
 
@@ -3799,6 +4040,8 @@ function _loadRmbgSide(side) {
     _renderPortList();
     _updateConfirmBtn();
     _updateAlignButtons();
+    _updateRotateBtn();
+    _updateShapeChrome();
     return;
   }
 
@@ -3828,6 +4071,8 @@ function _loadRmbgSide(side) {
   }
   _updateConfirmBtn();
   _updateAlignButtons();
+  _updateRotateBtn();
+  _updateShapeChrome();
 }
 
 // Bascule l'onglet affiché.
@@ -3896,6 +4141,81 @@ async function _deleteRmbgSide(side) {
   _refreshRmbgApplyLabel();
 }
 
+// Image a retenir pour la face affichee : celle deja enregistree si rien de ce qui la
+// concerne n'a change (_rmbgSideImageUnchanged), sinon le recadrage refait comme avant.
+function _rmbgImageForActiveSide() {
+  if (_rmbgSideImageUnchanged(_rmbgActiveSide)) {
+    const node = _rmbgTargetNode();
+    return _rmbgActiveSide === 'rear' ? node.imgRear : node.img;
+  }
+  return _currentShape ? _rmbgOriginal : _applyCrop();
+}
+
+// L'appareil vise par la fenetre, qu'elle ait ete ouverte au double-clic (_rmbgEditNodeId)
+// ou depuis la fenetre de modification (_anEditNodeId).
+function _rmbgTargetNode() {
+  const id = _rmbgEditNodeId || _anEditNodeId;
+  return id ? (APP.nodes[id] || null) : null;
+}
+
+// Vrai si RIEN de ce qui fabrique l'image de ce cote n'a change depuis l'ouverture :
+// recadrage, tolerance, forme, image source - et aucun point de connexion deplace,
+// puisqu'un point est repere en proportion de l'image affichee et n'aurait plus de sens
+// sur une autre. Dans ce cas l'image enregistree est conservee telle quelle, avec sa
+// compression d'origine, au lieu d'etre recadree une seconde fois puis re-encodee depuis
+// un canvas (quelques pixels perdus, proportions changees, points decales, poids double).
+// Toute incertitude renvoie false, donc le comportement d'avant.
+// Securite anti-regression : window._xKeepStoredImage = false -> toujours regenerer.
+function _rmbgSideImageUnchanged(side) {
+  if (window._xKeepStoredImage === false) return false;
+  if (_rmbgTouched) return false;   // recadrage, tolerance, re-import : la fenetre l'a deja note
+  const node = _rmbgTargetNode();
+  if (!node) return false;
+  const isRear = side === 'rear';
+  if (!(isRear ? node.imgRear : node.img)) return false;
+  // Cadre du contenu (obstacle de routage) absent : le laisser recalculer comme avant,
+  // sinon il serait marque « deja calcule » (bbAuto) sans jamais l'avoir ete.
+  if (!isRear && !node.bb) return false;
+  if ((_currentShape || null) !== ((isRear ? node.shapeRear : node.shape) || null)) return false;
+  if (_currentShape && (_currentShapeColor || null) !== ((isRear ? node.shapeColorRear : node.shapeColor) || null)) return false;
+  const orig = isRear ? (node.imgRear_original || node.imgRear) : (node.img_original || node.img);
+  if ((_rmbgOriginal || null) !== (orig || null)) return false;
+  const tolEl = document.getElementById('rmbg-tol');
+  const tolNode = isRear ? node.rmbg_tolRear : node.rmbg_tol;
+  if (tolEl && tolNode != null && +tolEl.value !== +tolNode) return false;
+  const oldPorts = (isRear ? node.portsRear : node.ports) || [];
+  for (const p of (_anPorts || [])) {
+    const op = oldPorts.find(o => o.id === p.id);
+    if (!op) return false;                                          // point ajoute
+    if (Math.abs((op.nx || 0) - (p.nx || 0)) > 1e-6) return false;   // point deplace
+    if (Math.abs((op.ny || 0) - (p.ny || 0)) > 1e-6) return false;
+  }
+  return true;
+}
+
+// Ce que l'appareil a DEJA, remis dans la meme forme que _rmbgFinalizeSide, pour que le
+// code appelant n'ait rien a savoir de ce choix. Les points, eux, viennent de la fenetre :
+// changer le mode IN/OUT, le nom ou le type d'un point ne touche pas a l'image.
+// crop volontairement laisse tel quel, meme absent : enregistrer le recadrage automatique
+// calcule a l'ouverture alors qu'on garde l'ANCIENNE image donnerait un recadrage qui ne
+// decrit pas l'image stockee - et decalerait les points a la prochaine ouverture.
+function _rmbgStoredSide(side) {
+  const node = _rmbgTargetNode();
+  const isRear = side === 'rear';
+  return {
+    img:          isRear ? node.imgRear : node.img,
+    img_original: isRear ? (node.imgRear_original || node.imgRear) : (node.img_original || node.img),
+    tol:          isRear ? node.rmbg_tolRear : node.rmbg_tol,
+    crop:         isRear ? (node.rmbg_cropRear || null) : (node.rmbg_crop || null),
+    ports:        (_anPorts || []).map(p => ({ ...p })),
+    shape:        isRear ? (node.shapeRear || null) : (node.shape || null),
+    shapeColor:   isRear ? (node.shapeColorRear || null) : (node.shapeColor || null),
+    shapeAspect:  (isRear ? node.shapeAspectRear : node.shapeAspect) || _defaultShapeAspect(isRear ? node.shapeRear : node.shape),
+    shapeQuarter: (isRear ? node.shapeQuarterRear : node.shapeQuarter) || 0,
+    bb:           isRear ? null : node.bb,
+  };
+}
+
 // Données finales (image recadrée + ports + tolérance...) d'un côté donné, au
 // moment d'Appliquer. Ne renvoie non-null QUE si ce côté a réellement été
 // rendu cette session (vue active avec image, ou bundle mis de côté dont le
@@ -3903,11 +4223,32 @@ async function _deleteRmbgSide(side) {
 // été affiché n'est PAS retouché : ses champs sur le nœud restent tels quels
 // plutôt que d'être écrasés par un recadrage encore vide.
 // Précondition : _saveActiveRmbgSide() vient d'être appelé.
+// Image remplacee = proportions potentiellement toutes autres : la boite de
+// l'appareil doit se recalculer dessus. Sans ca, une hauteur reglee a la main
+// pour l'ANCIENNE image restait figee, et le cadre de selection debordait
+// visiblement de la photo reellement affichee (signale le 2026-09-24 ; c'est le
+// symptome que le commentaire de nodes.js, au verrou `hManual`, decrit deja
+// comme corrige pour le redimensionnement par un coin).
+// Le recalcul lui-meme est celui de nodes.js, au chargement de l'image : il
+// garde la largeur et en deduit la hauteur. On ne fait que lever le verrou.
+// Securite anti-regression : window._xRefitOnImageChange = false -> la taille
+// reglee a la main survit a un remplacement d'image, comme avant.
+function _rendreCadreAuto(node, ancienOriginal) {
+  if (!node || window._xRefitOnImageChange === false) return;
+  if ((node.img_original || null) === (ancienOriginal || null)) return;   // meme image
+  node.hManual = false;
+}
+
 function _rmbgFinalizeSide(side) {
   const activeSnapshot = _rmbgActiveSide;
+  // Forme residuelle sur le cote affiche : soldee AVANT de composer ce qui sera
+  // enregistre, sinon l'appareil repartait avec l'image non recadree de la forme
+  // et le cadre de contenu plein cadre.
+  if (_shapeStale()) _currentShape = null;
 
   if (side === activeSnapshot) {
     if (!_rmbgOriginal) return null;
+    if (_rmbgSideImageUnchanged(side)) return _rmbgStoredSide(side);
     return {
       img: _currentShape ? _rmbgOriginal : _applyCrop(),
       img_original: _rmbgOriginal,
@@ -3915,6 +4256,8 @@ function _rmbgFinalizeSide(side) {
       crop: _cropRectAsFractions(),
       ports: _anPorts.map(p => ({ ...p })),
       shape: _currentShape, shapeColor: _currentShapeColor,
+      shapeAspect: _shapeAspect,
+      shapeQuarter: _shapeQuarter,
       bb: _currentShape ? { left: 0, right: 1, top: 0, bottom: 1 } : _lastAppliedBB,
     };
   }
@@ -3922,13 +4265,15 @@ function _rmbgFinalizeSide(side) {
   const b = _rmbgSideBundles[side];
   if (!b || !b.original || !b.canvas) return null; // jamais rendu cette session — on ne touche à rien
   _loadRmbgSide(side);
-  const out = {
+  const out = _rmbgSideImageUnchanged(side) ? _rmbgStoredSide(side) : {
     img: _currentShape ? _rmbgOriginal : _applyCrop(),
     img_original: _rmbgOriginal,
     tol: +document.getElementById('rmbg-tol').value,
     crop: _cropRectAsFractions(),
     ports: _anPorts.map(p => ({ ...p })),
     shape: _currentShape, shapeColor: _currentShapeColor,
+    shapeAspect: _shapeAspect,
+    shapeQuarter: _shapeQuarter,
     bb: _currentShape ? { left: 0, right: 1, top: 0, bottom: 1 } : _lastAppliedBB,
   };
   _loadRmbgSide(activeSnapshot);
@@ -3941,11 +4286,202 @@ function _rmbgFinalizeSide(side) {
 // cadre `bb` : indépendant des dimensions réelles, donc valable même si l'image
 // est un jour ré-encodée à une autre taille.
 function _cropRectAsFractions() {
-  if (!_cropRect || !_imgNatW || !_imgNatH) return null;
+  const r = _cropEffRect();
+  if (!r || !_imgNatW || !_imgNatH) return null;
   return {
-    x: _cropRect.x / _imgNatW, y: _cropRect.y / _imgNatH,
-    w: _cropRect.w / _imgNatW, h: _cropRect.h / _imgNatH,
+    x: r.x / _imgNatW, y: r.y / _imgNatH,
+    w: r.w / _imgNatW, h: r.h / _imgNatH,
   };
+}
+
+// ── Rotation de l'image source ────────────────────────────────────────────
+// Un clic = un quart de tour vers la gauche. L'image telle qu'importée est
+// gardée intacte (_rotBase) et le résultat est TOUJOURS recalculé depuis elle
+// selon l'angle cumulé : un seul ré-encodage quel que soit le nombre de clics,
+// et quatre clics rendent exactement le fichier de départ (q revient à 0, donc
+// on réutilise _rotBase sans repasser par un canvas).
+let _rotBase    = null;  // dataURL d'origine, avant toute rotation
+let _rotQuarter = 0;     // quarts de tour vers la gauche déjà appliqués (0..3)
+let _rotBusy    = false; // une rotation en cours : le bouton est désactivé
+
+// Un quart de tour vers la gauche, en fractions (0..1) : ce qui était sur le
+// bord droit se retrouve en haut. Appliqué au recadrage ET aux points de
+// connexion pour qu'ils ne bougent pas par rapport à l'image — un point posé
+// sur une prise reste sur cette prise.
+function _rotFracPoint(nx, ny) { return { nx: ny, ny: 1 - nx }; }
+function _rotFracRect(c)       { return { x: c.y, y: 1 - (c.x + c.w), w: c.h, h: c.w }; }
+
+// Affiche le bouton seulement quand il a un sens : une vraie image chargée.
+// Une forme générique (rectangle, rond…) n'a rien à faire tourner.
+function _updateRotateBtn() {
+  const b = document.getElementById('rmbg-rotate');
+  if (!b) return;
+  // Sur une forme, le bouton la redessine tournee : sans le format de forme (secours
+  // window._xShapeFormat = false), il n'aurait plus rien a faire.
+  b.style.display = (_rmbgOriginal && window._xImgRotate !== false
+                     && (!_currentShape || _shapeStale() || _shapeFormatOn())) ? '' : 'none';
+  b.disabled = _rotBusy;
+}
+
+function _rotateSourceImage() {
+  if (window._xImgRotate === false) return;
+  // Forme generique : on ne fait pas pivoter des pixels, on la redessine tournee.
+  if (_shapeFormatOn()) { _rotateCurrentShape(); return; }
+  if (_rotBusy || !_rmbgOriginal || _currentShape) return;
+  const base = _rotBase || _rmbgOriginal;
+  const q    = (_rotQuarter + 1) % 4;
+  // Recadrage courant : celui en attente s'il n'a pas encore été consommé par
+  // le rendu, sinon celui affiché.
+  const frac = _pendingCropFrac || _cropRectAsFractions();
+
+  _rotBusy = true;
+  _updateRotateBtn();
+
+  const fini = dataUrl => {
+    _rotBusy = false;
+    _rotBase      = base;
+    _rotQuarter   = q;
+    _rmbgOriginal = dataUrl;
+    _rmbgTouched  = true;
+    // Tout ce qui décrit l'image précédente est périmé : le pipeline complet
+    // est relancé, exactement comme à l'arrivée d'une nouvelle image.
+    _rmbgResult       = null;
+    _rmbgCanvas       = null;
+    _cropRect         = null;
+    _portsImgCropRect = null;
+    _contentBoxCache  = null;
+    _imgOff           = { x: 0, y: 0 };
+    _pendingCropFrac  = frac ? _rotFracRect(frac) : null;
+    _anPorts = _anPorts.map(p => {
+      const r = _rotFracPoint(p.nx, p.ny);
+      return { ...p, nx: r.nx, ny: r.ny };
+    });
+
+    document.getElementById('rmbg-orig-img').src  = dataUrl;
+    document.getElementById('rmbg-prev-img').src  = '';
+    document.getElementById('rmbg-ports-img').src = dataUrl;
+    document.getElementById('rmbg-ports-zone').querySelectorAll('.pdot').forEach(d => d.remove());
+    document.getElementById('crop-overlay').style.display = 'none';
+    _updateRotateBtn();
+    _scheduleRmbgRender();
+  };
+
+  // Retour au point de départ : on reprend le fichier d'origine tel quel.
+  if (q === 0) { fini(base); return; }
+
+  const im = new Image();
+  im.onload = () => {
+    const pivote = q % 2 === 1;                 // 90° ou 270° : les côtés s'échangent
+    const cv = document.createElement('canvas');
+    cv.width  = pivote ? im.naturalHeight : im.naturalWidth;
+    cv.height = pivote ? im.naturalWidth  : im.naturalHeight;
+    const cx = cv.getContext('2d');
+    cx.translate(cv.width / 2, cv.height / 2);
+    cx.rotate(-q * Math.PI / 2);                // négatif = sens inverse des aiguilles
+    cx.drawImage(im, -im.naturalWidth / 2, -im.naturalHeight / 2);
+    fini(cv.toDataURL('image/png'));
+  };
+  im.onerror = () => { _rotBusy = false; _updateRotateBtn(); };
+  im.src = base;
+}
+
+// ── Format d'une forme générique ──────────────────────────────────────────
+// Sur une forme, le cadre de la preview ne découpe rien : il donne ses
+// proportions. Personne ne veut rogner un rectangle ; en revanche un rectangle
+// proposé en paysage n'avait aucun moyen de devenir portrait. Relâcher une
+// poignée regénère donc la forme au format du cadre, qu'elle remplit ensuite
+// entièrement — rien n'est jamais coupé.
+// Sécurité anti-régression : window._xShapeFormat = false → ancien comportement
+// (cadre de recadrage classique, sans effet sur l'image enregistrée).
+// Etat de forme residuel : la fenetre se croit sur une forme, mais l'image affichee
+// n'est pas celle-la. Tout doit alors se comporter comme sur une photo. Les appareils
+// venus d'un projet plus ancien, eux, sont deja remis d'aplomb a l'ouverture (voir
+// _dropShapeIfNotShape dans nodes.js) : ici on ne surveille que la session en cours.
+function _shapeStale() { return !!_currentShape && _rmbgOriginal !== _shapeSrc; }
+function _shapeFormatOn() {
+  return !!_currentShape && !_shapeStale() && window._xShapeFormat !== false;
+}
+
+// Format VU a l'ecran, rotation comprise : un quart de tour echange les deux cotes.
+function _shapeVisibleAspect() {
+  return _shapeQuarter % 2 ? 1 / _shapeAspect : _shapeAspect;
+}
+
+function _reshapeCurrentShape(depart) {
+  if (!_shapeFormatOn() || !_cropRect || !_cropRect.h) return;
+  // Poignée relâchée sans rien bouger : comparé au cadre du début du geste, jamais au
+  // format de la forme. Le PNG porte une marge transparente de quelques pixels, donc son
+  // rapport ne retombe jamais pile sur le format demandé — comparer à lui aurait redessiné
+  // la forme à chaque simple clic, avec un écart qui s'accumule.
+  if (depart && Math.abs(depart.w - _cropRect.w) < 1 && Math.abs(depart.h - _cropRect.h) < 1) return;
+  const vu = _clampShapeAspect(_cropRect.w / _cropRect.h);
+  // Le cadre decrit la forme TELLE QU'ON LA VOIT ; elle est dessinee avant rotation,
+  // donc sur une forme tournee d'un quart de tour, les deux cotes s'echangent.
+  _shapeAspect = _clampShapeAspect(_shapeQuarter % 2 ? 1 / vu : vu);
+  _regenShape();
+}
+
+// Un clic de rotation sur une forme : elle tourne pour de vrai, et son orientation est
+// gardee avec elle — sinon un changement de couleur la redessinerait dans son sens d'origine.
+function _rotateCurrentShape() {
+  if (!_shapeFormatOn()) return;
+  _shapeQuarter = (_shapeQuarter + 1) % 4;
+  _regenShape();
+}
+
+function _regenShape() {
+  _applyShapeSource(_generateShapePng(_currentShape, null, _currentShapeColor, _shapeAspect, _shapeQuarter));
+}
+
+// Repose une forme regénérée comme image source. Même remise à zéro que l'arrivée
+// d'une nouvelle image, SAUF les points de connexion : la forme remplit toujours le
+// cadre, donc leurs fractions restent valables et ils gardent leur place relative.
+function _applyShapeSource(png) {
+  _rmbgOriginal     = png;
+  _shapeSrc         = png;
+  _rmbgTouched      = true;
+  _rotBase          = png;   // jamais une image perimee derriere le bouton de rotation
+  _rotQuarter       = 0;
+  _rotBusy          = false;
+  _rmbgResult       = null;
+  _rmbgCanvas       = null;
+  _cropRect         = null;
+  _portsImgCropRect = null;
+  _contentBoxCache  = null;
+  _pendingCropFrac  = null;
+  _imgOff           = { x: 0, y: 0 };
+  _loadShapeImgData(png);   // le test « point à l'intérieur de la forme » suit le nouveau format
+  document.getElementById('rmbg-orig-img').src  = png;
+  document.getElementById('rmbg-prev-img').src  = '';
+  document.getElementById('rmbg-ports-img').src = png;
+  document.getElementById('crop-overlay').style.display = 'none';
+  _scheduleRmbgRender();
+}
+
+// Une forme est déjà détourée et ne se recadre plus : tout ce qui parle de découpe
+// disparaît. Rappelé à chaque changement d'image ou de côté.
+function _updateShapeChrome() {
+  // Etat perime : on le solde ici, une bonne fois, plutot que de le trainer.
+  if (_shapeStale()) {
+    _currentShape = null;
+    const cs = document.getElementById('rmbg-shape-color');
+    if (cs) cs.style.display = 'none';
+  }
+  const forme = _shapeFormatOn();
+  const aff = (id, on, val) => { const e = document.getElementById(id); if (e) e.style.display = on ? (val || '') : 'none'; };
+  aff('rmbg-tol-row',     !forme);              // la tolérance ne fait rien sur une forme générée
+  // La vue agrandie reste disponible — elle est bien plus confortable pour régler un format
+  // à la main. Seuls ses champs de marges haut/bas/gauche/droite disparaissent : ils
+  // décrivent un recadrage, pas un format.
+  aff('rmbg-crop-fields', !forme, 'flex');
+  const box = document.getElementById('crop-box');
+  if (box) box.style.cursor = forme ? 'default' : 'move'; // seule la taille compte
+  const lab = document.querySelector('#modal-remove-bg [data-i18n="preview_crop"], #modal-remove-bg [data-i18n="preview_shape"]');
+  if (lab) {
+    const k = forme ? 'preview_shape' : 'preview_crop';
+    lab.dataset.i18n = k;
+    lab.textContent  = t(k);
+  }
 }
 
 let _cropRect        = null;   // { x, y, w, h } dans l'espace image
@@ -3978,6 +4514,8 @@ function _rmbgPrefillSidesFromNode(node) {
       ports: (node.portsRear || []).map(p => ({ ...p })),
       tol: node.rmbg_tolRear ?? 1,
       shape: node.shapeRear || null, shapeColor: node.shapeColorRear || '#6B7280',
+      shapeAspect: node.shapeAspectRear || _defaultShapeAspect(node.shapeRear),
+      shapeQuarter: node.shapeQuarterRear || 0,
     };
   }
 }
@@ -3986,7 +4524,7 @@ function _rmbgPrefillSidesFromNode(node) {
 // Champs de la vue Arrière retirés, aperçu ↻ et pixels d'occlusion en cache oubliés (nodes.js).
 function _rmbgClearRearFromNode(sid, node) {
   for (const k of ['imgRear', 'imgRear_original', 'portsRear', 'rmbg_tolRear', 'rmbg_cropRear',
-                   'shapeRear', 'shapeColorRear', '_imgWRear', '_imgHRear']) delete node[k];
+                   'shapeRear', 'shapeColorRear', 'shapeAspectRear', 'shapeQuarterRear', '_imgWRear', '_imgHRear']) delete node[k];
   if (typeof _previewView      !== 'undefined') delete _previewView[sid];
   if (typeof _alphaPixelsCache !== 'undefined') delete _alphaPixelsCache[sid];
   if (typeof _rearReadPending  !== 'undefined') delete _rearReadPending[sid];
@@ -4003,6 +4541,9 @@ function openNodePortsEditor(sid) {
   _searchProduct = null; // produit d'une recherche faite pour un autre appareil : jamais repris ici
   _currentShape      = node.shape || null;
   _currentShapeColor = node.shapeColor || '#6B7280';
+  _shapeAspect       = node.shapeAspect || _defaultShapeAspect(node.shape);
+  _shapeQuarter      = node.shapeQuarter || 0;
+  _shapeSrc          = _currentShape ? _rmbgOriginal : null;
   _rmbgPrefillSidesFromNode(node);
   // Utiliser l'original si disponible pour permettre re-crop + re-BG
   const dataUrl = node.img_original || node.img || null;
@@ -4012,6 +4553,16 @@ function openNodePortsEditor(sid) {
   }
   _anPorts = (node.ports || []).map(p => ({ ...p }));
   _openRmbgModal(dataUrl);
+  // L'appareil est affiché en vue Arrière sur le canevas (bouton ↻) : on ouvre la
+  // fenêtre sur CET onglet, pas sur l'Avant. On passe par la bascule normale plutôt
+  // que de charger l'Arrière d'emblée : elle range l'Avant dans son paquet comme un
+  // changement d'onglet ordinaire, donc revenir dessus reste correct.
+  // Sécurité anti-régression : window._xEditOpensDisplayedSide = false → toujours l'Avant.
+  if (window._xEditOpensDisplayedSide !== false
+      && typeof _previewView !== 'undefined' && _previewView[sid] === 'rear'
+      && node.imgRear) {
+    _switchRmbgSide('rear');
+  }
   // On vient de charger l'image de CET appareil : c'est l'état de référence, pas une
   // modification. (_openRmbgModal lève le drapeau pour couvrir les ré-imports.)
   _rmbgTouched = false;
@@ -4120,14 +4671,23 @@ window.addEventListener('resize', () => {
 });
 
 function _openRmbgModal(dataUrl) {
+  _rmbgAutoLabels.clear();   // numéros automatiques : propres à CETTE ouverture (voir _rmbgIsAutoLabel)
   // Toute ouverture charge une image : ré-import, retour de l'éditeur externe ou
   // remplacement comptent comme une modification. Le seul cas contraire est
   // l'ouverture sur l'appareil lui-même, qui remet le drapeau à faux juste après.
   _rmbgTouched  = true;
   _rmbgOriginal = dataUrl;
+  // Forme : c'est SON image. Photo : plus aucune forme de reference.
+  _shapeSrc     = _currentShape ? dataUrl : null;
+  // Nouvelle image : elle devient la base de rotation, angle remis a zero.
+  _rotBase      = dataUrl;
+  _rotQuarter   = 0;
+  _rotBusy      = false;
   _rmbgResult   = null;
   _rmbgCanvas   = null;   // reset pour éviter crop de l'image précédente
   _cropRect     = null;   // reset crop handles
+  _imgOff = { x: 0, y: 0 }; // position de l'image dans son cadre, propre a cette image
+  _contentBoxCache = null;// cadre du contenu opaque : recalcule sur le nouveau canvas
   // Recadrage enregistré sur l'appareil, à restaurer au premier rendu plutôt
   // que de recalculer le cadre automatique — sinon un recadrage ajusté à la
   // main est écrasé à chaque réouverture de la fenêtre.
@@ -4182,6 +4742,8 @@ function _openRmbgModal(dataUrl) {
 
   // Apply désactivé jusqu'à ≥1 port
   _updateConfirmBtn();
+  _updateRotateBtn();
+  _updateShapeChrome();
 
   document.getElementById('modal-remove-bg').classList.add('open');
   _refreshRmbgDeviceName(); // fenêtre visible : la case du nom peut être mesurée
@@ -4430,11 +4992,158 @@ function _runRmbgRender() {
         setTimeout(() => { _syncPortVisuals(); _renderPortList(); }, 50);
       }
     };
-    document.getElementById('rmbg-status').textContent = `${t('tolerance')} ${tol} · ${t('drag_to_crop')}`;
+    // Forme : ni tolerance (masquee) ni recadrage, le titre de l'apercu dit deja tout.
+    document.getElementById('rmbg-status').textContent =
+      _shapeFormatOn() ? '' : `${t('tolerance')} ${tol} · ${t('drag_to_crop')}`;
   });
 }
 
 // Convertit coordonnées image → coordonnées DOM sur la preview
+// Cadre du contenu reellement OPAQUE de l'image en cours, en pixels image. Les contraintes
+// de recadrage s'y referent plutot qu'au rectangle complet : une image detouree porte
+// souvent du vide transparent sur un cote, et le contenu visible butait alors bien avant le
+// bord du cadre, comme s'il etait bloque pour rien (2026-09-20).
+// Le balayage des pixels est fait une seule fois par canvas — il est refait a chaque
+// changement de tolerance, ce qui invalide le cache tout seul.
+let _contentBoxCache = null;
+function _cropContentBox() {
+  const src = _rmbgCanvas;
+  const plein = { x: 0, y: 0, w: _imgNatW, h: _imgNatH };
+  if (!src || !src.width || !src.height || typeof _alphaBBFromCanvas !== 'function') return plein;
+  if (_contentBoxCache && _contentBoxCache.src === src) return _contentBoxCache.box;
+  const f = _alphaBBFromCanvas(src);
+  const box = {
+    x: f.left * src.width,  y: f.top * src.height,
+    w: (f.right - f.left) * src.width, h: (f.bottom - f.top) * src.height,
+  };
+  if (!(box.w > 0) || !(box.h > 0)) return plein;
+  _contentBoxCache = { src, box };
+  return box;
+}
+
+// ── Caler une vue sur l'autre, dans l'apercu de recadrage ──────────────────
+// Les deux images d'un appareil sont logees dans la MEME boite (voir _nodeImgRect,
+// routing.js), dimensionnee sur l'image Avant. Deux photos cadrees differemment ne se
+// superposent donc pas. Pour y remedier a l'oeil, l'apercu montre le cadre de l'AUTRE face
+// la ou il tombe, et les poignees peuvent sortir de l'image pour ajouter du vide autour.
+let _otherDimsCache = {};   // { [dataUrl]: {w,h} } — taille naturelle d'une image finale
+let _otherSideDims  = null; // celle de l'autre face, ou null (appareil a une seule vue)
+let _cropMoveDrag   = false;// un deplacement d'image est en cours (voir _initCropDrag)
+let _cropZoomScale  = null; // derniere echelle d'apercu calculee hors geste
+// Position de l'IMAGE dans le cadre, en pixels image. Le cadre (_cropRect) n'est touche que
+// par les poignees, ce decalage que par le deplacement : les deux cadres restent donc
+// immobiles a l'ecran pendant qu'on fait glisser la photo dessous.
+let _imgOff = { x: 0, y: 0 };
+// Calage des deux vues d'un appareil : ETEINT par defaut. Mis au point le 2026-09-20 mais
+// jamais stabilise — chaque correction en deplacait une autre. Le code reste en place.
+// window._xCropAlign = true en console : rallume cadre repere, butee, ajustement de la
+// photo, poignees hors image et decoupe.
+function _cropAlignOn() { return window._xCropAlign === true; }
+// Vrai quand l'apercu doit se dezoomer pour montrer un cadre plus grand que l'image :
+// le calage des deux vues, et le format d'une forme generique — sur une forme, tirer une
+// poignee vers l'exterieur doit AGRANDIR, pas buter sur le bord (signale le 2026-09-22).
+function _cropZoomOn() { return _cropAlignOn() || _shapeFormatOn(); }
+
+let _cropS   = 1;                  // pixels image -> pixels ecran, pour les CADRES
+let _cropVue = { x: 0, y: 0 };     // point du repere des cadres au centre de l'apercu
+
+// Echelle de la photo : son CONTENU VISIBLE est ajuste au cadre bleu, proportions
+// conservees, jamais agrandi. Sur le contenu et non sur l'image entiere : un panneau de
+// rack occupe une bande fine dans une image presque vide, et ajuster l'image entiere la
+// divisait par cinq (2026-09-20).
+function _cropPhotoScale() {
+  if (!_imgNatW || !_imgNatH) return 1;
+  const ref = (window._xCropRef === false) ? null : _cropRefRect();
+  if (!ref || !(ref.w > 0) || !(ref.h > 0)) return 1;
+  const cb = _cropContentBox();
+  if (!cb || !(cb.w > 0) || !(cb.h > 0)) return 1;
+  return Math.min(1, ref.w / cb.w, ref.h / cb.h);
+}
+
+// Coin haut-gauche de la PHOTO dans le repere des cadres : son contenu vient se centrer
+// dans le cadre bleu, decale de la position choisie a la souris (_imgOff).
+function _cropPhotoOrigin() {
+  const sp = _cropPhotoScale();
+  const ref = (window._xCropRef === false) ? null : _cropRefRect();
+  const cb = _cropContentBox();
+  if (!ref || !cb) return { x: _imgOff.x, y: _imgOff.y, sp: 1 }; // eteint : rendu d'avant
+  return {
+    x: ref.x + (ref.w - cb.w * sp) / 2 - cb.x * sp + _imgOff.x,
+    y: ref.y + (ref.h - cb.h * sp) / 2 - cb.y * sp + _imgOff.y,
+    sp,
+  };
+}
+
+// Recadrage REELLEMENT applique : le cadre, moins la position de l'image dedans. C'est lui
+// qui produit l'image finale et qui est enregistre sur l'appareil.
+function _cropEffRect() {
+  if (!_cropRect) return null;
+  return { x: _cropRect.x - _imgOff.x, y: _cropRect.y - _imgOff.y, w: _cropRect.w, h: _cropRect.h };
+}
+
+// Image FINALE de l'autre face (celle qui est posee sur le canevas), ou null.
+function _otherSideFinalUrl() {
+  const node = _rmbgTargetNode();
+  if (!node) return null;
+  return (_rmbgActiveSide === 'rear' ? node.img : node.imgRear) || null;
+}
+
+// Decode sa taille naturelle une seule fois par image, puis redessine l'apercu.
+function _ensureOtherSideDims() {
+  const url = _otherSideFinalUrl();
+  if (!url) { _otherSideDims = null; return; }
+  const hit = _otherDimsCache[url];
+  if (hit) { _otherSideDims = hit; return; }
+  _otherSideDims = null;
+  const im = new Image();
+  im.onload = () => {
+    _otherDimsCache[url] = { w: im.naturalWidth, h: im.naturalHeight };
+    _updateCropOverlay();
+  };
+  im.src = url;
+}
+
+// Cible a atteindre pour que cette vue se superpose a l'autre sur le canevas : le plus petit
+// rectangle ayant la FORME de l'autre image et contenant tout le contenu visible de celle-ci.
+// Deux images logees dans la meme boite (voir _nodeImgRect, routing.js) se superposent si et
+// seulement si elles ont la meme forme — la taille, elle, est absorbee par la mise a l'echelle.
+// Il suffit donc d'amener le cadre de recadrage sur ce rectangle.
+// Volontairement FIXE : une premiere version l'exprimait par rapport au cadre en cours, donc
+// une cible qui se deplacait a chaque pixel tire, impossible a viser (signale le 2026-09-20).
+// Taille que l'autre face AURA apres validation : celle de son cadre de recadrage, tel qu'il
+// est reglé dans la fenetre. La cible doit annoncer le RESULTAT — calculee sur l'image deja
+// enregistree, elle decrivait l'etat d'avant et pouvait contredire l'autre onglet, alors
+// qu'un humain amene son cadre sur elle en comprenant que les deux vues auront alors la
+// meme forme (remarque de l'utilisateur, 2026-09-20). Cote jamais ouvert cette session :
+// son cadre n'existe pas encore, on retombe sur son image enregistree, qui est justement
+// le resultat de son recadrage enregistre.
+function _otherSidePendingDims() {
+  const autre = _rmbgActiveSide === 'rear' ? 'front' : 'rear';
+  const b = _rmbgSideBundles[autre];
+  if (b && b.cropRect && b.cropRect.w > 0 && b.cropRect.h > 0) return { w: b.cropRect.w, h: b.cropRect.h };
+  return null;
+}
+
+function _cropRefRect() {
+  if (!_cropAlignOn()) return null;
+  const autre = _otherSidePendingDims() || _otherSideDims;
+  if (!_cropRect || !autre || !(autre.w > 0) || !(autre.h > 0)) return null;
+  // Cible = le plus grand rectangle a la FORME de l'autre vue que cette photo peut remplir A SA
+  // TAILLE REELLE, c'est-a-dire inscrit dedans, centre. C'est precisement la limite au-dela de
+  // laquelle il faudrait agrandir la photo : on reduit donc la cible plutot que d'agrandir
+  // l'image, et il n'y a jamais de flou, jamais de vide ajoute (regle posee par l'utilisateur
+  // le 2026-09-20 apres plusieurs essais dans les deux sens).
+  // Seule la forme decide de la superposition sur le canevas : les deux images y sont mises a
+  // l'echelle dans la meme boite, leur definition n'y joue aucun role.
+  // Repere DESSINE uniquement : ne touche ni a l'autre image ni au canevas.
+  const asp = autre.w / autre.h;
+  if (!(asp > 0)) return null;
+  let w = _imgNatW, h = _imgNatW / asp;
+  if (h > _imgNatH) { h = _imgNatH; w = _imgNatH * asp; }
+  if (!(w > 0) || !(h > 0)) return null;
+  return { x: _imgNatW / 2 - w / 2, y: _imgNatH / 2 - h / 2, w, h };
+}
+
 function _imgToDom(ix, iy) {
   const img = document.getElementById('rmbg-prev-img');
   const r = img.getBoundingClientRect();
@@ -4452,14 +5161,52 @@ function _imgToDom(ix, iy) {
   };
 }
 
+// Position a l'ecran d'un point du repere des CADRES. Calculee, et non plus lue sur le
+// rectangle de l'element image : depuis que la photo est ajustee au cadre bleu, les deux
+// ne sont plus a la meme echelle. _cropS et _cropVue sont poses par _applyCropPreviewZoom.
+function _cropToDom(ix, iy) {
+  if (!_cropZoomOn()) return _imgToDom(ix, iy); // eteint : l'image porte tout le cadrage
+  const pv = document.getElementById('rmbg-preview');
+  const pr = pv ? pv.getBoundingClientRect() : { width: 0, height: 0 };
+  const o = _cropPhotoOrigin();
+  return {
+    x: pr.width  / 2 + _cropS * (ix - _cropVue.x),
+    y: pr.height / 2 + _cropS * (iy - _cropVue.y),
+    scaleX: _cropS, scaleY: _cropS,
+    imgLeft: pr.width  / 2 + _cropS * (o.x - _cropVue.x),
+    imgTop:  pr.height / 2 + _cropS * (o.y - _cropVue.y),
+    imgW: _imgNatW * o.sp * _cropS,
+    imgH: _imgNatH * o.sp * _cropS,
+  };
+}
+
 function _updateCropOverlay() {
   if (!_cropRect) return;
+  // Calage eteint : un cadre qui sort de l'image n'a aucun sens et n'est meme pas montrable,
+  // l'apercu ne cadrant que l'image. Seuls les essais du 2026-09-20 ont pu en produire : on
+  // les ramene donc dedans. Un cadre deja a l'interieur n'est jamais touche.
+  if (!_cropZoomOn() && _imgNatW && _imgNatH) {
+    const w = Math.min(_cropRect.w, _imgNatW), h = Math.min(_cropRect.h, _imgNatH);
+    const x = Math.max(0, Math.min(_cropRect.x, _imgNatW - w));
+    const y = Math.max(0, Math.min(_cropRect.y, _imgNatH - h));
+    if (x !== _cropRect.x || y !== _cropRect.y || w !== _cropRect.w || h !== _cropRect.h) {
+      _cropRect = { x, y, w, h };
+      _imgOff = { x: 0, y: 0 };
+    }
+  }
   const overlay = document.getElementById('crop-overlay');
   overlay.style.display = 'block';
 
+  // Cadre de l'autre face, et dezoom de l'apercu pour le montrer EN ENTIER meme s'il
+  // deborde de l'image. Sans reference (appareil a une seule vue), rien ne change.
+  // Securite anti-regression : window._xCropRef = false -> apercu d'avant, sans repere.
+  _ensureOtherSideDims();
+  const ref = (window._xCropRef === false) ? null : _cropRefRect();
+  _applyCropPreviewZoom(ref);
+
   const { x, y, w, h } = _cropRect;
-  const tl = _imgToDom(x, y);
-  const br = _imgToDom(x + w, y + h);
+  const tl = _cropToDom(x, y);
+  const br = _cropToDom(x + w, y + h);
 
   const bx = tl.x, by = tl.y, bw = br.x - tl.x, bh = br.y - tl.y;
 
@@ -4474,16 +5221,87 @@ function _updateCropOverlay() {
   const ph = tl.imgTop  + tl.imgH;
   const il = tl.imgLeft, it = tl.imgTop;
 
+  // Jamais de dimension negative : elles assombrissent ce qui est HORS du cadre, et un cadre
+  // plus grand que l'image n'a rien a assombrir. Sans cette borne, la bande du haut prenait une
+  // hauteur negative et s'affichait n'importe ou — la « bande noire » signalee le 2026-09-20.
+  // L'image est decoupee sur le cadre (voir la fin de _applyCropPreviewZoom) : ces quatre voiles
+  // n'ont plus rien a assombrir, et celui du haut couvrait du vide des qu'on remontait l'image —
+  // la « bande noire » signalee le 2026-09-20. Ils ne servent que si la decoupe est desactivee.
+  const _voiles = !_shapeFormatOn() && (!_cropAlignOn() || window._xCropClip === false);
+  const POS = v => (_voiles ? Math.max(0, v) : 0);
   const dt = document.getElementById('crop-dim-top');
-  dt.style.cssText    = `left:${il}px;top:${it}px;width:${tl.imgW}px;height:${by - it}px`;
+  dt.style.cssText    = `left:${il}px;top:${it}px;width:${POS(tl.imgW)}px;height:${POS(by - it)}px`;
   const db = document.getElementById('crop-dim-bottom');
-  db.style.cssText    = `left:${il}px;top:${by + bh}px;width:${tl.imgW}px;height:${ph - (by + bh)}px`;
+  db.style.cssText    = `left:${il}px;top:${by + bh}px;width:${POS(tl.imgW)}px;height:${POS(ph - (by + bh))}px`;
   const dl = document.getElementById('crop-dim-left');
-  dl.style.cssText    = `left:${il}px;top:${by}px;width:${bx - il}px;height:${bh}px`;
+  dl.style.cssText    = `left:${il}px;top:${by}px;width:${POS(bx - il)}px;height:${POS(bh)}px`;
   const dr = document.getElementById('crop-dim-right');
-  dr.style.cssText    = `left:${bx + bw}px;top:${by}px;width:${pw - (bx + bw)}px;height:${bh}px`;
+  dr.style.cssText    = `left:${bx + bw}px;top:${by}px;width:${POS(pw - (bx + bw))}px;height:${POS(bh)}px`;
+
+  // Cadre de reference, positionne comme le cadre de recadrage lui-meme.
+  const refEl = document.getElementById('crop-ref');
+  if (refEl) {
+    if (!ref) refEl.style.display = 'none';
+    else {
+      const rtl = _cropToDom(ref.x, ref.y), rbr = _cropToDom(ref.x + ref.w, ref.y + ref.h);
+      refEl.style.display = 'block';
+      refEl.style.left   = rtl.x + 'px';
+      refEl.style.top    = rtl.y + 'px';
+      refEl.style.width  = (rbr.x - rtl.x) + 'px';
+      refEl.style.height = (rbr.y - rtl.y) + 'px';
+    }
+  }
 
   _refreshCropFieldsUI();
+}
+
+// Reduit l'image de l'apercu juste assez pour que l'image, le cadre de recadrage et le
+// cadre de l'autre face tiennent tous les trois. Jamais d'agrandissement : sans debordement
+// l'apercu reste exactement celui d'avant. _imgToDom lit le rectangle REEL de l'image, donc
+// toutes les positions suivent ce zoom sans un seul calcul de plus.
+function _applyCropPreviewZoom(ref) {
+  const img = document.getElementById('rmbg-prev-img');
+  const pv  = document.getElementById('rmbg-preview');
+  if (!img || !pv || !_imgNatW || !_imgNatH || !_cropRect) return;
+  const pr = pv.getBoundingClientRect();
+  if (!pr.width || !pr.height) return;
+  if (!_cropZoomOn()) { img.style.transform = ''; img.style.clipPath = ''; return; }
+
+  // Cadrage cale sur la CIBLE, qui ne depend ni de la position ni de la taille du cadre blanc :
+  // aucun cadre ne bouge a l'ecran. Sans cible, on se cale sur l'image, comme avant.
+  // Union de la CIBLE et du CADRE BLANC : aucun des deux ne doit sortir du champ. Inclure le
+  // cadre est sans risque depuis que deplacer la photo ne le touche plus — le cadrage ne bouge
+  // donc que lorsqu'on redimensionne, ce qui est attendu (2026-09-20).
+  const base = ref || { x: 0, y: 0, w: _imgNatW, h: _imgNatH };
+  const ax = Math.min(base.x, _cropRect.x), ay = Math.min(base.y, _cropRect.y);
+  const bx = Math.max(base.x + base.w, _cropRect.x + _cropRect.w);
+  const by = Math.max(base.y + base.h, _cropRect.y + _cropRect.h);
+  const vue = { x: ax, y: ay, w: bx - ax, h: by - ay };
+  const MARGE = 1.08; // un peu d'air, pour que les poignees au bord restent attrapables
+  _cropS   = Math.min(pr.width / (vue.w * MARGE), pr.height / (vue.h * MARGE));
+  _cropVue = { x: vue.x + vue.w / 2, y: vue.y + vue.h / 2 };
+
+  // Photo posee a son echelle propre, contenu centre dans la cible. Son element a une taille de
+  // base plafonnee a 1 par max-width/max-height:100% — d'ou le rapport a k0.
+  const o  = _cropPhotoOrigin();
+  const k0 = Math.min(1, Math.min(pr.width / _imgNatW, pr.height / _imgNatH));
+  const tx = _cropS * (o.x + _imgNatW * o.sp / 2 - _cropVue.x);
+  const ty = _cropS * (o.y + _imgNatH * o.sp / 2 - _cropVue.y);
+  img.style.transformOrigin = 'center';
+  img.style.transform = `translate(${tx}px, ${ty}px) scale(${o.sp * _cropS / k0})`;
+
+  // Ce qui depasse du cadre blanc n'est pas dessine, en pourcentages de la photo.
+  // Securite anti-regression : window._xCropClip = false -> photo entiere visible.
+  if (window._xCropClip !== false && !_shapeFormatOn() && o.sp > 0) {
+    const pw = _imgNatW * o.sp, ph = _imgNatH * o.sp;
+    const gx0 = (_cropRect.x - o.x) / pw, gy0 = (_cropRect.y - o.y) / ph;
+    const gx1 = (_cropRect.x + _cropRect.w - o.x) / pw;
+    const gy1 = (_cropRect.y + _cropRect.h - o.y) / ph;
+    const pc = v => (Math.max(0, Math.min(1, v)) * 100).toFixed(4) + '%';
+    img.style.clipPath = `inset(${pc(gy0)} ${pc(1 - gx1)} ${pc(1 - gy1)} ${pc(gx0)})`;
+  } else {
+    img.style.clipPath = '';
+  }
 }
 
 let _rmbgPreviewResizeObserver = null; // voir fin de _initCropDrag()
@@ -4494,16 +5312,29 @@ function _initCropDrag() {
 
   const onDown = (e) => {
     e.stopPropagation();
+    // Ce clic est a nous : sans ca le navigateur peut y voir le debut d'un glisser-deposer
+    // d'image. Il confisque alors la souris — le cadre se fige en plein geste, une vignette
+    // fantome suit le curseur, et tout ne revient qu'au relachement (signale le 2026-09-22,
+    // bug anterieur au format des formes).
+    // Securite anti-regression : window._xCropNoNativeDrag = false -> comportement d'avant.
+    if (window._xCropNoNativeDrag !== false) e.preventDefault();
     const handle = e.target.dataset.h;
-    const info = _imgToDom(0, 0);
+    // Forme : le cadre donne un format, pas un cadrage — le déplacer n'aurait aucun effet.
+    if (!handle && _shapeFormatOn()) return;
+    const info = _cropToDom(0, 0); // repere des CADRES : c'est lui que les gestes deplacent
     drag = {
       handle: handle || 'move',
       startX: e.clientX, startY: e.clientY,
       startRect: { ..._cropRect },
+      startOff:  { ..._imgOff },
       scaleX: info.scaleX, scaleY: info.scaleY,
       imgLeft: info.imgLeft, imgTop: info.imgTop,
       imgW: info.imgW, imgH: info.imgH,
     };
+    // Deplacement d'image : l'apercu se cale sur le cadre pendant tout le geste, pour qu'il
+    // reste immobile a l'ecran. L'ecart avec le cadrage courant est fige ici, sinon l'apercu
+    // sauterait au premier pixel.
+    _cropMoveDrag = (drag.handle === 'move');
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup',   onUp);
   };
@@ -4516,7 +5347,9 @@ function _initCropDrag() {
     const MIN = 10;
 
     switch (drag.handle) {
-      case 'move': x += dx; y += dy; break;
+      // Calage allume : ce geste deplace l'IMAGE dans le cadre (_imgOff, plus bas), pas le
+      // cadre. Eteint : il deplace le cadre, comme avant.
+      case 'move': if (!_cropAlignOn()) { x += dx; y += dy; } break;
       case 'nw':   x += dx; y += dy; w -= dx; h -= dy; break;
       case 'n':               y += dy;          h -= dy; break;
       case 'ne':              y += dy; w += dx; h -= dy; break;
@@ -4527,23 +5360,108 @@ function _initCropDrag() {
       case 'w':   x += dx;    w -= dx;                   break;
     }
 
+    // Deplacement d'image : le cadre ne doit PAS bouger d'un pixel. On sort donc de toutes les
+    // contraintes ci-dessous, qui portent sur lui — l'une d'elles recalait sa position sur le
+    // contenu de l'image, ce qui suffisait a le faire bouger a l'ecran (signale le 2026-09-20).
+    // La position de l'image, elle, a sa propre borne, posee plus bas.
+    if (_cropAlignOn() && drag.handle === 'move') {
+      x = drag.startRect.x; y = drag.startRect.y;
+      w = drag.startRect.w; h = drag.startRect.h;
+    } else {
+
     // Contraindre dans les limites de l'image
     if (w < MIN) { if (drag.handle.includes('w')) x = drag.startRect.x + drag.startRect.w - MIN; w = MIN; }
     if (h < MIN) { if (drag.handle.includes('n')) y = drag.startRect.y + drag.startRect.h - MIN; h = MIN; }
-    x = Math.max(0, Math.min(x, _imgNatW - w));
-    y = Math.max(0, Math.min(y, _imgNatH - h));
-    w = Math.min(w, _imgNatW - x);
-    h = Math.min(h, _imgNatH - y);
+    // Le cadre peut SORTIR de l'image : c'est ainsi qu'on ajoute de la marge transparente
+    // autour pour caler cette vue sur l'autre (voir _cropRefRect). Simplement borne a une
+    // image de large de chaque cote, pour ne pas fabriquer un PNG demesure.
+    // Securite anti-regression : window._xCropOutside = false -> bloque aux bords, comme avant.
+    if (!_cropZoomOn() || window._xCropOutside === false) {
+      x = Math.max(0, Math.min(x, _imgNatW - w));
+      y = Math.max(0, Math.min(y, _imgNatH - h));
+      w = Math.min(w, _imgNatW - x);
+      h = Math.min(h, _imgNatH - y);
+    } else {
+      // Le plus grand des deux contient toujours l'autre, en entier :
+      //  - cadre plus GRAND que l'image  -> l'image reste entierement dedans (calage,
+      //    le debord devient de la marge transparente) ;
+      //  - cadre plus PETIT que l'image  -> il reste entierement dedans (recadrage
+      //    classique, comportement d'avant).
+      // Jamais de bornes en « une taille d'image » : sur une photo large et plate, elles
+      // ne retenaient rien vers le haut et interdisaient presque tout vers le bas (2026-09-20).
+      w = Math.min(w, _imgNatW * 4);
+      h = Math.min(h, _imgNatH * 4);
+      const cb = _cropContentBox();
+      x = (w >= cb.w) ? Math.max(cb.x + cb.w - w, Math.min(x, cb.x))
+                      : Math.max(0, Math.min(x, _imgNatW - w));
+      y = (h >= cb.h) ? Math.max(cb.y + cb.h - h, Math.min(y, cb.y))
+                      : Math.max(0, Math.min(y, _imgNatH - h));
+    }
+
+    } // fin du cas « redimensionnement »
+
+    const _H = drag.handle;
+    const _vert  = (_H === 'n' || _H === 's' || _H === 'nw' || _H === 'ne' || _H === 'sw' || _H === 'se');
+    const _horiz = (_H === 'e' || _H === 'w' || _H === 'nw' || _H === 'ne' || _H === 'sw' || _H === 'se');
+    // Butee sur la cible : le cadre ne peut pas en sortir, dans aucune direction — on s'arrete
+    // pile dessus. Redimensionnement seulement : un deplacement ne touche pas au cadre.
+    // Securite anti-regression : window._xCropRefStop = false -> plus aucune butee.
+    if (_H !== 'move' && window._xCropRefStop !== false && window._xCropRef !== false) {
+      const cible = _cropRefRect();
+      if (cible) {
+        // Taille d'abord, puis position : le cadre ne sort jamais de la cible, dans aucune
+        // direction. Une premiere version ne limitait que la FORME, si bien que le cadre
+        // passait allegrement au-dessus du pointille (signale le 2026-09-20).
+        if (_vert && h > cible.h)  { h = cible.h; if (_H[0] === 'n') y = drag.startRect.y + drag.startRect.h - h; }
+        if (_horiz && w > cible.w) { w = cible.w; if (_H[_H.length - 1] === 'w') x = drag.startRect.x + drag.startRect.w - w; }
+        x = Math.max(cible.x, Math.min(x, cible.x + cible.w - w));
+        y = Math.max(cible.y, Math.min(y, cible.y + cible.h - h));
+      }
+    }
+
+    // Redimensionnement : le bord OPPOSE a la poignee tiree est invariant. Les bornes
+    // ci-dessus corrigent la POSITION du cadre, ce qui le faisait glisser en entier : tirer
+    // la poignee gauche deplacait la droite des qu'une limite etait atteinte (2026-09-20).
+    // Impose en dernier, pour que ni les bornes ni la butee ne puissent le defaire.
+    if (_H !== 'move') {
+      if (_H === 'w' || _H === 'nw' || _H === 'sw') w = Math.max(MIN, drag.startRect.x + drag.startRect.w - x);
+      if (_H === 'e' || _H === 'ne' || _H === 'se') x = drag.startRect.x;
+      if (_H === 'n' || _H === 'nw' || _H === 'ne') h = Math.max(MIN, drag.startRect.y + drag.startRect.h - y);
+      if (_H === 's' || _H === 'sw' || _H === 'se') y = drag.startRect.y;
+    }
+
+    // Deplacement : seule la position de l'image change, bornee pour qu'elle reste entiere
+    // dans le cadre — le contenu OPAQUE, pas le rectangle complet, qui porte souvent du vide
+    // transparent sur un cote (voir _cropContentBox).
+    if (_cropAlignOn() && _H === 'move') {
+      const cb = _cropContentBox();
+      let ox = drag.startOff.x + dx, oy = drag.startOff.y + dy;
+      if (w >= cb.w) ox = Math.max(x - cb.x, Math.min(ox, x + w - cb.x - cb.w));
+      else           ox = Math.max(x + w - cb.x - cb.w, Math.min(ox, x - cb.x));
+      if (h >= cb.h) oy = Math.max(y - cb.y, Math.min(oy, y + h - cb.y - cb.h));
+      else           oy = Math.max(y + h - cb.y - cb.h, Math.min(oy, y - cb.y));
+      _imgOff = { x: ox, y: oy };
+    }
 
     _cropRect = { x, y, w, h };
     _updateCropOverlay();
   };
 
   const onUp = () => {
+    const _depart = drag ? drag.startRect : null;
     drag = null;
+    _cropMoveDrag = false;
     window.removeEventListener('mousemove', onMove);
     window.removeEventListener('mouseup',   onUp);
-    _commitCropRectChange();
+    _updateCropOverlay(); // recadrage normal de l'apercu, une fois le geste fini
+    // Etat de forme residuel (une photo a pris la place sans remise a zero) : on le solde
+    // ici, avant de decider. Sans ca le geste serait bien traite comme un recadrage, mais
+    // l'etat restant ferait ignorer ce recadrage a la validation — le defaut de la 1.5.0.
+    if (_shapeStale()) { _updateShapeChrome(); _updateRotateBtn(); }
+    // Forme : le cadre ne recadre pas, il refait la forme a ses proportions. Les points
+    // ne sont donc PAS remappes comme pour un recadrage — ils gardent leurs fractions.
+    if (_shapeFormatOn()) _reshapeCurrentShape(_depart);
+    else                  _commitCropRectChange();
   };
 
   box.addEventListener('mousedown', onDown);
@@ -4557,6 +5475,8 @@ function _initCropDrag() {
     expBtn.onmousedown = e => { e.stopPropagation(); e.preventDefault(); };
     expBtn.onclick     = e => { e.stopPropagation(); _toggleRmbgCropExpand(); };
   }
+  const rotBtn = document.getElementById('rmbg-rotate');
+  if (rotBtn) rotBtn.onclick = e => { e.stopPropagation(); _rotateSourceImage(); };
   const preview = document.getElementById('rmbg-preview');
   if (preview && !_rmbgPreviewResizeObserver) {
     _rmbgPreviewResizeObserver = new ResizeObserver(() => _updateCropOverlay());
@@ -4571,14 +5491,14 @@ function _commitCropRectChange() {
   const portsImg = document.getElementById('rmbg-ports-img');
   if (!portsImg || !_portsImgCropRect) return;
   const oldR = _portsImgCropRect;
-  const newR = _cropRect;
+  const newR = _cropEffRect(); // les points suivent le contenu, donc le recadrage applique
   _anPorts = _anPorts.map(p => ({
     ...p,
     nx: Math.max(0, Math.min(1, (oldR.x + p.nx * oldR.w - newR.x) / newR.w)),
     ny: Math.max(0, Math.min(1, (oldR.y + p.ny * oldR.h - newR.y) / newR.h)),
   }));
   portsImg.src = _applyCrop();
-  _portsImgCropRect = { ..._cropRect };
+  _portsImgCropRect = { ..._cropEffRect() };
   _rmbgTouched = true;   // le recadrage ne se voit pas dans la liste des ports
   _syncPortVisuals();
 }
@@ -4600,8 +5520,9 @@ function _syncShapeSwatches(color, container) {
 function _applyShapeColor(color) {
   _currentShapeColor = color;
   if (!_currentShape) return;
-  const png  = _generateShapePng(_currentShape, null, _currentShapeColor);
+  const png  = _generateShapePng(_currentShape, null, _currentShapeColor, _shapeAspect, _shapeQuarter);
   _rmbgOriginal = png;
+  _shapeSrc     = png;
   _anImgData    = png;
   document.getElementById('rmbg-ports-img').src = png;
   document.getElementById('rmbg-orig-img').src  = png; // pour que _applyCrop() lise la bonne couleur
@@ -4651,6 +5572,9 @@ function _initRmbgModal() {
         const s = _anSetupSnapshot;
         _anPorts = s.ports; _rmbgOriginal = s.original; _anImgData = s.imgData;
         _currentShape = s.shape; _currentShapeColor = s.shapeColor; _lastAppliedBB = s.bb;
+        _shapeSrc     = _currentShape ? _rmbgOriginal : null;
+        _shapeAspect  = s.shapeAspect || _defaultShapeAspect(s.shape);
+        _shapeQuarter = s.shapeQuarter || 0;
         _rmbgActiveSide = s.activeSide; _rmbgSideBundles = s.bundles;
         _anSetupSnapshot = null;
         _renderAddDevicePreview();
@@ -4668,7 +5592,7 @@ function _initRmbgModal() {
     try {
     // Pour les formes génériques, _rmbgOriginal est toujours le PNG à jour (couleur comprise).
     // _applyCrop() lirait rmbg-orig-img de façon synchrone avant son chargement async.
-    _anImgData = _currentShape ? _rmbgOriginal : _applyCrop();
+    _anImgData = _rmbgImageForActiveSide();
 
     // Ouvert DEPUIS la modale de modification (bouton crayon) : ne rien appliquer
     // ici — l'image/les ports restent en attente et c'est « Appliquer » de cette
@@ -4683,11 +5607,14 @@ function _initRmbgModal() {
         _rmbgActiveSide = 'front';
         _loadRmbgSide('front');
         _updateRmbgTabsChrome();
-        _anImgData = _currentShape ? _rmbgOriginal : _applyCrop();
+        _anImgData = _rmbgImageForActiveSide();
       }
       _renderAddDevicePreview();
       const rm = document.getElementById('modal-remove-bg');
       rm.dataset.usedForEdit = _anEditNodeId; // la tolérance du curseur concerne bien CET appareil
+      // Image inchangee : _applyEditToNode ne doit alors PAS enregistrer le recadrage ni la
+      // tolerance lus dans la fenetre - ils decriraient une image qu'on vient de ne pas produire.
+      rm.dataset.imageKept = (_anImgData === (APP.nodes[_anEditNodeId]?.img || null)) ? '1' : '';
       rm.classList.remove('open');
       document.getElementById('crop-overlay').style.display = 'none';
       return;
@@ -4758,12 +5685,23 @@ function _initRmbgModal() {
         }
 
         if (frontData) {
+          const _origAvant  = node.img_original || null;
           node.img          = frontData.img;
           node.img_original = frontData.img_original;
+          // Marqueur d'origine : relu sur la NOUVELLE originale. Oubli signalé par
+          // Search le 2026-10-01 : après une rotation ou un ré-import passés par ce
+          // chemin, l'ancien chemin catalogue restait, et le cloud aurait rendu
+          // l'ancienne image — sans la moindre erreur.
+          node.img_src = _srcDeLImage(node.img_original);
+          _rendreCadreAuto(node, _origAvant);
           node.rmbg_tol     = frontData.tol;
           node.rmbg_crop    = frontData.crop;
           node.ports        = frontData.ports;
-          if (frontData.shape) { node.shape = frontData.shape; node.shapeColor = frontData.shapeColor; }
+          // Meme raison qu'a l'Arriere : efface quand il n'y a plus de forme.
+          node.shape        = frontData.shape || null;
+          node.shapeColor   = frontData.shape ? frontData.shapeColor   : null;
+          node.shapeAspect  = frontData.shape ? frontData.shapeAspect  : null;
+          node.shapeQuarter = frontData.shape ? frontData.shapeQuarter : null;
           // Cadre du contenu visible (obstacle pour le routage/contournement) —
           // seule l'image Avant y participe pour l'instant (occlusion/rendu
           // canevas de l'Arrière pas encore codés).
@@ -4773,17 +5711,24 @@ function _initRmbgModal() {
         if (rearData) {
           node.imgRear          = rearData.img;
           node.imgRear_original = rearData.img_original;
+          node.imgRear_src      = _srcDeLImage(rearData.img_original);
           node.rmbg_tolRear     = rearData.tol;
           node.rmbg_cropRear    = rearData.crop;
           node.portsRear        = rearData.ports;
-          if (rearData.shape) { node.shapeRear = rearData.shape; node.shapeColorRear = rearData.shapeColor; }
+          node.shapeRear        = rearData.shape || null;
+          node.shapeColorRear   = rearData.shape ? rearData.shapeColor   : null;
+          node.shapeAspectRear  = rearData.shape ? rearData.shapeAspect  : null;
+          node.shapeQuarterRear = rearData.shape ? rearData.shapeQuarter : null;
         }
         _storeSearchProductOn(node); // produit choisi dans la recherche pendant cette modification
         if (frontFromRear) {
           node.shape      = frontData.shape || null;
           node.shapeColor = frontData.shape ? frontData.shapeColor : null;
+          node.shapeAspect = frontData.shape ? frontData.shapeAspect : null;
+          node.shapeQuarter = frontData.shape ? frontData.shapeQuarter : null;
           node._imgW = node._imgWRear || node._imgW;
           node._imgH = node._imgHRear || node._imgH;
+          node.hManual = window._xRefitOnImageChange === false ? node.hManual : false;
           if (!frontData.bb) node.bbAuto = false; // cadre du contenu recalculé sur la nouvelle image au rendu
         }
         if (rearDeleted) _rmbgClearRearFromNode(_rmbgEditNodeId, node);
@@ -4912,6 +5857,10 @@ function _initRmbgModal() {
   // a été choisie, quelle que soit sa provenance. Extrait de #pick-image-import
   // pour que les deux chemins ne puissent pas diverger.
   function _acceptPickedImage(dataUrl, produit) {
+    // Adresse catalogue de l'image, quand la recherche la fournit : Search la
+    // passe dans `produit.imageUrl` seulement si elle est déjà sur Cloudflare
+    // (portage du 2026-10-01). Un import disque n'en a jamais.
+    _retenirSrcImage(dataUrl, produit && produit.imageUrl);
     _enterRearIfSecondImagePick(); // en premier : l'Avant est rangée avant les remises à zéro ci-dessous
     // Le nom ne sert qu'à la DERNIÈRE étape (#modal-add-node), qui n'arrive
     // qu'après Configuration image : il faut donc le mettre de côté ici et le
@@ -4987,6 +5936,9 @@ function _initRmbgModal() {
           // une toute première recherche.
           initialBrand: initialProduct?.brand,
           initialModel: initialProduct?.model,
+          // Deuxième image (Arrière, ou son remplacement), 08-10 : le produit pré-rempli
+          // est sélectionné tout seul et la case « Arrière » est cochée. Jamais pour l'Avant.
+          pourArriere: _pickImageSide === 'rear',
           // Second argument : { brand?, model? }, jamais une chaîne assemblée.
           // C'est Wires qui compose le nom complet et le nom court.
           onPick: (dataUrl, produit) => finish(dataUrl, produit),
@@ -5041,13 +5993,15 @@ function _initRmbgModal() {
       const shape = btn.dataset.shape;
       _currentShape = shape;
       _currentShapeColor = '#6B7280'; // reset couleur par défaut à chaque nouvelle forme
+      _shapeAspect = _defaultShapeAspect(shape); // format de depart, le cadre le changera ensuite
+      _shapeQuarter = 0;                         // nouvelle forme : toujours dans son sens d'origine
       // Forme générée → un fichier temp d'édition externe d'une précédente photo
       // devient sans rapport (voir #pick-image-import, même logique de reset).
       _rmbgTempPath = null;
       document.getElementById('rmbg-reimport').disabled = true;
       document.getElementById('rmbg-reimport').style.opacity = '0.35';
       document.getElementById('rmbg-status').textContent = '';
-      const dataUrl = _generateShapePng(shape, null, _currentShapeColor);
+      const dataUrl = _generateShapePng(shape, null, _currentShapeColor, _shapeAspect, _shapeQuarter);
       _openRmbgModal(dataUrl);
     });
   });
@@ -5111,6 +6065,21 @@ function _initRmbgModal() {
       }
 
       _rmbgOriginal = newUrl;
+      // L'image vient de changer : le dire a la fenetre, sinon rien ne le remarque.
+      // La comparaison qui decide du libelle du bouton (_rmbgStateDiffers) regarde la
+      // forme, la tolerance, les points et la vue Arriere, JAMAIS l'image elle-meme :
+      // sans ce drapeau, le bouton restait « Fermer » apres un aller-retour dans
+      // l'editeur externe, et le travail etait perdu en fermant (signale le
+      // 2026-09-24). L'autre chemin qui change d'image, « Remplacer l'image »,
+      // le levait deja en passant par _openRmbgModal.
+      _rmbgTouched  = true;
+      // Le fichier revenu de l'editeur est une vraie image, meme s'il est parti
+      // d'une forme : on quitte le mode forme au lieu de le trainer.
+      _currentShape = null;
+      _shapeSrc     = null;
+      if (typeof _updateShapeChrome === 'function') _updateShapeChrome();
+      if (typeof _updateRotateBtn   === 'function') _updateRotateBtn();
+      _refreshRmbgApplyLabel();
       status.textContent = 'Re-imported — processing...';
       _runRmbgRender();
     } catch(e) {
@@ -5132,6 +6101,48 @@ function _initRmbgModal() {
   const colorPicker = document.getElementById('rmbg-shape-color-picker');
   colorPicker.addEventListener('input', () => _applyShapeColor(colorPicker.value));
   colorSection.querySelector('label').addEventListener('click', () => colorPicker.click());
+}
+
+// ── Détourage SANS effet de bord ──────────────────────────────
+//
+// Pour reconstruire un projet repris en ligne : on refait l'image détourée à
+// partir de l'originale, de la tolérance et du recadrage.
+//
+// ⚠️ `_removeBgCanvas` laisse derrière lui une référence globale au canvas
+// (`_rmbgCanvas`), dont `_applyCrop` se sert comme source. Une reconstruction
+// en arrière-plan écraserait donc ce que la fenêtre Configuration image a sous
+// la main, et le prochain recadrage porterait sur la mauvaise image. On remet
+// la valeur en place.
+//
+// Doit vivre ICI : `_rmbgCanvas` est privée au fichier, une enveloppe posée
+// ailleurs ne pourrait pas la restaurer.
+async function detourageIsole(dataUrl, tolerance) {
+  // Garde-fou (relecture de sécurité du 09-10, sa limite) : au-delà de 40 millions de pixels,
+  // pas de détourage — l'image compte comme manquante. Une image piégée, légère mais immense
+  // (10 000 × 10 000), ferait sinon planter la fenêtre qui reprend le projet de Wires Cloud
+  // ou la page du lien. Les images d'appareils font 1 à 2 millions de pixels.
+  const MAX_PIXELS = 40e6;
+  const taille = await new Promise((ok, ko) => {
+    const i = new Image();
+    i.onload = () => ok(i.naturalWidth * i.naturalHeight);
+    i.onerror = () => ko(new Error('detourageIsole : image illisible'));
+    i.src = dataUrl;
+  });
+  if (!(taille > 0) || taille > MAX_PIXELS) throw new Error('detourageIsole : image trop grande (' + taille + ' pixels)');
+  const sauve = _rmbgCanvas;
+  try {
+    const r = await _removeBgCanvas(dataUrl, Number(tolerance) || 0);
+    // ⚠️ On rend AUSSI le canvas, et c'est essentiel : le recadrage doit
+    // travailler dessus directement, comme le fait `_applyCrop`. Passer par un
+    // PNG intermédiaire ferait perdre de la précision aux pixels à demi
+    // transparents du fondu de contour (un canvas range la transparence sous
+    // une forme interne, l'aller-retour la convertit deux fois). Mesuré le
+    // 2026-10-01 : jusqu'à 8 % des pixels d'une image détourée en étaient
+    // affectés.
+    return Object.assign({}, r, { canvas: _rmbgCanvas });
+  } finally {
+    _rmbgCanvas = sauve;
+  }
 }
 
 // ── Algorithme suppression fond (canvas) — retourne dataUrl + bbox ──
@@ -5363,11 +6374,17 @@ function _applyCrop() {
     return src.toDataURL('image/png');
   }
 
-  const { x, y, w, h } = _cropRect;
+  const { w, h } = _cropRect;
   const out = document.createElement('canvas');
   out.width  = Math.round(w);
   out.height = Math.round(h);
-  out.getContext('2d').drawImage(src, Math.round(x), Math.round(y), Math.round(w), Math.round(h), 0, 0, Math.round(w), Math.round(h));
+  // Photo posee exactement comme dans l'apercu : contenu ajuste au cadre bleu, centre
+  // dedans, decale de la position choisie a la souris (voir _cropPhotoOrigin). Ce qui
+  // depasse du cadre sort du canvas et n'est donc pas dessine.
+  const o = _cropPhotoOrigin();
+  out.getContext('2d').drawImage(src,
+    Math.round(o.x - _cropRect.x), Math.round(o.y - _cropRect.y),
+    Math.round(_imgNatW * o.sp), Math.round(_imgNatH * o.sp));
   _lastAppliedBB   = _alphaBBFromCanvas(out);
   return out.toDataURL('image/png');
 }

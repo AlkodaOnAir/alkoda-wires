@@ -714,6 +714,16 @@ function _deleteSubprojectAll(spId) {
 function renderAllZones() {
   const layer = _zLayer();
   if (!layer) return;
+  // ⚠️ Une zone selectionnee ne vit PAS dans ce calque : elle est montee dans
+  // #zone-edit-overlay pour rester attrapable la ou elle recouvre un appareil.
+  // Vider le calque ici la laisserait donc orpheline au-dessus de tout, son aplat
+  // de couleur par-dessus les appareils et les cables, sans plus aucun moyen de
+  // s'en debarrasser. On la ramene d'abord chez elle.
+  // Pose ICI et non chez les appelants : l'annulation s'en chargeait deja de son
+  // cote, mais Nouveau, l'import d'un sous-projet et le detachement d'un
+  // sous-projet l'oubliaient (signale le 2026-09-24). Tout futur appelant est
+  // couvert sans avoir a y penser.
+  if (typeof clearSelZone === 'function') clearSelZone();
   layer.innerHTML = '';
   _zNextId = 1;
   for (const id of Object.keys(APP.zones)) {

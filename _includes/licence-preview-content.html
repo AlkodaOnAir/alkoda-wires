@@ -2,10 +2,6 @@
 {% assign logo_base = page.asset_prefix | append: 'Logos/' %}
 <main>
   <section class="page-hero compact license-preview-hero">
-    <div class="lic-coming-banner" role="note">
-      <strong>{{ lp.coming_title }}</strong>
-      <span>{{ lp.coming_text }}</span>
-    </div>
     <h1>{{ lp.hero }}</h1>
     <div class="lic-annonce">
       <p><b>{{ lp.intro_lead }}</b></p>
@@ -15,12 +11,14 @@
         <img class="lic-annonce-logo" src="{{ logo_base }}Neon-ENT.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Ent.">{{ lp.cloud_end }}</p>
       <p>{{ lp.free_before }} <img class="lic-annonce-logo" src="{{ logo_base }}Neon-FREE.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Free"> {{ lp.free_after }}</p>
       <p>{{ lp.fast_before }} <img class="lic-annonce-logo" src="{{ logo_base }}Neon-FAST.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Fast">{{ lp.fast_after }}</p>
-      <p class="lic-pionniers">{{ lp.pioneers }}</p>
-      <p class="lic-pionniers-gain">{{ lp.pioneers_q }}<br>{{ lp.pioneers_gain }}<span class="lic-etoile">*</span>.</p>
     </div>
   </section>
 
   <section class="license-table-section">
+    <!-- Parrainage (1.6.0, 09-10) : comme dans la fenêtre Licence de Wires, une phrase qui ouvre un
+         panneau glissant de la droite (assets/js/licence-parrainage.js). Posée au milieu de l'espace
+         entre l'annonce et les offres, sans l'agrandir (sa demande). -->
+    <div class="lic-parrain-place"><button type="button" class="lic-parrain-lien" id="lic-parrain-lien" aria-controls="lic-parrain" aria-expanded="false">{{ lp.ref_link }}</button></div>
     <div class="license-table">
       <div class="license-column free">
         <div class="license-column-heading">
@@ -47,7 +45,7 @@
           <p class="license-target">{{ lp.target_fast }}</p>
           <img class="license-plan-logo" src="{{ logo_base }}Neon-FAST.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Fast">
           <div class="license-price-block">
-            <span class="license-price">29€<span class="lic-etoile">**</span></span>
+            <span class="license-price">29€<span class="lic-etoile">*</span></span>
             <span class="license-price-note">{{ lp.price_fast_duration }}</span>
             <span class="license-price-note">{{ lp.one_time }}</span>
             <span class="license-price-note">{{ lp.one_computer }}</span>
@@ -55,14 +53,14 @@
         </div>
         <div class="lic-propre"><ul>
           <li class="lic-reprise">{{ lp.all_free }}</li>
-          <li class="lic-reprise lic-version lic-version-space" aria-hidden="true">{{ lp.versions }}<span class="lic-etoile">***</span></li>
+          <li class="lic-reprise lic-version lic-version-space" aria-hidden="true">{{ lp.versions }}<span class="lic-etoile">**</span></li>
           <li>{{ lp.unlimited }}</li>
           <li>{{ lp.pdf_pro }}</li>
           <li><span class="license-new">new</span> {{ lp.network_scan }}</li>
           <li>{{ lp.import_subprojects }}</li>
           <li class="missing">{{ lp.no_cloud }}</li>
         </ul></div>
-        <div class="lic-actions"><span class="btn btn-secondary license-card-action lic-coming-soon" aria-disabled="true">{{ lp.coming_soon }}</span></div>
+        <div class="lic-actions"><a class="btn btn-secondary license-card-action lemonsqueezy-button" href="https://alkoda.lemonsqueezy.com/checkout/buy/94029843-af62-40d3-bc10-2ea7c476df6c" aria-haspopup="dialog">{{ lp.buy_fast }}</a></div>
       </div>
 
       <div class="license-column pro">
@@ -70,7 +68,7 @@
           <p class="license-target">{{ lp.target_pro }}</p>
           <img class="license-plan-logo" src="{{ logo_base }}Neon-PRO.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Pro">
           <div class="license-price-block">
-            <span class="license-price">49€<span class="lic-etoile">**</span></span>
+            <span class="license-price">49€<span class="lic-etoile">*</span></span>
             <span class="license-price-note">{{ lp.pro_duration }}</span>
             <span class="license-price-note lic-renewal">{{ lp.renewal }}</span>
             <span class="license-price-note">{{ lp.two_computers }}</span>
@@ -78,7 +76,7 @@
         </div>
         <div class="lic-propre"><ul>
           <li class="lic-reprise">{{ lp.all_free }}</li>
-          <li class="lic-reprise lic-version">{{ lp.versions }}<span class="lic-etoile">***</span></li>
+          <li class="lic-reprise lic-version">{{ lp.versions }}<span class="lic-etoile">**</span></li>
           <li>{{ lp.unlimited }}</li>
           <li>{{ lp.pdf_pro }}</li>
           <li><span class="license-new">new</span> {{ lp.network_scan }}</li>
@@ -88,7 +86,7 @@
           <li class="license-cloud-detail">{{ lp.share_project }}</li>
           <li class="license-cloud-detail">{{ lp.online_backup }}</li>
         </ul></div>
-        <div class="lic-actions"><span class="btn btn-primary license-card-action lic-coming-soon" aria-disabled="true">{{ lp.coming_soon }}</span></div>
+        <div class="lic-actions"><a id="buy-wires-pro" class="btn btn-primary license-card-action lemonsqueezy-button" href="https://alkoda.lemonsqueezy.com/checkout/buy/460d9211-ddfe-4514-bdce-3b38bb268d85" aria-haspopup="dialog">{{ lp.buy_pro }}</a></div>
       </div>
 
       <div class="license-column entreprise">
@@ -96,7 +94,7 @@
           <p class="license-target">{{ lp.target_ent }}</p>
           <img class="license-plan-logo" src="{{ logo_base }}Neon-ENT.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires Ent.">
           <div class="license-price-block">
-            <span class="license-price">449€<span class="lic-etoile">**</span></span>
+            <span class="license-price">449€<span class="lic-etoile">*</span></span>
             <span class="license-price-note">{{ lp.ent_duration }}</span>
             <span class="license-price-note lic-renewal">{{ lp.renewal }}</span>
             <span class="license-price-note">{{ lp.ten_computers }}</span>
@@ -104,7 +102,7 @@
         </div>
         <div class="lic-propre"><ul>
           <li class="lic-reprise">{{ lp.all_free }}</li>
-          <li class="lic-reprise lic-version">{{ lp.versions }}<span class="lic-etoile">***</span></li>
+          <li class="lic-reprise lic-version">{{ lp.versions }}<span class="lic-etoile">**</span></li>
           <li>{{ lp.unlimited }}</li>
           <li>{{ lp.pdf_pro }}</li>
           <li><span class="license-new">new</span> {{ lp.network_scan }}</li>
@@ -118,13 +116,13 @@
         <p class="lic-commun plus">{{ lp.plus }}</p>
         <ul><li>{{ lp.catalog }}</li><li>{{ lp.support }}</li><li>{{ lp.invoice }}</li></ul></div>
         <div class="lic-actions">
-          <span class="btn btn-secondary license-card-action lic-coming-soon" aria-disabled="true">{{ lp.coming_soon }}</span>
-          <span class="btn lic-btn-devis lic-coming-soon" aria-disabled="true">{{ lp.quote_soon }}</span>
+          <a class="btn btn-secondary license-card-action lemonsqueezy-button" href="https://alkoda.lemonsqueezy.com/checkout/buy/fad41253-afbf-4ae6-8282-a5f1a156ff4d" aria-haspopup="dialog">{{ lp.buy_ent }}</a>
+          <a class="btn lic-btn-devis" href="mailto:contact@alkoda-wires.com?subject={{ lp.quote_subject | url_encode | replace: '+', '%20' }}">{{ lp.quote }}</a>
         </div>
       </div>
     </div>
 
-    <p class="lic-taxes">* {{ lp.coupon_note }}<br>** {{ lp.tax_note }}<br>*** {{ lp.subscription_note }}<br><br>{{ lp.more_seats }} <a href="mailto:contact@alkoda-wires.com">{{ lp.write_us }}</a>.</p>
+    <p class="lic-taxes">* {{ lp.tax_note }}<br>** {{ lp.subscription_note }}<br><br>{{ lp.more_seats }} <a href="mailto:contact@alkoda-wires.com">{{ lp.write_us }}</a>.</p>
     <p class="license-more">{{ lp.more_features }}</p>
     <p class="lic-ailleurs">{{ lp.elsewhere_before }} <b>{{ lp.elsewhere_bold }}</b><br>{{ lp.elsewhere_after }}</p>
 
@@ -135,4 +133,28 @@
       <div class="lic-rassurance"><p>{{ lp.stop_p3 }}</p></div>
     </div>
   </section>
-</main>
+
+  <div class="lic-parrain-voile" id="lic-parrain-voile" hidden></div>
+  <aside class="lic-parrain" id="lic-parrain" aria-hidden="true" aria-labelledby="lic-parrain-titre">
+    <button type="button" class="lic-parrain-fermer" id="lic-parrain-fermer" aria-label="{{ lp.ref_close }}">&times;</button>
+    <img class="lic-parrain-logo" src="{{ logo_base }}Logo-horizontal-transparent.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Wires">
+    <h2 class="lic-parrain-titre" id="lic-parrain-titre">{{ lp.ref_title }}</h2>
+    <p class="lic-parrain-accroche">{{ lp.ref_hook }}</p>
+    <h3 class="lic-parrain-sous">{{ lp.ref_how }}</h3>
+    <ol class="lic-parrain-etapes">
+      <li>{{ lp.ref_step1 }}</li>
+      <li>{{ lp.ref_step2 }}</li>
+      <li>{{ lp.ref_step3 }}</li>
+    </ol>
+    <h3 class="lic-parrain-sous">{{ lp.ref_gains }}</h3>
+    <div class="lic-parrain-tableau">
+      <span class="lic-parrain-entete">{{ lp.ref_col_ref }}</span><span class="lic-parrain-entete" aria-hidden="true"></span><span class="lic-parrain-entete">{{ lp.ref_col_friend }}</span><span class="lic-parrain-entete">{{ lp.ref_col_ref_gets }}</span><span class="lic-parrain-entete">{{ lp.ref_col_friend_gets }}</span>
+      <span class="lic-parrain-offre"><img src="{{ logo_base }}Neon-PRO.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Pro"></span><span class="lic-parrain-fleche" aria-hidden="true">&rarr;</span><span class="lic-parrain-offre"><img src="{{ logo_base }}Neon-PRO.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Pro"></span><span class="lic-parrain-mois">{{ lp.ref_m2 }}</span><span class="lic-parrain-mois">{{ lp.ref_m2 }}</span>
+      <span class="lic-parrain-offre"><img src="{{ logo_base }}Neon-PRO.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Pro"></span><span class="lic-parrain-fleche" aria-hidden="true">&rarr;</span><span class="lic-parrain-offre"><img src="{{ logo_base }}Neon-ENT.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Ent."></span><span class="lic-parrain-mois">{{ lp.ref_m4 }}</span><span class="lic-parrain-mois">{{ lp.ref_m1 }}</span>
+      <span class="lic-parrain-offre"><img src="{{ logo_base }}Neon-ENT.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Ent."></span><span class="lic-parrain-fleche" aria-hidden="true">&rarr;</span><span class="lic-parrain-offre"><img src="{{ logo_base }}Neon-PRO.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Pro"></span><span class="lic-parrain-mois">{{ lp.ref_m1 }}</span><span class="lic-parrain-mois">{{ lp.ref_m2 }}</span>
+      <span class="lic-parrain-offre"><img src="{{ logo_base }}Neon-ENT.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Ent."></span><span class="lic-parrain-fleche" aria-hidden="true">&rarr;</span><span class="lic-parrain-offre"><img src="{{ logo_base }}Neon-ENT.png?v={{ site.time | date: '%Y%m%d%H%M' }}" alt="Ent."></span><span class="lic-parrain-mois">{{ lp.ref_m2 }}</span><span class="lic-parrain-mois">{{ lp.ref_m1 }}</span>
+    </div>
+    <p class="lic-parrain-regle">{{ lp.ref_rule }}</p>
+    <p class="lic-parrain-regle">{{ lp.ref_fast }}</p>
+    <p class="lic-parrain-achat">{{ lp.ref_buy }}</p>
+  </aside>

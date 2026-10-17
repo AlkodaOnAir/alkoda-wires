@@ -309,6 +309,9 @@ function rebuildCM() {
 // ── setDirty ─────────────────────────────────────────────────
 function setDirty(v = true) {
   dirty = v;
+  // Projet de Wires Cloud en cours d'envoi (Ctrl+S) : une modification faite
+  // pendant l'envoi ne doit pas être marquée « enregistrée » à son retour.
+  if (v && typeof window._cloudSurModif === 'function') window._cloudSurModif();
   const btn = document.getElementById('fsa-btn');
   if (btn) btn.classList.toggle('dirty', v);
   if (window.electronAPI) window.electronAPI.setSaveEnabled(v);
@@ -347,7 +350,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     window.electronAPI.onMenuAction(ev => {
       switch (ev) {
         case 'menu-new':        newProject(); break;
-        case 'menu-open':       openFile();   break;
+        case 'menu-open':       ouvrirUnProjet(); break;
+        // Le gestionnaire de projets (04-10) : la grande fenêtre, avec la fiche du projet choisi.
+        case 'menu-project-manager': if (window.CloudFenetre) CloudFenetre.ouvrirFenetre({ mode: 'gestion' }); break;
         case 'menu-save':       saveFile();   break;
         case 'menu-save-as':    saveFileAs(); break;
         case 'menu-export':           openExportModal();  break;
@@ -382,7 +387,7 @@ window.addEventListener('DOMContentLoaded', async () => {
       if (e.key === 'z' &&  e.shiftKey) { e.preventDefault(); redo(); return; }
       if (e.key === 'y')                { e.preventDefault(); redo(); return; }
       if (e.key === 's') { e.preventDefault(); saveFile(); return; }
-      if (e.key === 'o') { e.preventDefault(); openFile(); return; }
+      if (e.key === 'o') { e.preventDefault(); ouvrirUnProjet(); return; }
       if (e.key === 'n') { e.preventDefault(); newProject(); return; }
       // Copier/Couper agissent sur ce qui est sélectionné ; Coller relit
       // _clipboardType (posé par le dernier copier/couper), jamais la sélection en

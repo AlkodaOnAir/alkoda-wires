@@ -58,8 +58,17 @@ function promptProjectName(allowCancel = true) {
       input.replaceWith(newLabel);
       wrap.classList.remove('editing');
       if (!trimmed) { updateProjectNameDisplay(); resolve(false); return; }
+      const ancien = APP.meta.title;
       APP.meta.title = trimmed;
       updateProjectNameDisplay();
+      // Projet de Wires Cloud : le nom change aussi en ligne, tout de suite
+      // (décision de l'utilisateur, 2026-10-01) — ce n'est pas un « Enregistrer
+      // sous ». Refusé par le serveur, l'ancien nom revient (cloud-fenetre.js).
+      if (window.CloudFenetre && CloudFenetre.projetCourant()) {
+        if (trimmed !== ancien) CloudFenetre.renommer(trimmed, ancien);
+        resolve(true);
+        return;
+      }
       if (typeof setTitleChanged === 'function') setTitleChanged();
       setDirty(true);
       resolve(true);
@@ -135,6 +144,8 @@ function initUI() {
 function newProject(offerTour = true, skipDirtyCheck = false) {
   const _doNew = () => {
     wLog('PROJECT_NEW', {});
+    // Un projet ouvert depuis Wires Cloud quitte l'écran : il rend son verrou.
+    if (window.CloudFenetre) CloudFenetre.quitterProjet();
     if (typeof _closeRouteStep === 'function') _closeRouteStep(); // étape « route » d'un câble en attente : ne pas la garder dans le nouveau projet
   APP.nodes        = {};
   APP.cables       = [];
@@ -149,6 +160,13 @@ function newProject(offerTour = true, skipDirtyCheck = false) {
   APP.selTextLabel = null;
   document.getElementById('text-labels-layer')?.replaceChildren();
   APP.zones    = {};
+  APP.paquetage = { coches: {}, extras: [] };   // Liste de Paquetage à cocher (1.6.0)
+  // ⚠️ AVANT de couper la selection a la main : clearSelZone() commence par
+  // « aucune zone selectionnee, rien a faire ». Appele apres, comme le faisait le
+  // clearSel() seize lignes plus bas, il ne ramenait plus la zone selectionnee
+  // depuis #zone-edit-overlay, et son rectangle colore restait affiche au-dessus
+  // du projet neuf (signale le 2026-09-24).
+  if (typeof clearSelZone === 'function') clearSelZone();
   APP.selZone  = null;
   document.getElementById('zones-layer')?.replaceChildren();
   APP.undo        = [];

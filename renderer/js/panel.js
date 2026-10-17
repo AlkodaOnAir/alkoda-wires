@@ -197,12 +197,16 @@ function openInfoPanel(sid) {
     });
     // Wire swatch clicks (re-attach to avoid stale sid)
     ipShapeColor.querySelectorAll('.shape-swatch').forEach(btn => {
+      // Jamais le nom dans la forme : il est grave dans le PNG, donc renommer
+      // l'appareil ne le mettrait plus jamais a jour. Une forme est un aplat de
+      // couleur, c'est l'etiquette du canevas qui la nomme - comme pour une photo
+      // (tranche le 2026-09-23 ; avant, changer la couleur gravait le nom du moment).
       btn.onclick = () => {
         const node = APP.nodes[sid];
         if (!node) return;
         node.shapeColor = btn.dataset.color;
         node.img = typeof _generateShapePng === 'function'
-          ? _generateShapePng(node.shape, node.name, node.shapeColor)
+          ? _generateShapePng(node.shape, null, node.shapeColor, node.shapeAspect, node.shapeQuarter)
           : node.img;
         node.img_original = node.img;
         ipImg.src = node.img;
@@ -222,7 +226,7 @@ function openInfoPanel(sid) {
       if (!node) return;
       node.shapeColor = picker.value;
       node.img = typeof _generateShapePng === 'function'
-        ? _generateShapePng(node.shape, node.name, node.shapeColor)
+        ? _generateShapePng(node.shape, null, node.shapeColor, node.shapeAspect, node.shapeQuarter)
         : node.img;
       node.img_original = node.img;
       ipImg.src = node.img;
@@ -409,6 +413,8 @@ function openInfoPanel(sid) {
     };
     scanBtn.onclick = async () => {
       if (_ipScanRunning || !window.electronAPI?.networkScan) return;
+      // Fermé en Free, ouvert en Fast, Pro et Ent. (sa décision du 2026-10-04).
+      if (typeof LICENSE !== 'undefined' && LICENSE.can && !LICENSE.can('networkScan')) { LICENSE.showGate('network_scan'); return; }
       _ipScanRunning = window.electronAPI.networkScan();
       _ipScanFolded  = false; // nouveau scan : liste redépliée pour montrer les nouveaux résultats
       _ipScanRender();

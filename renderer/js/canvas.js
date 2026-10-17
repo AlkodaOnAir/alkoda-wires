@@ -2,6 +2,23 @@
    canvas.js — Pan / Zoom / Minimap
 ═══════════════════════════════════════════════════════════════ */
 
+// Plancher de zoom, commun a TOUTES les commandes. Il valait 0.1 a la molette et
+// aux boutons et 0.03 au pincement : trois limites differentes pour le meme geste,
+// par accumulation. Aligne sur la plus basse le 2026-09-24, a la demande.
+// Un plancher reste necessaire, meme si on ne s'en sert jamais : les boutons - / +
+// retranchent un pas fixe, donc sans borne le zoom finirait a zero puis negatif.
+// La molette, elle, multiplie, et ne peut pas atteindre zero.
+const ZOOM_MIN = 0.03;
+const ZOOM_MAX = 4;
+
+// Plancher EFFECTIF : Ajuster la vue (F) n'a pas de plancher et peut descendre sous
+// ZOOM_MIN sur un tres grand plan. Depuis la, dezoomer ne doit pas faire ZOOMER en
+// remontant d'un coup a ZOOM_MIN : on reste ou l'on est (audit du 10-10).
+// Securite anti-regression : window._xZoomFloorKeep = false -> ancien plancher fixe.
+function _zoomFloor(z) {
+  return (window._xZoomFloorKeep === false) ? ZOOM_MIN : Math.min(ZOOM_MIN, z);
+}
+
 let _area, _root, _mmCanvas, _mmCtx;
 let _areaRect    = null;
 let _panStart    = null;
@@ -109,10 +126,10 @@ function initCanvas() {
     let nz;
     if (window._zoomProportional) {
       const dy = e.deltaY * (e.deltaMode === 1 ? 16 : 1);
-      nz = Math.max(0.1, Math.min(4, APP.view.zoom * Math.exp(-dy * window._zoomSensitivity)));
+      nz = Math.max(_zoomFloor(APP.view.zoom), Math.min(ZOOM_MAX, APP.view.zoom * Math.exp(-dy * window._zoomSensitivity)));
     } else {
       const step = e.deltaY < 0 ? 0.02 : -0.02;
-      nz = Math.max(0.1, Math.min(4, Math.round((APP.view.zoom + step) * 50) / 50));
+      nz = Math.max(_zoomFloor(APP.view.zoom), Math.min(ZOOM_MAX, Math.round((APP.view.zoom + step) * 50) / 50));
     }
     if (nz === APP.view.zoom) return;
 
@@ -376,7 +393,7 @@ function initCanvas() {
         e.touches[1].clientX - e.touches[0].clientX,
         e.touches[1].clientY - e.touches[0].clientY
       );
-      APP.view.zoom = Math.max(0.03, Math.min(4, _zoom0 * d / _pinchDist0));
+      APP.view.zoom = Math.max(_zoomFloor(_zoom0), Math.min(ZOOM_MAX, _zoom0 * d / _pinchDist0));
       applyT();
     }
   }, { passive: false });
@@ -385,9 +402,11 @@ function initCanvas() {
   let _mmDragging = false;
   const _mmNavigate = e => {
     const r = _mmCanvas.getBoundingClientRect();
-    const sx = CW / 160, sy = CH / 90;
-    const cx = (e.clientX - r.left) * sx;
-    const cy = (e.clientY - r.top)  * sy;
+    // Même projection que le dessin, inversée, et bornée à l'étendue affichée :
+    // un appui dans les marges de centrage ne doit pas envoyer hors du canevas.
+    const _f = _minimapFit();
+    const cx = Math.max(_f.b.x, Math.min(_f.b.x + _f.b.w, ((e.clientX - r.left) - _f.ox) / _f.s + _f.b.x));
+    const cy = Math.max(_f.b.y, Math.min(_f.b.y + _f.b.h, ((e.clientY - r.top)  - _f.oy) / _f.s + _f.b.y));
     updateAreaRect();
     APP.view.panX = _areaRect.width  / 2 - cx * APP.view.zoom;
     APP.view.panY = _areaRect.height / 2 - cy * APP.view.zoom;
@@ -431,6 +450,11 @@ let _zoomLogTmr = null;
 function applyT() {
   const { zoom, panX, panY } = APP.view;
   _root.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+  // Sécurité anti-régression : window._xCanvasPromote = true dans la console rend
+  // au canevas sa promotion permanente en surface graphique, comportement d'avant
+  // le 2026-09-24 (voir la note sur #canvas-root dans main.css).
+  const _promo = window._xCanvasPromote === true ? 'transform' : '';
+  if (_root.style.willChange !== _promo) _root.style.willChange = _promo;
   document.documentElement.style.setProperty('--z-border', (2 / zoom).toFixed(3) + 'px');
   // Nom du type de port au survol (mode ajouter un câble) : taille fixe à l'écran,
   // même principe que --z-border ci-dessus — sans ça le texte grandirait/rétrécirait
@@ -455,7 +479,7 @@ function applyT() {
 
 function dz(d) {
   updateAreaRect();
-  const nz = Math.max(0.1, Math.min(4, Math.round((APP.view.zoom + d) * 50) / 50));
+  const nz = Math.max(_zoomFloor(APP.view.zoom), Math.min(ZOOM_MAX, Math.round((APP.view.zoom + d) * 50) / 50));
   const sc = nz / APP.view.zoom;
   const mx = _areaRect ? _areaRect.width  / 2 : 400;
   const my = _areaRect ? _areaRect.height / 2 : 300;
@@ -494,12 +518,34 @@ function fitView() {
     maxX = Math.max(maxX, z.x + z.width);
     maxY = Math.max(maxY, z.y + z.height);
   }
+  // Étiquettes : MESURÉES sur les éléments réels, jamais devinées. Le nom d'une zone
+  // est centré au-dessus d'elle : il déborde donc à gauche et à droite quand il est plus
+  // large qu'elle, et sa hauteur suit sa taille de police — le décalage figé de 24 px
+  // ci-dessus le coupait (signalé le 2026-09-24). Même chose pour le nom d'un appareil,
+  // sous lui, et pour une étiquette de texte libre. Les valeurs figées restent comme
+  // repli : au tout premier ajustement, les éléments peuvent ne pas encore exister.
+  if (typeof screenToCanvas === 'function') {
+    for (const el of document.querySelectorAll('#zones-layer .zone-label, #zone-edit-overlay .zone-label, #node-labels-layer .node-lbl, #text-labels-layer .text-label')) {
+      const r = el.getBoundingClientRect();
+      if (!r.width && !r.height) continue;          // masquée : rien à englober
+      const h = screenToCanvas(r.left, r.top);
+      const b = screenToCanvas(r.right, r.bottom);
+      minX = Math.min(minX, h.x); minY = Math.min(minY, h.y);
+      maxX = Math.max(maxX, b.x); maxY = Math.max(maxY, b.y);
+    }
+  }
+
   const pad = 80;
   const bw = maxX - minX + pad * 2;
   const bh = maxY - minY + pad * 2;
   const usableW = aW - leftOffset;
   const zoom = Math.min(usableW / bw, aH / bh, 2);
-  APP.view.zoom = Math.max(0.15, zoom);
+  // ⚠️ Aucun plancher ici (retire le 2026-09-24) : ajuster a la vue doit montrer
+  // TOUT le canevas, quel que soit le zoom que cela demande. Un plancher a 0.15
+  // ne se declenchait que sur les grands projets — exactement ceux qu'on cherche
+  // a voir en entier — et le recentrage juste en dessous continuait d'utiliser le
+  // zoom calcule, si bien que le plan etait a la fois trop gros ET decentre.
+  APP.view.zoom = zoom;
   APP.view.panX = leftOffset + usableW / 2 - (minX - pad + bw / 2) * zoom;
   APP.view.panY = aH / 2 - (minY - pad + bh / 2) * zoom;
   applyT();
@@ -561,10 +607,50 @@ function scheduleMinimap() {
   });
 }
 
+// Étendue réelle du contenu, pour la minimap. Elle projetait jusqu'ici un
+// rectangle FIGE de 0..CW x 0..CH : un projet qui déborde de ce cadre — et les
+// coordonnées négatives en font partie — avait des pans entiers jamais dessinés,
+// et la navigation par la vignette ne pouvait pas les atteindre (signalé le
+// 2026-09-24). Même étendue que l'ajustement à la vue : appareils, zones et
+// tracés de câbles. Les zones délimitent, elles ne sont pas peintes.
+// ⚠️ Sur les DONNÉES seules, jamais sur les éléments de la page : la vignette est
+// redessinée à chaque image pendant un déplacement, et mesurer quarante étiquettes
+// y forcerait autant de recalculs de mise en page. L'écart avec F se compte en
+// deux ou trois pixels sur 160 de large.
+// Sécurité anti-régression : window._xMinimapFit = false → ancien cadre fige.
+function _minimapBounds() {
+  if (window._xMinimapFit === false) return { x: 0, y: 0, w: CW, h: CH };
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  const eat = (a, b, c, d) => { x0 = Math.min(x0, a); y0 = Math.min(y0, b); x1 = Math.max(x1, c); y1 = Math.max(y1, d); };
+  for (const s of Object.values(APP.nodes || {})) eat(s.x, s.y, s.x + s.w, s.y + s.h);
+  for (const z of Object.values(APP.zones || {}))  eat(z.x, z.y, z.x + z.width, z.y + z.height);
+  for (const c of (APP.cables || [])) {
+    const pts = cableOverrides[c.id];
+    if (!pts) continue;
+    for (const p of pts) eat(p[0], p[1], p[0], p[1]);
+  }
+  if (!isFinite(x0)) return { x: 0, y: 0, w: CW, h: CH };
+  const marge = 80;
+  return { x: x0 - marge, y: y0 - marge, w: (x1 - x0) + marge * 2, h: (y1 - y0) + marge * 2 };
+}
+
+// Projection commune au dessin et à la navigation : UNE seule échelle pour les
+// deux axes, vignette centrée dans son cadre. Deux échelles différentes
+// étiraient le plan en hauteur.
+function _minimapFit() {
+  const W = 160, H = 90;
+  const b = _minimapBounds();
+  const s = Math.min(W / Math.max(b.w, 1), H / Math.max(b.h, 1));
+  return { b, s, ox: (W - b.w * s) / 2, oy: (H - b.h * s) / 2 };
+}
+
 function drawMinimap() {
   if (!_mmCtx) return;
   const W = 160, H = 90;
-  const sx = W / CW, sy = H / CH;
+  const _f = _minimapFit();
+  const MX = x => (x - _f.b.x) * _f.s + _f.ox;
+  const MY = y => (y - _f.b.y) * _f.s + _f.oy;
+  const sx = _f.s, sy = _f.s;
 
   _mmCtx.fillStyle = '#060810';
   _mmCtx.fillRect(0, 0, W, H);
@@ -580,24 +666,24 @@ function drawMinimap() {
       if (!pts || pts.length < 2) continue;
       _mmCtx.strokeStyle = colored ? (c.color || '#888') + '88' : '#48546688';
       _mmCtx.beginPath();
-      _mmCtx.moveTo(pts[0][0] * sx, pts[0][1] * sy);
+      _mmCtx.moveTo(MX(pts[0][0]), MY(pts[0][1]));
       for (let i = 1; i < pts.length; i++) {
-        _mmCtx.lineTo(pts[i][0] * sx, pts[i][1] * sy);
+        _mmCtx.lineTo(MX(pts[i][0]), MY(pts[i][1]));
       }
       _mmCtx.stroke();
     }
     for (const s of Object.values(APP.nodes)) {
       const cat = getCat(s.cat);
       _mmCtx.fillStyle = colored ? (cat.color || '#888') + 'cc' : '#5a6678cc';
-      _mmCtx.fillRect(s.x * sx, s.y * sy, s.w * sx, s.h * sy);
+      _mmCtx.fillRect(MX(s.x), MY(s.y), s.w * sx, s.h * sy);
     }
   };
 
   // Cadre de visualisation (portion du canevas réellement à l'écran)
   updateAreaRect();
   const { zoom, panX, panY } = APP.view;
-  const vx = -panX / zoom * sx;
-  const vy = -panY / zoom * sy;
+  const vx = MX(-panX / zoom);
+  const vy = MY(-panY / zoom);
   const vw = (_areaRect?.width  || 800) / zoom * sx;
   const vh = (_areaRect?.height || 600) / zoom * sy;
 

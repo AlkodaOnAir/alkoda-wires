@@ -1863,6 +1863,20 @@ function _removeWaveEl(g) {
 // (tracé SVG ou longueur virtuelle sans fil) + longueur cumulée. Partagé entre
 // les trains de chemins et le train d'épilogue (voir startFlowAnimation).
 function _resolveSegsForAnim(chain, segs, svg) {
+  // Le signal S'ARRETE au premier cable debranche de la suite (« ? » en source ou en
+  // destination dans le panneau Routes = un bout sans appareil, cf. _nodePortLabel).
+  // Sans cette coupe, le point lumineux parcourait ce cable comme s'il etait branche,
+  // puis continuait sur toute la route (regle posee par l'utilisateur le 2026-09-20).
+  // Le .filter() plus bas ne suffirait pas : il ECARTE un segment et enchaine sur le
+  // suivant, le point sautant alors par-dessus la rupture.
+  // Securite anti-regression : window._xAnimStopAtOrphan = false -> route entiere.
+  if (window._xAnimStopAtOrphan !== false) {
+    const cut = (segs || []).findIndex(sg => {
+      const c = APP.cables.find(x => x.id === sg.cableId);
+      return !!c && (c.orphan_from || c.orphan_to || !APP.nodes[c.from] || !APP.nodes[c.to]);
+    });
+    if (cut >= 0) segs = segs.slice(0, cut);
+  }
   const resolved = segs.map(seg => {
     const cable = APP.cables.find(c => c.id === seg.cableId);
     const color = cable?.color || chain.color;

@@ -84,12 +84,41 @@ function _applySelCableDim(cabSet) {
       p.setAttribute('opacity', '0.97');
       p.setAttribute('filter', 'url(#glow)');
       p.dataset.selected = '1';
+    } else if (typeof _cableExemptFromSelDim === 'function' && _cableExemptFromSelDim(p)) {
+      // Cable orphelin : etat de repos d'un cable branche, pas d'estompage (cables.js).
+      // Son pointille clignotant reste donc visible pendant qu'un appareil est selectionne.
+      p.setAttribute('opacity', '0.85');
+      p.setAttribute('stroke-width', '3.5');
+      p.removeAttribute('filter');
+      delete p.dataset.selected;
     } else {
       p.setAttribute('opacity', '0.03');
       p.setAttribute('stroke-width', '1');
       p.removeAttribute('filter');
       delete p.dataset.selected;
     }
+  });
+  _applySelJunctionDim(cabSet);
+}
+
+// Triangles de jonction (ports doubles) : estompés comme les câbles. Seul reste allumé
+// le triangle d'un port par lequel passe un câble de l'appareil sélectionné — même
+// granularité (appareil + port) que pour les routes (_applyCanvasDim, routes.js).
+// Signalé le 10-10 : ceux de PATCH IN / PATCH OUT restaient allumés en sélectionnant
+// un appareil sans rapport. L'attribut est retiré par clearSel().
+// Sécurité anti-régression : window._xSelJunctionDim = false → triangles jamais estompés.
+function _applySelJunctionDim(cabSet) {
+  if (window._xSelJunctionDim === false) return;
+  const ports = new Set();
+  for (const c of APP.cables) {
+    if (!cabSet.has(c.id)) continue;
+    ports.add(`${c.from}:${c.from_port}`);
+    ports.add(`${c.to}:${c.to_port}`);
+  }
+  document.querySelectorAll('#cables-svg .junction-marker').forEach(g => {
+    const key = `${g.dataset.nodeId}:${g.dataset.portId}`;
+    if (ports.has(key)) g.removeAttribute('opacity');
+    else g.setAttribute('opacity', '0.03');
   });
 }
 
@@ -146,6 +175,8 @@ function clearSel() {
     p.setAttribute('stroke-width', '3.5');
     p.setAttribute('opacity', '0.85');
   });
+  // Triangles de jonction : estompés par la sélection (_applySelJunctionDim), rallumés ici.
+  document.querySelectorAll('#cables-svg .junction-marker').forEach(g => g.removeAttribute('opacity'));
 
   exitResizeMode();
   if (typeof applyCanvasFilters === 'function') applyCanvasFilters();

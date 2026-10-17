@@ -5,8 +5,13 @@
 let _spPlaceActive = false;
 
 async function importSubproject() {
-  if (!LICENSE.isPro()) { LICENSE.showGate('subprojects'); return; }
+  if (!LICENSE.can('subprojects')) { LICENSE.showGate('subprojects'); return; }   // fermé en Free seulement
   if (!window.electronAPI) return;
+  // La fenêtre à deux côtés, Mon poste | Wires Cloud, titrée « Importer un
+  // projet » (2026-10-03) : un double-clic ajoute le projet choisi au projet
+  // ouvert ; son « Parcourir… » choisit un autre dossier. La fenêtre du
+  // système ci-dessous ne sert plus qu'en son absence.
+  if (window.CloudFenetre) { CloudFenetre.ouvrirFenetre({ mode: 'importer' }); return; }
 
   const result = await window.electronAPI.openDialog();
   if (!result) return;
@@ -14,11 +19,6 @@ async function importSubproject() {
   let data;
   try { data = JSON.parse(result.data); }
   catch(e) { alert('Invalid project file.'); return; }
-  // Même règle que loadState (fileIO.js) : un format ancien reste importable, seul
-  // un format plus récent que celui connu est refusé — sinon un projet 1.5.0 à
-  // face Arrière (format 2) serait rejeté par Wires 1.5.0 lui-même.
-  if (!data || !Number.isInteger(data.version) || data.version < 1) { alert(t('unsupported')); return; }
-  if (data.version > WIRES_FORMAT_MAX) { alert(t('file_newer_version')); return; }
 
   // Nom de la zone : le FICHIER choisi, pas le titre ecrit dans le fichier. Wires
   // reecrit ce titre interne a partir du nom de fichier a chaque ouverture et a
@@ -28,9 +28,22 @@ async function importSubproject() {
   // Securite anti-regression : window._xImportNameFromFile = false → titre interne.
   const srcName = (window._xImportNameFromFile === false) ? null
     : ((result.filePath || '').split(/[\\/]/).pop().replace(/\.wires$/i, '') || null);
+  importSubprojectData(data, srcName);
+}
+
+// Intègre au canevas un projet déjà lu : le fichier choisi ci-dessus, ou un
+// projet choisi dans la fenêtre « Importer un projet » (2026-10-03 — fichier
+// du poste ou projet de Wires Cloud ; srcName = son nom de fichier ou son nom
+// en ligne). Renvoie true si le contenu est placé.
+function importSubprojectData(data, srcName) {
+  // Même règle que loadState (fileIO.js) : un format ancien reste importable, seul
+  // un format plus récent que celui connu est refusé — sinon un projet 1.5.0 à
+  // face Arrière (format 2) serait rejeté par Wires 1.5.0 lui-même.
+  if (!data || !Number.isInteger(data.version) || data.version < 1) { alert(t('unsupported')); return false; }
+  if (data.version > WIRES_FORMAT_MAX) { alert(t('file_newer_version')); return false; }
 
   const importedNodes = (data.nodes || []).filter(n => n.cat !== 'internet');
-  if (!importedNodes.length) { alert('This project contains no importable devices.'); return; }
+  if (!importedNodes.length) { alert('This project contains no importable devices.'); return false; }
 
   // Bounding box of imported content (canvas-space)
   const PAD   = 60;
@@ -47,10 +60,11 @@ async function importSubproject() {
   // Sécurité anti-régression : window._xSubprojectClickPlace = true → ancien mode.
   if (window._xSubprojectClickPlace === true) {
     _startSubprojectPlaceMode(data, importedNodes, ghostW, ghostH, srcMinX, srcMinY, srcName);
-    return;
+    return true;
   }
   const spot = _freeSpotForImport(ghostW, ghostH);
   _placeSubproject(data, importedNodes, spot.x + PAD - srcMinX, spot.y + PAD - srcMinY, srcName);
+  return true;
 }
 
 // Coin haut-gauche d'un rectangle libre pour le contenu importé : à DROITE de tout ce

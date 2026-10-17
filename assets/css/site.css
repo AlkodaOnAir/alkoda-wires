@@ -277,6 +277,8 @@ h3{color:#fff}
 }
 .value-grid h3,.export-grid h3,.feature-grid h3{font-size:18px;margin:0 0 8px}
 .value-grid p,.export-grid p,.feature-grid p{margin:0;color:var(--muted);font-size:14px}
+.feature-grid .feature-cloud-title{min-height:22px;display:flex;align-items:center}
+.feature-grid .feature-cloud-title img{display:block;width:auto;height:30px;max-width:100%;object-fit:contain;object-position:left center}
 .export-grid strong{display:inline-block;color:var(--accent);font-family:"Share Tech Mono",monospace;letter-spacing:.16em;margin-bottom:12px}
 
 .use-cases-section{padding-top:42px;padding-bottom:42px;background:linear-gradient(180deg,rgba(7,11,18,.25),rgba(16,26,43,.5))}
@@ -368,7 +370,7 @@ h3{color:#fff}
   position:relative;
   width:100%;
   height:210px;
-  margin:0;
+  margin:23px 0 0;
   overflow:hidden;
   border:1px solid rgba(0,210,255,.32);
   border-radius:10px;
@@ -377,7 +379,7 @@ h3{color:#fff}
 .video-image-slot img{
   width:100%;
   height:100%;
-  object-fit:cover;
+  object-fit:contain;
   display:block;
 }
 .video-link::after{
@@ -1436,11 +1438,3 @@ h3{color:#fff}
   .release-group{padding:20px}
 }
 
-/* Temporary link to the Wires 1.6 plan preview. It always stays readable. */
-.site-nav .nav-preview{color:#69e7ff;text-shadow:0 0 7px rgba(0,210,255,.28);animation:nav-preview-pulse 1.6s ease-in-out infinite}
-.site-nav .nav-preview:hover,.site-nav .nav-preview.active{color:#fff;text-shadow:0 0 11px rgba(0,210,255,.7)}
-@keyframes nav-preview-pulse{
-  0%,100%{color:#69e7ff;text-shadow:0 0 5px rgba(0,210,255,.25)}
-  50%{color:#c8f7ff;text-shadow:0 0 12px rgba(0,210,255,.78)}
-}
-@media(prefers-reduced-motion:reduce){.site-nav .nav-preview{animation:none}}

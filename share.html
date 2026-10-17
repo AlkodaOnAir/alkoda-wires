@@ -6,7 +6,9 @@
 <!-- La page d'un lien Wires Cloud (1.6.0, 07-10) : UNE SEULE PAGE, indépendante (ni menu ni pied
      du site), trois langues dans la page avec son propre sélecteur, comme la page d'Alkoda On Air.
      Jamais indexée, jamais de référent.
-     ⚠️ PAGE ASSEMBLÉE par D:\Sandbox\share-src\assembler_share.py : modifier share.source.html. -->
+     ⚠️ SA SEULE PLACE est ici (09-10). La partie copiée de Wires, entre les repères
+     DEBUT/FIN_COPIES_WIRES, est mise à jour par App Wires\stats\assembler_share.py : ne jamais la
+     retoucher à la main. Le reste de la page se modifie directement ici. -->
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <link rel="icon" href="favicon.ico" sizes="any">
@@ -68,6 +70,11 @@ a{color:inherit;text-decoration:none}
 .ps-etat{margin:18px 0 0;font-size:14px;color:var(--muted,#a8b6cc)}
 .ps-etat.ps-fait{color:#3ddc84}
 .ps-etat.ps-refus{color:#ff8a6b}
+/* Des photos manquent encore après les essais (09-10) : on le dit, et on laisse choisir. */
+.ps-etat.ps-attention{color:#ffbf5e}
+.ps-manque{margin-top:14px}
+.ps-manque[hidden]{display:none}
+.ps-quand-meme{font-family:inherit;cursor:pointer}
 .ps-aide{margin:22px 0 0;font-size:13px;color:var(--muted,#a8b6cc)}
 .share-carte.ps-attente .ps-nom{color:transparent}
 .share-carte.ps-invalide .ps-nom,.share-carte.ps-invalide .ps-par,.share-carte.ps-invalide .ps-fin{display:none}
@@ -97,12 +104,16 @@ a{color:inherit;text-decoration:none}
         <a class="btn btn-secondary ps-telecharger" data-i18n="download" href="downloads.html"></a>
       </div>
       <p class="ps-etat" role="status" hidden></p>
+      <div class="ps-boutons ps-manque" hidden>
+        <button type="button" class="btn btn-secondary ps-quand-meme" data-i18n="anyway"></button>
+      </div>
       <p class="ps-aide" data-i18n="hint"></p>
     </div>
   </section>
 </main>
 <script>
-// Les textes des trois langues ($p : pseudo ; $d : date ; $n : pourcentage ; $f : fichier ; $m : minutes).
+// Les textes des trois langues ($p : pseudo ; $d : date ; $n : pourcentage, ou nombre d'appareils ;
+// $f : fichier ; $m : minutes ; $a : noms d'appareils ; $k : appareils non nommés).
 const TEXTES = {
   "en": {
     "title": "Shared Wires project",
@@ -118,7 +129,12 @@ const TEXTES = {
     "done": "Project loaded: $f",
     "invalid": "This link is no longer valid. Ask the person who sent it for a new link.",
     "busy": "Too many requests for this link. Try again in $m min.",
-    "error": "The project could not be loaded. Try again later."
+    "error": "The project could not be loaded. Try again later.",
+    "missing_1": "The photo of the device $a could not be retrieved. It will appear without a photo in Wires.",
+    "missing_n": "The photos of $n devices could not be retrieved: $a. They will appear without a photo in Wires.",
+    "others_1": "… and 1 more",
+    "others_n": "… and $k more",
+    "anyway": "Download anyway"
   },
   "fr": {
     "title": "Projet Wires partagé",
@@ -134,7 +150,12 @@ const TEXTES = {
     "done": "Projet chargé : $f",
     "invalid": "Ce lien n'est plus valable. Demandez un nouveau lien à la personne qui vous l'a envoyé.",
     "busy": "Trop de demandes pour ce lien. Réessayez dans $m min.",
-    "error": "Le projet n'a pas pu être chargé. Réessayez plus tard."
+    "error": "Le projet n'a pas pu être chargé. Réessayez plus tard.",
+    "missing_1": "La photo de l'appareil $a n'a pas pu être récupérée. Il s'affichera sans photo dans Wires.",
+    "missing_n": "Les photos de $n appareils n'ont pas pu être récupérées : $a. Ils s'afficheront sans photo dans Wires.",
+    "others_1": "… et 1 autre",
+    "others_n": "… et $k autres",
+    "anyway": "Télécharger quand même"
   },
   "es": {
     "title": "Proyecto de Wires compartido",
@@ -150,7 +171,12 @@ const TEXTES = {
     "done": "Proyecto cargado: $f",
     "invalid": "Este enlace ya no es válido. Pida un nuevo enlace a la persona que se lo envió.",
     "busy": "Demasiadas solicitudes para este enlace. Inténtelo de nuevo en $m min.",
-    "error": "No se pudo cargar el proyecto. Inténtelo más tarde."
+    "error": "No se pudo cargar el proyecto. Inténtelo más tarde.",
+    "missing_1": "No se ha podido recuperar la foto del dispositivo $a. Aparecerá sin foto en Wires.",
+    "missing_n": "No se han podido recuperar las fotos de $n dispositivos: $a. Aparecerán sin foto en Wires.",
+    "others_1": "… y 1 más",
+    "others_n": "… y $k más",
+    "anyway": "Descargar de todos modos"
   }
 };
 /* ═══════════════════════════════════════════════════════════════
@@ -167,10 +193,10 @@ const TEXTES = {
    seul site. Le jeton est après le # : le navigateur ne l'envoie jamais de
    lui-même ; la page le passe dans le corps de ses demandes.
 
-   ⚠️ PAGE ASSEMBLÉE par assembler_share.py (D:\Sandbox\share-src) :
-   modifier share.source.html, jamais share.html. Le code qui refait le projet
-   est recopié TEL QUEL de Wires (cloud-depot.js, library.js), comme dans
-   l'onglet Cloud de la page de statistiques.
+   ⚠️ Le code qui refait le projet est recopié TEL QUEL de Wires (cloud-depot.js,
+   library.js), entre les repères DEBUT/FIN_COPIES_WIRES, par
+   App Wires\stats\assembler_share.py (--verifier pour contrôler) : ne jamais le
+   retoucher ici. Tout le reste de la page se modifie directement ici.
 ═══════════════════════════════════════════════════════════════ */
 
 (function (global) {
@@ -182,6 +208,7 @@ const TEXTES = {
   const FORMAT_DOCUMENT = 'wires-cloud-document';
   const VERSION_DOCUMENT = 1;
 
+  /*@@DEBUT_COPIES_WIRES@@*/
   // Recopiées TELLES QUELLES par assembler_share.py — ne pas les retoucher ici :
   //   cloud-depot.js : FACES, SUFFIXES, estImageEmbarquee, estInterne, octetsDeDataUrl, _ascii, formatReel, _empreinteOctets, empreinte, _recadrer, reconstruireFace, reconstruireProjet ;
   //   library.js     : detourageIsole, _removeBgCanvas.
@@ -405,6 +432,18 @@ const TEXTES = {
     // Doit vivre ICI : `_rmbgCanvas` est privée au fichier, une enveloppe posée
     // ailleurs ne pourrait pas la restaurer.
     async function detourageIsole(dataUrl, tolerance) {
+      // Garde-fou (relecture de sécurité du 09-10, sa limite) : au-delà de 40 millions de pixels,
+      // pas de détourage — l'image compte comme manquante. Une image piégée, légère mais immense
+      // (10 000 × 10 000), ferait sinon planter la fenêtre qui reprend le projet de Wires Cloud
+      // ou la page du lien. Les images d'appareils font 1 à 2 millions de pixels.
+      const MAX_PIXELS = 40e6;
+      const taille = await new Promise((ok, ko) => {
+        const i = new Image();
+        i.onload = () => ok(i.naturalWidth * i.naturalHeight);
+        i.onerror = () => ko(new Error('detourageIsole : image illisible'));
+        i.src = dataUrl;
+      });
+      if (!(taille > 0) || taille > MAX_PIXELS) throw new Error('detourageIsole : image trop grande (' + taille + ' pixels)');
       const sauve = _rmbgCanvas;
       try {
         const r = await _removeBgCanvas(dataUrl, Number(tolerance) || 0);
@@ -564,6 +603,7 @@ const TEXTES = {
     global.detourageIsole = detourageIsole;
     return { FACES, SUFFIXES, estImageEmbarquee, estInterne, octetsDeDataUrl, formatReel, empreinte, reconstruireFace, reconstruireProjet, detourageIsole };
   })();
+  /*@@FIN_COPIES_WIRES@@*/
 
   // ── Le serveur ──
   async function appelerServeur(action, jeton) {
@@ -591,30 +631,112 @@ const TEXTES = {
     });
   }
 
+  // Un échec, avec sa raison : c'est elle qui décide d'un nouvel essai (voir avecEssais).
+  const echec = (code, plus) => Object.assign(new Error(code), { code }, plus || {});
+  const pause = ms => new Promise(fin => setTimeout(fin, ms));
+
   // Un fichier du lien, par un simple GET — jamais par la mémoire du navigateur (voir la page
-  // de statistiques, 03-10). `progres` reçoit le nombre d'octets lus.
-  async function lireFichier(lien, progres) {
-    const r = await fetch(lien, { cache: 'reload' });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const octets = new Uint8Array(await r.arrayBuffer());
-    if (progres) progres(octets.length);
+  // de statistiques, 03-10). Chaque échec dit sa raison.
+  async function lireFichier(lien) {
+    let r;
+    try { r = await fetch(lien, { cache: 'reload' }); } catch (e) { throw echec('reseau'); }
+    if (r.status === 429) {
+      const s = Number(r.headers.get('Retry-After'));
+      throw echec('occupe', { attente: s > 0 ? Math.min(s, 30) * 1000 : null });
+    }
+    if (r.status === 401 || r.status === 403) throw echec('expire');      // lien du magasin dépassé (1 h)
+    if (r.status === 404 || r.status === 410) throw echec('introuvable');
+    if (!r.ok) throw echec('serveur');
+    let octets;
+    try { octets = new Uint8Array(await r.arrayBuffer()); } catch (e) { throw echec('reseau'); }   // coupure en route
+    const annonce = Number(r.headers.get('Content-Length'));
+    if (annonce > 0 && octets.length < annonce) throw echec('tronque');
     return octets;
   }
 
+  // Les nouveaux essais (1.6.0, 09-10, sa demande ; réglages de Search) : 3 essais en tout,
+  // 1 s puis 3 s entre eux, seulement quand un nouvel essai peut changer quelque chose.
+  // Jamais pour un format que le navigateur ne sait pas lire, ni pour un fichier introuvable.
+  const ESSAIS = 3;
+  const ATTENTES = [1000, 3000];
+  const A_REFAIRE = ['reseau', 'serveur', 'occupe', 'tronque', 'empreinte', 'expire'];
+
   // Le projet entier, comme Wires le reconstruit : le document, puis chaque image, vérifiée
-  // contre son empreinte. Une image illisible n'empêche pas le reste : l'appareil garde sa place.
-  async function reconstruire(fichiers, progres) {
-    const octetsDoc = await lireFichier(fichiers.document.lien, progres);
-    const enveloppe = JSON.parse(new TextDecoder().decode(octetsDoc));
-    if (!enveloppe || enveloppe.format !== FORMAT_DOCUMENT || !enveloppe.projet) throw Object.assign(new Error('document'), { code: 'document_invalide' });
-    if (!(enveloppe.version <= VERSION_DOCUMENT)) throw Object.assign(new Error('document'), { code: 'document_trop_recent' });
-    const parEmpreinte = new Map((fichiers.images || []).map(im => [im.empreinte, im]));
-    const { projet, manquantes } = await WiresFormat.reconstruireProjet(enveloppe.projet, async ({ empreinte }) => {
-      const im = parEmpreinte.get(empreinte);
-      if (!im || !im.lien) throw new Error('sans lien');
-      return enDataUrl(await lireFichier(im.lien, progres));
+  // contre son empreinte. Une image qui manque encore après ses essais n'empêche pas le reste :
+  // l'appareil garde sa place, et elle est rendue dans `manquantes` — jamais passée sous silence.
+  // Liens expirés (1 h) : `redemander` en rend des neufs, UNE fois pour tout le chargement
+  // (chaque demande compte dans les 10 chargements par jour du lien). Si le propriétaire a
+  // enregistré une nouvelle version entre-temps, on s'arrête (code 'nouvelle_version') : le
+  // chargement reprend en entier sur elle, jamais deux versions mêlées.
+  async function reconstruire(premiers, progres, redemander) {
+    let fichiers = premiers;
+    let redemande = null;
+    // ⚠️ Retenue ICI, pas seulement levée : l'erreur passe par reconstruireProjet (copie de
+    // Wires), qui avale toute erreur d'une image et la compte « manquante ». Vérifiée à la fin.
+    let nouvelleVersion = null;
+    const liensNeufs = () => {
+      if (!redemande) redemande = (async () => {
+        const r = redemander ? await redemander() : null;
+        if (!r || !r.ok) throw echec('expire');
+        if (r.version !== fichiers.version) { nouvelleVersion = r; throw echec('nouvelle_version', { fichiers: r }); }
+        fichiers = r;
+      })();
+      return redemande;
+    };
+    // Le lien est relu à chaque essai : après une nouvelle demande, c'est le neuf.
+    const lienDe = cle => cle === null ? (fichiers.document || {}).lien
+      : ((fichiers.images || []).find(im => im.empreinte === cle) || {}).lien;
+
+    async function avecEssais(cle, lire) {
+      for (let essai = 1; ; essai++) {
+        try {
+          const lien = lienDe(cle);
+          if (!lien) throw echec('introuvable');
+          return await lire(await lireFichier(lien));
+        } catch (e) {
+          if (nouvelleVersion || e.code === 'nouvelle_version' || !A_REFAIRE.includes(e.code) || essai >= ESSAIS) throw e;
+          if (e.code === 'expire') await liensNeufs();
+          else await pause(e.attente || ATTENTES[essai - 1]);
+        }
+      }
+    }
+
+    // L'empreinte du document est vérifiée comme celle des images (relecture de sécurité du
+    // 09-10) : même calcul que le serveur et Wires — SHA-256 des octets bruts, en hexadécimal.
+    const hex = async octets => [...new Uint8Array(await crypto.subtle.digest('SHA-256', octets))]
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+    const enveloppe = await avecEssais(null, async octets => {
+      const attendue = (fichiers.document || {}).empreinte;
+      if (!attendue || await hex(octets) !== attendue) throw echec('empreinte');
+      let e;
+      try { e = JSON.parse(new TextDecoder().decode(octets)); } catch (x) { throw echec('tronque'); }
+      progres(octets.length);
+      return e;
     });
-    return { projet, manquantes };
+    if (!enveloppe || enveloppe.format !== FORMAT_DOCUMENT || !enveloppe.projet) throw echec('document_invalide');
+    if (!(enveloppe.version <= VERSION_DOCUMENT)) throw echec('document_trop_recent');
+    const { projet, manquantes } = await WiresFormat.reconstruireProjet(enveloppe.projet, ({ empreinte }) =>
+      avecEssais(empreinte, async octets => {
+        const dataUrl = await enDataUrl(octets);          // format illisible : pas de nouvel essai
+        if (await WiresFormat.empreinte(dataUrl) !== empreinte) throw echec('empreinte');
+        progres(octets.length);
+        return dataUrl;
+      }));
+    if (nouvelleVersion) throw echec('nouvelle_version', { fichiers: nouvelleVersion });
+    return { projet, manquantes, fichiers };
+  }
+
+  // Les appareils qui s'afficheront SANS PHOTO : ceux dont l'image visible (détourée) d'une
+  // face manque. Chacun une fois, dans l'ordre du projet. Une originale seule qui manque ne
+  // change pas l'affichage (seul son détourage ne pourra plus être re-réglé dans Wires).
+  function appareilsSansPhoto(manquantes) {
+    const vus = new Set(), noms = [];
+    for (const m of manquantes || []) {
+      if (m.quoi !== 'detouree' || vus.has(m.noeud)) continue;
+      vus.add(m.noeud);
+      noms.push(m.nom || '?');
+    }
+    return noms;
   }
 
   // Le fichier .wires, écrit comme Wires l'écrit : son titre est le nom du projet.
@@ -668,6 +790,14 @@ const TEXTES = {
     const charger = $('.ps-charger');
     const jeton = decodeURIComponent((location.hash || '').replace(/^#/, '').trim());
 
+    // Des noms d'appareils (09-10) : les 5 premiers, puis « … et N autres » ; $n reste le vrai total.
+    const valeursDe = v => {
+      if (!v || !v.noms) return v;
+      const reste = v.noms.length - 5;
+      const a = v.noms.slice(0, 5).join(', ') + (reste > 0 ? ' ' + t(reste === 1 ? 'others_1' : 'others_n', { k: reste }) : '');
+      return { n: v.noms.length, a };
+    };
+
     // Ce qui est affiché se garde en clés, pour se réécrire dans une autre langue.
     let infos = null;                 // { nom, proprietaire, expireLe } rendus par « voir »
     let message = null;               // { cle, valeurs, sorte }
@@ -689,7 +819,7 @@ const TEXTES = {
         par.textContent = t('shared_by', { p: infos.proprietaire || '?' });
         fin.textContent = t('until', { d: dateLongue(infos.expireLe) });
       }
-      etat.textContent = message ? t(message.cle, message.valeurs) : '';
+      etat.textContent = message ? t(message.cle, valeursDe(message.valeurs)) : '';
       etat.hidden = !message;
       etat.className = 'ps-etat' + (message && message.sorte ? ' ps-' + message.sorte : '');
       // Le sélecteur : la langue en cours sur le bouton, les deux autres dans la liste.
@@ -751,34 +881,70 @@ const TEXTES = {
       dire(null);
     })();
 
+    // Le fichier .wires, donné au navigateur.
+    const manque = $('.ps-manque');
+    let enAttente = null;             // un projet incomplet, donné seulement sur « Télécharger quand même »
+    function donner(projet, nomProjet) {
+      const fichier = nomDeFichier(nomProjet);
+      const url = URL.createObjectURL(fichierWires(projet, nomProjet || ''));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fichier;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      dire('done', { f: fichier }, 'fait');
+      global.__shareDernier = { fichier, projet };   // pour le banc d'essai
+    }
+    $('.ps-quand-meme').addEventListener('click', () => {
+      if (!enAttente) return;
+      const x = enAttente;
+      enAttente = null;
+      manque.hidden = true;
+      donner(x.projet, x.nom);
+    });
+
     let enCours = false;
     charger.addEventListener('click', async () => {
       if (enCours) return;
       enCours = true;
       charger.disabled = true;
+      enAttente = null;
+      manque.hidden = true;
       dire('progress', { n: 0 });
       try {
         const r = await serveur('charger', jeton);
         if (!r || !r.ok) { const x = refus(r); dire(x[0], x[1], 'refus'); return; }
-        const total = (r.document && r.document.octets || 0)
-          + (r.images || []).reduce((s, im) => s + (Number(im.octets) || 0), 0);
-        let lus = 0;
+        let total = 0, lus = 0;
+        const compter = f => {
+          total = (f.document && f.document.octets || 0) + (f.images || []).reduce((s, im) => s + (Number(im.octets) || 0), 0);
+          lus = 0;
+        };
         const progres = n => {
           lus += n;
           if (total > 0) dire('progress', { n: Math.min(99, Math.round(lus * 100 / total)) });
         };
-        const { projet } = await reconstruire(r, progres);
-        const fichier = nomDeFichier(r.nom);
-        const url = URL.createObjectURL(fichierWires(projet, r.nom || ''));
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fichier;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
-        dire('done', { f: fichier }, 'fait');
-        global.__shareDernier = { fichier, projet };   // pour le banc d'essai
+        compter(r);
+        let resultat;
+        try {
+          resultat = await reconstruire(r, progres, () => serveur('charger', jeton));
+        } catch (e) {
+          if (e.code !== 'nouvelle_version') throw e;
+          // Une nouvelle version, enregistrée pendant le chargement : tout reprend sur elle, avec
+          // ses liens tout neufs — sans nouvelle demande au serveur.
+          compter(e.fichiers);
+          resultat = await reconstruire(e.fichiers, progres, null);
+        }
+        const noms = appareilsSansPhoto(resultat.manquantes);
+        if (noms.length) {
+          enAttente = { projet: resultat.projet, nom: resultat.fichiers.nom };
+          global.__shareManque = { noms, manquantes: resultat.manquantes };   // pour le banc d'essai
+          dire(noms.length === 1 ? 'missing_1' : 'missing_n', { noms }, 'attention');
+          manque.hidden = false;
+          return;
+        }
+        donner(resultat.projet, resultat.fichiers.nom);
       } catch (e) {
         dire('error', null, 'refus');
       } finally {
@@ -788,7 +954,7 @@ const TEXTES = {
     });
   }
 
-  global.Share = { monter, reconstruire, fichierWires, _wires: WiresFormat };
+  global.Share = { monter, reconstruire, fichierWires, appareilsSansPhoto, _wires: WiresFormat };
   // Le banc d'essai monte la page lui-même, avec un faux serveur.
   if (!global.__shareManuel) {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => monter());

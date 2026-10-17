@@ -153,6 +153,10 @@ function createNode(equipment, canvasX, canvasY) {
     cat:     equipment.cat || 'video',
     img:          equipment.img || null,
     img_original: equipment.img_original || null,
+    // Marqueur d'origine : suit l'image depuis l'équipement, comme la
+    // tolérance plus bas. Sans ça, un appareil posé depuis la bibliothèque
+    // perdrait la provenance que sa création avait capturée.
+    img_src:      equipment.img_src || null,
     // Tolérance de détourage : la bibliothèque la mémorise depuis toujours, mais
     // elle n'était jamais reportée sur l'appareil placé. Deux effets, tous deux
     // constatés : Configuration image rouvrait sur la valeur par défaut au lieu
@@ -176,6 +180,10 @@ function createNode(equipment, canvasX, canvasY) {
     ports:      equipment.ports ? equipment.ports.map(p => ({ ...p })) : [],
     shape:      equipment.shape || null,
     shapeColor: equipment.shapeColor || null,
+    // Format et orientation d'une forme réglés à sa création (09-10) : sans eux, le premier
+    // changement de couleur la redessinait aux proportions par défaut, remise droite.
+    shapeAspect:  equipment.shapeAspect ?? null,
+    shapeQuarter: equipment.shapeQuarter ?? null,
     zindex: 1,
   };
   // Vue Arrière, si l'équipement en a une (configurée pendant sa création — voir
@@ -184,11 +192,14 @@ function createNode(equipment, canvasX, canvasY) {
   if (equipment.imgRear) {
     node.imgRear          = equipment.imgRear;
     node.imgRear_original = equipment.imgRear_original || null;
+    node.imgRear_src      = equipment.imgRear_src || null;
     node.rmbg_tolRear      = equipment.rmbg_tolRear ?? null;
     node.rmbg_cropRear     = equipment.rmbg_cropRear || null;
     node.portsRear         = equipment.portsRear ? equipment.portsRear.map(p => ({ ...p })) : [];
     node.shapeRear         = equipment.shapeRear || null;
     node.shapeColorRear    = equipment.shapeColorRear || null;
+    node.shapeAspectRear   = equipment.shapeAspectRear ?? null;
+    node.shapeQuarterRear  = equipment.shapeQuarterRear ?? null;
   }
   // Produit trouvé par la recherche d'images (voir _searchProductOfNode, library.js) : sert à
   // pré-remplir la recherche d'une image ajoutée ou remplacée plus tard.
@@ -375,6 +386,74 @@ function _ensureFrontAlphaPixels(sid, s, imgEl) {
 }
 
 // ── Rendu d'UN nœud ──────────────────────────────────────────
+// Ecart de hauteur, en pixels, en dessous duquel un reajustement automatique decale les
+// traces de cables au lieu de les jeter (voir le bloc d'auto-ajustement dans _onLoad).
+// Quelques pixels = un reajustement invisible, jamais un vrai changement de forme.
+const AUTOFIT_PATCH_MAX_DH = 4;
+
+// ── Forme ou photo ? ──────────────────────────────────────────────
+// Jusqu'en 1.5.0, enregistrer un appareil ne SUPPRIMAIT jamais ses champs de forme.
+// Un appareil passé de la forme à une photo gardait donc l'étiquette « je suis un
+// rectangle gris » : le panneau de propriétés lui proposait encore ses pastilles de
+// couleur, et en cliquer une remplaçait la photo par la forme ; son cadre d'obstacle
+// restait figé plein cadre, donc les câbles contournaient le rectangle de l'image au
+// lieu de l'appareil. Les projets faits avec ces versions se réparent ici, à
+// l'ouverture, une fois par appareil et par face.
+// Comment on tranche : une forme générée n'a que DEUX couleurs, son aplat et son
+// contour ; une photo n'en approche jamais. On échantillonne donc l'image déjà
+// décodée, sans rien redessiner. Mesuré sur les 1152 formes possibles (4 formes
+// × 6 couleurs × 4 formats × 4 orientations × 3 longueurs de nom), la moins bien
+// reconnue l'est à 84 % ; 135 photos d'appareils réelles tombent toutes à 0 %.
+// Volontairement SANS setDirty, comme la migration du cadre bb : ouvrir un projet ne
+// doit pas le marquer comme modifié.
+// Sécurité anti-régression : window._xShapeCheck = false → plus aucune vérification.
+const _shapeSeen  = new WeakMap();   // appareil -> image déjà reconnue, par face
+let   _shapeProbe = null;
+function _dropShapeIfNotShape(s, rear, imgEl) {
+  if (!s || window._xShapeCheck === false) return;
+  if (!s[rear ? 'shapeRear' : 'shape']) return;
+  if (typeof _shapeStrokeColor !== 'function') return;
+  if (!imgEl || !imgEl.naturalWidth) return;
+  // Reconnue une fois, plus jamais reprise. La clé est l'image RANGÉE SUR L'APPAREIL,
+  // pas imgEl.src : c'est la même chaîne d'un rendu à l'autre, donc la comparaison est
+  // immédiate, là où relire src en reconstruirait une copie à chaque fois.
+  const face = rear ? 'rear' : 'front';
+  const cle  = rear ? s.imgRear : s.img;
+  let memo = _shapeSeen.get(s);
+  if (memo && memo[face] === cle) return;
+
+  const hex = h => { h = String(h || '#6B7280').replace('#', '');
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]; };
+  const col = rear ? s.shapeColorRear : s.shapeColor;
+  const f = hex(col), t = hex(_shapeStrokeColor(col || '#6B7280'));
+  let opaques = 0, siens = 0;
+  try {
+    if (!_shapeProbe) { _shapeProbe = document.createElement('canvas'); _shapeProbe.width = _shapeProbe.height = 32; }
+    const cx = _shapeProbe.getContext('2d', { willReadFrequently: true });
+    cx.clearRect(0, 0, 32, 32);
+    cx.imageSmoothingEnabled = false;   // on veut de vrais pixels de l'image, pas des mélanges
+    cx.drawImage(imgEl, 0, 0, 32, 32);
+    const d = cx.getImageData(0, 0, 32, 32).data;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] < 200) continue;
+      opaques++;
+      if ((d[i] === f[0] && d[i + 1] === f[1] && d[i + 2] === f[2])
+       || (d[i] === t[0] && d[i + 1] === t[1] && d[i + 2] === t[2])) siens++;
+    }
+  } catch (e) { return; }   // image illisible ici : on ne conclut rien, on n'efface rien
+
+  if (opaques && siens / opaques >= 0.5) {        // c'est bien sa forme
+    if (!memo) _shapeSeen.set(s, memo = {});
+    memo[face] = cle;
+    return;
+  }
+  for (const k of (rear ? ['shapeRear', 'shapeColorRear', 'shapeAspectRear', 'shapeQuarterRear']
+                        : ['shape', 'shapeColor', 'shapeAspect', 'shapeQuarter'])) delete s[k];
+  // Cadre du contenu figé plein cadre du temps où l'appareil se croyait une forme :
+  // remis à recalculer sur les pixels de la photo, juste en dessous.
+  if (!rear && s.bb && s.bb.left === 0 && s.bb.right === 1 && s.bb.top === 0 && s.bb.bottom === 1) s.bbAuto = false;
+}
+
 function renderOneNode(sid) {
   const s = APP.nodes[sid];
   if (!s) return;
@@ -598,18 +677,22 @@ function renderOneNode(sid) {
     const imgEl = imgWrap.querySelector('img');
     const _onLoad = () => {
       let _rearSizeChanged = false; // taille Arrière changée à l'affichage : bouts de câble déjà recalés par _applyRearSize
+      let _autoFitPatched = false;  // traces decales par le reajustement de hauteur : il reste a redessiner
       if (_rearActive) {
         // Vue Arrière : mesurer SES propres dimensions naturelles (pour que ses
         // ports/câbles soient positionnés via _nodeImgRect(s,'rear'), jamais le
         // rect de l'Avant) — mais ne jamais toucher au cadre d'obstacle (bb) ni à
         // l'ajustement de hauteur, qui restent basés sur l'Avant (voir plus haut) :
         // la boîte du nœud ne doit pas changer de taille selon la vue affichée.
+        _dropShapeIfNotShape(s, true, imgEl);   // etiquette de forme oubliee sur l'Arriere
         if (window._xRearImageSync !== false) _rearSizeChanged = _applyRearSize(sid, s.imgRear, imgEl.naturalWidth, imgEl.naturalHeight);
         else { s._imgWRear = imgEl.naturalWidth; s._imgHRear = imgEl.naturalHeight; }
       } else {
       s._imgW = imgEl.naturalWidth;
       s._imgH = imgEl.naturalHeight;
       _ensureFrontAlphaPixels(sid, s, imgEl);
+      _dropShapeIfNotShape(s, false, imgEl);   // etiquette de forme oubliee sur l'Avant
+
 
       // Migration ponctuelle du cadre de contenu (bb) : historiquement il valait une
       // constante (PNG entier, ou 2 % de marge) au lieu du contour réellement opaque,
@@ -629,6 +712,7 @@ function renderOneNode(sid) {
       if (!s.hManual && s._imgW && s._imgH) {
         const naturalH = Math.max(MIN_H, Math.round(s.w * s._imgH / s._imgW));
         if (naturalH !== s.h) {
+          const _hAvant = s.h;
           s.h = naturalH;
           s.cy = s.y + s.h / 2;
           el.style.height         = (s.h + 40) + 'px';
@@ -636,9 +720,24 @@ function renderOneNode(sid) {
           imgWrap.style.height    = (s.h - 3) + 'px';
           portsLayer.style.height = s.h + 'px';
           _updateLblPos(sid);
-          // Ports have moved → invalidate all overrides for connected cables
-          for (const c of (APP?.cables || [])) {
-            if (c.from === sid || c.to === sid) delete cableOverrides[c.id];
+          // Les prises de cet appareil ont bouge. Jeter les traces (comportement d'avant)
+          // faisait reprendre un chemin ENTIEREMENT different a des cables auxquels
+          // l'utilisateur n'avait pas touche, pour un reajustement de quelques pixels
+          // invisible a l'ecran (signale le 2026-09-20). En dessous de ce seuil on decale
+          // donc chaque trace sur la nouvelle position de sa prise en gardant sa forme -
+          // meme outil que apres une modification dans Configuration image. Au-dela,
+          // l'appareil a vraiment change de forme : le recalcul complet reste le bon
+          // comportement, un trace simplement decale pouvant traverser un appareil.
+          // Securite anti-regression : window._xAutoFitKeepPaths = false -> traces jetes.
+          const _dh = Math.abs(naturalH - _hAvant);
+          if (window._xAutoFitKeepPaths !== false && _dh <= AUTOFIT_PATCH_MAX_DH
+              && typeof _patchCablesForPortMove === 'function') {
+            _patchCablesForPortMove(sid);
+            _autoFitPatched = true;
+          } else {
+            for (const c of (APP?.cables || [])) {
+              if (c.from === sid || c.to === sid) delete cableOverrides[c.id];
+            }
           }
           setDirty();
         }
@@ -652,7 +751,7 @@ function renderOneNode(sid) {
       // Le côté (Avant/Arrière) de CHAQUE câble est résolu individuellement via
       // _findPortById (cables.js) — ce nœud peut avoir des câbles sur les deux
       // vues à la fois, indépendamment de laquelle est actuellement affichée.
-      let needRedraw = _rearSizeChanged; // bouts déjà recalés par _applyRearSize : il reste à redessiner
+      let needRedraw = _rearSizeChanged || _autoFitPatched; // bouts déjà recalés (_applyRearSize ou hauteur) : il reste à redessiner
       for (const c of (APP?.cables || [])) {
         if (c.from !== sid && c.to !== sid) continue;
         // Câble dont une extrémité est en cours de glissement (voir _endDragInProgress, cables.js) : jamais

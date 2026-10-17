@@ -799,11 +799,19 @@ function drawJunctionMarkers() {
     const node = APP.nodes[nodeId];
     if (!node) continue;
     const nx = parseFloat(nxStr), ny = parseFloat(nyStr);
-    // Les DEUX faces : un port double (IN+OUT) posé sur la vue Arrière n'obtenait jamais
-    // ses triangles de jonction, alors que les deux câbles qui le partagent étaient bien
-    // dessinés — sur le canevas comme dans l'export PDF/PNG (2026-09-19).
-    const port = [...(node.ports || []), ...(node.portsRear || [])]
-      .find(p => Math.abs(p.nx - nx) < 0.001 && Math.abs(p.ny - ny) < 0.001);
+    // Face AFFICHÉE seulement. Chercher le port sur les DEUX faces (2026-09-19) lui a bien
+    // donné ses triangles quand il est posé sur la vue Arrière, mais les laissait aussi
+    // affichés après un retour sur la vue Avant, où ce port n'existe pas (2026-09-20).
+    // L'export Canevas PDF/PNG suit tout seul, il photographie le canevas ; le Canevas HTML
+    // Interactif a sa propre copie de ce calcul (viewer.js), à traiter à part.
+    // Sécurité anti-régression : window._xJunctionDisplayedSide = false → les deux faces.
+    const _deuxFaces = window._xJunctionDisplayedSide === false;
+    const _arriereAffichee = !_deuxFaces
+      && typeof _previewView !== 'undefined' && _previewView[nodeId] === 'rear' && !!node.imgRear;
+    const _portsVus = _deuxFaces
+      ? [...(node.ports || []), ...(node.portsRear || [])]
+      : (_arriereAffichee ? (node.portsRear || []) : (node.ports || []));
+    const port = _portsVus.find(p => Math.abs(p.nx - nx) < 0.001 && Math.abs(p.ny - ny) < 0.001);
     if (!port?.dual) continue;
     const { pts, end } = entries[0];
     const jp = end === 'from' ? pts[0] : pts[pts.length - 1];
@@ -954,6 +962,16 @@ function refreshCableHitWidths() {
   document.querySelectorAll('#cables-svg .cable-hit').forEach(p => p.setAttribute('stroke-width', w));
 }
 
+// Un cable orphelin echappe a l'estompage de la SELECTION d'appareil : n'etant branche
+// a rien, il n'est jamais dans les cables de l'appareil selectionne et passait donc a
+// 3% d'opacite des l'ouverture du panneau droit — invisible, clignotement compris
+// (signale le 2026-09-20). Ne concerne QUE cette selection : pendant une animation de
+// route, effacer tout ce qui n'est pas la route est l'effet demande.
+// Securite anti-regression : window._xOrphanNoSelDim = false -> estompage d'avant.
+function _cableExemptFromSelDim(vis) {
+  return !!vis && vis.dataset.orphan === '1' && window._xOrphanNoSelDim !== false;
+}
+
 // ── Dessiner un câble (visual + hit path unique) ─────────────
 function drawCable(c, pts, orphan = false) {
   const d = toSVG(pts);
@@ -964,10 +982,13 @@ function drawCable(c, pts, orphan = false) {
   // ── Path visuel ──────────────────────────────────────────────
   const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   p.setAttribute('d', d);
-  p.setAttribute('stroke', orphan ? '#556' : (c.color || '#888'));
-  p.setAttribute('stroke-width', isSelected ? '5' : (orphan ? '2' : '3.5'));
+  // Orphelin : il garde la COULEUR, l'epaisseur et l'opacite d'un cable branche.
+  // Sa seule difference est le pointille clignotant (voir .cable-orphan, main.css) —
+  // choix de l'utilisateur le 2026-09-20 : le gris fin d'avant le rendait invisible.
+  p.setAttribute('stroke', c.color || '#888');
+  p.setAttribute('stroke-width', isSelected ? '5' : '3.5');
   p.setAttribute('fill', 'none');
-  p.setAttribute('opacity', isSelected ? '1' : (orphan ? '0.5' : '0.85'));
+  p.setAttribute('opacity', isSelected ? '1' : '0.85');
   if (orphan) p.setAttribute('stroke-dasharray', '6,5');
   if (!orphan && c.dashed && c.dashed !== 'solid') {
     if (c.dashed === 'long') p.setAttribute('stroke-dasharray', '16,10');
@@ -977,6 +998,20 @@ function drawCable(c, pts, orphan = false) {
   p.setAttribute('vector-effect', 'non-scaling-stroke');
   p.setAttribute('data-cid', c.id);
   p.classList.add('cable-visual', 'cp');
+  // Regle generale : un cable orphelin CLIGNOTE, pour qu'un branchement laisse en
+  // suspens ne passe pas inapercu dans un schema charge. Le gris pointille plus fin
+  // ne suffisait pas. L'animation est en CSS (main.css) et s'arrete d'elle-meme quand
+  // le cable est selectionne, sa mise en evidence prenant le relais.
+  // Securite anti-regression : window._xOrphanBlink = false -> plus de clignotement.
+  // !isSelected : sur un cable selectionne, sa mise en evidence prend le relais. Teste
+  // ICI et non en CSS sur data-selected comme avant — ce marqueur sert aussi a la route
+  // animee et aux cables de l'appareil selectionne, il coupait donc le clignotement
+  // pendant l'animation d'une route (signale le 2026-09-20). selectCable/clearSelCable
+  // passent tous deux par redrawOnlyCables, la classe est donc recalculee a chaque fois.
+  if (orphan && !isSelected && window._xOrphanBlink !== false) p.classList.add('cable-orphan');
+  // Marqueur d'etat, pose meme si le clignotement est coupe : c'est lui que lisent les
+  // estompages (_cableExemptFromSelDim, juste au-dessus) pour laisser l'orphelin visible.
+  if (orphan) p.dataset.orphan = '1';
   p.style.pointerEvents = 'none';
   if (isSelected) p.dataset.selected = '1';
 
@@ -1016,7 +1051,26 @@ function drawCable(c, pts, orphan = false) {
           n2 = _occlusionEraseLength(_occl.to.node, _occl.to.sid, _occl.to.side, pts[n - 1], pts[n - 2], dir);
         }
       }
-      if (_ghost) {
+      // Les DEUX bouts cachés par le MÊME appareil, et un tracé qui ne sort jamais de son
+      // cadre : le câble est entièrement derrière la face affichée, il ne doit pas se voir
+      // du tout. Le fantôme, lui, reste le bon rendu quand deux appareils DIFFÉRENTS se
+      // chevauchent — le faire disparaître serait alors incompréhensible. Oubli de la
+      // 1.5.0, signalé le 2026-09-22 : un câble branché à l'arrière et revenant à l'arrière
+      // du même appareil restait visible en atténué par-dessus sa face avant.
+      // Sécurité anti-régression : window._xSelfRearHide = false → retour au fantôme.
+      const _selfHidden = _ghost && _occl.from && _occl.to
+        && _occl.from.sid === _occl.to.sid && window._xSelfRearHide !== false;
+      if (_selfHidden) {
+        // Effacé sur toute sa longueur plutôt que masqué : l'export recopie le tracé calculé
+        // ici, et l'animation des routes lit ces mêmes bornes — les deux suivent sans rien
+        // de particulier à prévoir. La bande de capture (ph) reste cliquable, comme partout.
+        p.setAttribute('pathLength', totalLen);
+        // Quatre valeurs, comme le motif normal : l'export et le moteur d'animation de la
+        // page relisent un motif « 0 n1 milieu n2 » et ignorent tout motif plus court.
+        p.setAttribute('stroke-dasharray', `0 ${totalLen} 0 0`);
+        p.dataset.visStart = totalLen;
+        p.dataset.visEnd   = totalLen;
+      } else if (_ghost) {
         // Tracé jamais sorti du cadre de l'appareil : câble entier en « fantôme », sans effacement.
         p.setAttribute('stroke-opacity', '0.5');
         p.classList.add('cable-occl-ghost');
@@ -1146,8 +1200,10 @@ function drawCable(c, pts, orphan = false) {
       // faire raviver au survol, puisqu'elles ne touchent volontairement pas _activeRoutes.
       const routeActive = typeof _isDimmingActive === 'function' && _isDimmingActive();
       let sw, op;
-      if (APP.sel || routeActive) { sw = '1';   op = '0.03'; }
-      else                        { sw = '3.5'; op = '0.85'; }
+      // Quitter le survol ne doit pas re-estomper un orphelin exempte (meme regle
+      // que _applySelCableDim, select.js) ; une route active, elle, estompe tout.
+      if (routeActive || (APP.sel && !_cableExemptFromSelDim(vis))) { sw = '1';   op = '0.03'; }
+      else                                                         { sw = '3.5'; op = '0.85'; }
       vis.setAttribute('stroke-width', sw); vis.setAttribute('opacity', op);
     };
     ph.addEventListener('mouseenter', () => {
@@ -1826,6 +1882,11 @@ function _computeBypassPts(axis, c0, c1, newVal, startVal, fromId, toId) {
 // return;`). On préserve donc le tracé, et on étire juste le bout existant dans
 // l'axe de son dernier segment (reste orthogonal, visuellement détaché du port).
 const _ORPHAN_EJECT_OFFSET = 48; // px, décalage/dégagement du point orphelin (facilite la prise en main)
+// Diametre, en pixels ecran, de la zone qui attire la pointe d'un cable orphelin vers un
+// point de connexion pendant son rattachement : le point lui-meme (14 px, PORT_DOT_SCREEN
+// dans nodes.js) plus une dizaine de pixels autour. Exprime a l'ecran comme le point, pour
+// que la sensation ne change pas avec le zoom.
+const ORPHAN_SNAP_SCREEN = 24;
 
 function _orphanCableEnd(c, role) {
   const pts = cableOverrides[c.id];
@@ -1857,11 +1918,16 @@ function _orphanCableEnd(c, role) {
     ox = ax + _ORPHAN_EJECT_OFFSET; oy = ay + _ORPHAN_EJECT_OFFSET;
   }
 
+  // Appareil quitte, memorise pour le rattachement : rebranche sur LUI, le trace est
+  // conserve au lieu d'etre recalcule (voir finalize, poignee de cable orphelin).
+  // Efface des que le cable est rebranche.
   if (role === 'from') {
+    c.orphan_from_sid = c.from;
     c.orphan_from   = true;
     c.orphan_from_x = ox; c.orphan_from_y = oy;
     c.from = null; c.from_port = null; c.from_side = null;
   } else {
+    c.orphan_to_sid = c.to;
     c.orphan_to   = true;
     c.orphan_to_x = ox; c.orphan_to_y = oy;
     c.to = null; c.to_port = null; c.to_side = null;
@@ -2074,9 +2140,30 @@ function _drawOrphanHandle(c, pts, idx, role) {
           _odbg('ORPHAN_DRAG_MOVE', { cableId: c.id, moveCount, x: Math.round(x), y: Math.round(y) });
         }
         if (!undoPushed) { undoPushed = true; pushUndo(); } // état d'avant le moindre déplacement
-        ovPts[idx] = [Math.round(x), Math.round(y)];
-        if (role === 'from') { c.orphan_from_x = x; c.orphan_from_y = y; }
-        else                 { c.orphan_to_x   = x; c.orphan_to_y   = y; }
+        // Magnetisme leger : la pointe se cale au centre d'un point de connexion des que le
+        // curseur entre dans sa zone d'attraction (ORPHAN_SNAP_SCREEN). Seuls les points qui
+        // acceptent ce cable attirent — un point plein ou de type incompatible est deja
+        // estompe et inerte au rattachement (_reattachAcceptor), l'aimanter serait mentir.
+        // Vue affichee seulement (_displayedPortsOf) : les prises de la face cachee ne sont
+        // pas a l'ecran, rien ne doit y attirer la pointe.
+        // Securite anti-regression : window._xOrphanSnap = false -> aucun magnetisme.
+        let _px = Math.round(x), _py = Math.round(y);
+        if (window._xOrphanSnap !== false) {
+          let _best = (ORPHAN_SNAP_SCREEN / 2) / (APP.view?.zoom || 1);
+          const _accepte = _reattachAcceptor(c.id, role);
+          for (const [sid2, node2] of Object.entries(APP.nodes)) {
+            const { ports: _ps, side: _sd } = _displayedPortsOf(sid2, node2);
+            for (const port of _ps) {
+              if (!_accepte(sid2, port)) continue;
+              const [ax, ay] = edgePtFixed(node2, port.nx, port.ny, _sd);
+              const d = Math.hypot(x - ax, y - ay);
+              if (d < _best) { _best = d; _px = Math.round(ax); _py = Math.round(ay); }
+            }
+          }
+        }
+        ovPts[idx] = [_px, _py];
+        if (role === 'from') { c.orphan_from_x = _px; c.orphan_from_y = _py; }
+        else                 { c.orphan_to_x   = _px; c.orphan_to_y   = _py; }
         redrawOnlyCables();
         setDirty();
       } catch (err) {
@@ -2109,7 +2196,19 @@ function _drawOrphanHandle(c, pts, idx, role) {
           c.to_port = port ? port.id : null;
           c.to_side = side;
         }
-        delete cableOverrides[c.id]; // forcer recalcul BFS
+        // Rebranche sur l'appareil d'ou l'extremite venait : son trace est CONSERVE, seule
+        // la pointe revient sur le point de connexion avec son coude voisin realigne
+        // (_patchCablesForPortMove, le meme outil qu'un point deplace dans Configuration
+        // image). Rebranche sur son point d'origine, le cable retrouve exactement son
+        // trace : la pointe n'avait ete que decalee de _ORPHAN_EJECT_OFFSET, le reste
+        // jamais touche. Sur un AUTRE appareil, cheminement complet recalcule comme avant,
+        // garder l'ancien trace le ferait partir en diagonale a travers le schema.
+        // Securite anti-regression : window._xOrphanKeepPath = false -> toujours recalculer.
+        const _venaitDeLa = window._xOrphanKeepPath !== false
+          && sid === (role === 'from' ? c.orphan_from_sid : c.orphan_to_sid);
+        if (role === 'from') c.orphan_from_sid = null; else c.orphan_to_sid = null;
+        if (_venaitDeLa && (cableOverrides[c.id] || []).length >= 2) _patchCablesForPortMove(sid);
+        else delete cableOverrides[c.id]; // forcer recalcul BFS
         rebuildCM();
         renderCables();
         setDirty();
@@ -2640,10 +2739,16 @@ function setupAnchorDrag(handle, cid, idx, role) {
         const ox = Math.round(x), oy = Math.round(y);
         const ovPts = cableOverrides[cid];
         if (ovPts) ovPts[idx] = [ox, oy];
+        // Meme memoire de l'appareil quitte que _orphanCableEnd : le rattachement doit se
+        // comporter pareil, que l'extremite soit devenue orpheline ici ou par une ejection.
         if (role === 'from') {
+          // Deja orphelin : garder la memoire existante, c.from valant deja null — sans quoi
+          // promener la pointe libre dans le vide effacait l'appareil d'ou elle venait.
+          if (c.from) c.orphan_from_sid = c.from;
           c.orphan_from = true; c.orphan_from_x = ox; c.orphan_from_y = oy;
           c.from = null; c.from_port = null; c.from_side = null;
         } else {
+          if (c.to) c.orphan_to_sid = c.to;
           c.orphan_to = true; c.orphan_to_x = ox; c.orphan_to_y = oy;
           c.to = null; c.to_port = null; c.to_side = null;
         }
@@ -2686,8 +2791,27 @@ function setupAnchorDrag(handle, cid, idx, role) {
           c.to_side = side;
         }
 
-        // Recalcul BFS complet depuis les nouvelles positions
-        delete cableOverrides[cid];
+        // Cette poignee apparait AUSSI sur la pointe libre d'un cable orphelin selectionne,
+        // par-dessus sa poignee dediee. Sans effacer la marque « debranche », le cable
+        // restait connecte a l'ecran tout en etant cru debranche : l'animation d'une route
+        // s'arretait dessus (_resolveSegsForAnim, routes.js) et le fichier projet
+        // l'enregistrait ainsi.
+        const _etaitOrphelin = role === 'from' ? !!c.orphan_from : !!c.orphan_to;
+        const _venaitDeLa = _etaitOrphelin && window._xOrphanKeepPath !== false
+          && targetSid === (role === 'from' ? c.orphan_from_sid : c.orphan_to_sid);
+        if (role === 'from') { c.orphan_from = false; c.orphan_from_sid = null; }
+        else                 { c.orphan_to   = false; c.orphan_to_sid   = null; }
+
+        // Retour sur l'appareil quitte : trace conserve, meme regle que la poignee orpheline.
+        // On repart du trace d'AVANT le glissement — pendant le glissement, seule la pointe a
+        // suivi le curseur, son coude voisin n'a pas ete realigne et le segment resterait en
+        // diagonale. _patchCablesForPortMove recale ensuite pointe et coude d'un coup.
+        if (_venaitDeLa && (snap.pts || []).length >= 2) {
+          cableOverrides[cid] = snap.pts.map(p => [...p]);
+          _patchCablesForPortMove(targetSid);
+        } else {
+          delete cableOverrides[cid]; // recalcul BFS complet depuis les nouvelles positions
+        }
         rebuildCM();
         renderCables();
         selectCable(cid);

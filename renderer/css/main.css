@@ -3,7 +3,7 @@
    Alkoda © 2026
 ═══════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
   --bg:       #05070f;
@@ -143,6 +143,14 @@ html, body {
   transition: all .15s; white-space: nowrap; flex-shrink: 0;
 }
 #btn-routes:hover { background: rgba(0,212,255,.15); }
+/* Icone de route a la place de l'ancien hexagone : une prise qui se divise en deux, ce
+   que le bouton ouvre justement. Pas de decalage vertical ici — contrairement au sigle
+   Wires, ce dessin occupe tout son carre et sa barre horizontale tombe deja au milieu. */
+#btn-routes::before {
+  content: ''; display: inline-block; width: 18px; height: 18px;
+  margin-right: 6px; vertical-align: middle;
+  background: url('../assets/route.png') center/contain no-repeat;
+}
 
 /* Add node btn */
 #btn-add-node {
@@ -333,9 +341,22 @@ html, body {
   background: radial-gradient(ellipse at center, transparent 30%, rgba(5,7,15,.75) 100%);
 }
 
+/* ⚠️ PAS de `will-change: transform` ici (retiré le 2026-09-24). Il promouvait
+   le canevas entier — 6008 × 3172 avant mise à l'échelle, avec ses cinq calques —
+   en surface graphique permanente. Le navigateur en rasterisait le contenu une
+   fois puis se contentait d'y appliquer la transformation, sans le redessiner :
+   idéal pour un simple déplacement, mais un changement d'ÉCHELLE impose de
+   redessiner à la nouvelle résolution, et sur une surface de cette taille il
+   gardait des morceaux de l'ancienne. En dessous de ~20 % de zoom le plan
+   devenait illisible : appareils en fragments, câbles absents. Rien n'était
+   pourtant faux dans la page — positions, tailles, tracés et opacités étaient
+   exacts, vérifiés avant/après. Seul un clic sur le vide réparait, parce qu'il
+   réécrit des attributs sur tous les tracés et salit vraiment les calques.
+   Mesuré sans : le déplacement reste fluide. Voir applyT (canvas.js) pour le
+   secours console. */
 #canvas-root {
   position: absolute; top: 0; left: 0;
-  transform-origin: 0 0; z-index: 2; will-change: transform;
+  transform-origin: 0 0; z-index: 2;
 }
 
 /* Cables SVG */
@@ -610,6 +631,22 @@ html, body {
 #canvas-area.reattach-active .node:not(.drag-flip) .node-flip-btn { display: none; }
 .node-flip-btn.drag-flip-armed { background: rgba(0,212,255,.35); border-color: #00d4ff; }
 /* Câble fantôme (occlusion : tracé qui ne sort jamais du cadre de l'appareil) — plus fin au repos seulement */
+/* Cable orphelin : une extremite n'est plus branchee sur un port. Il clignote pour
+   qu'un branchement en suspens se voie tout de suite ; pleine opacite sur le temps fort
+   (demande du 2026-09-20), quasi efface sur le temps faible. L'animation porte sur
+   stroke-opacity : sur `opacity`, la zone n'etait repeinte qu'au prochain deplacement
+   ou zoom du canevas, le cable restant invisible jusque-la. Selectionne, il ne clignote
+   plus : sa mise en evidence prend le relais — decide au dessin (cables.js), PAS ici sur
+   data-selected, marqueur qui sert aussi a la route animee et coupait le clignotement.
+   Drapeau : window._xOrphanBlink = false -> la classe n'est plus posee (cables.js). */
+@keyframes cable-orphan-blink {
+  0%, 100% { stroke-opacity: 1; }
+  50%      { stroke-opacity: .12; }
+}
+#cables-svg .cable-visual.cable-orphan {
+  animation: cable-orphan-blink 1.1s ease-in-out infinite;
+}
+
 #cables-svg .cable-visual.cable-occl-ghost[opacity="0.85"] { stroke-width: 2px; }
 
 /* Resize handles */
@@ -1083,6 +1120,15 @@ html, body {
 .modal-title { font-family: var(--display); font-size: 12px; font-weight: 700; letter-spacing: 3px; color: #fff; }
 .modal-close { background: none; border: none; color: var(--textdim); font-size: 18px; cursor: pointer; padding: 2px 6px; line-height: 1; }
 .modal-close:hover { color: #fff; }
+/* Cercles RVB a la place de l'ancien hexagone, dans l'en-tete de la fenetre Couleurs :
+   le symbole dit de quoi parle la fenetre. Le titre n'a ni identifiant ni classe, il est
+   donc vise par sa fenetre et sa cle de traduction. L'image est carree a 2 % pres
+   (500x510), 16 px pour un titre de 12 px. */
+#modal-colors .modal-header span[data-i18n="colors_title"]::before {
+  content: ''; display: inline-block; width: 16px; height: 16px;
+  margin-right: 8px; vertical-align: -4px;
+  background: url('../assets/rgb-colors.webp') center/contain no-repeat;
+}
 /* Configuration image : nom de l'appareil sur la ligne du titre (library.js, _refreshRmbgDeviceName). L'emplacement
    (.rmbg-device-slot) prend toute la place libre entre le titre et ✕ ; la case du nom en occupe 75 %, centrée entre
    les deux. Case de 50px de haut, dont 10px pris en haut et en bas dans la marge de l'en-tête : la case grandit sans
@@ -1147,6 +1193,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
    Boutons Portrait/Paysage alignés sous elle, à gauche (align-items:flex-start). */
 .pl-preview-wrap { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; flex-shrink: 0; padding: 8px 0 4px; }
 .pl-page-count { font-family: var(--mono); font-size: 10px; letter-spacing: .5px; color: var(--textdim); }
+.pl-preview-hint { font-family: var(--body); font-size: 12px; color: var(--accent); max-width: 318px; }   /* largeur de la vignette : passe à la ligne plutôt que d'élargir la colonne */
 .pl-orient-row { display: flex; align-items: center; gap: 8px; }
 /* Sélecteur à deux classes pour l'emporter sur .export-preset-btn (défini plus
    loin dans ce fichier) quel que soit l'ordre des règles. */
@@ -1212,6 +1259,28 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 .pick-shape-btn:hover { border-color: rgba(0,212,255,.5) !important; background: rgba(0,212,255,.08) !important; outline: 2px dashed rgba(0,212,255,.4); outline-offset: -3px; }
 
 /* BG Removal modal sliders */
+/* Rotation de l'image source, a droite du titre ORIGINAL. Meme gabarit 24x24 que
+   le bouton d'agrandissement de l'apercu juste en dessous. L'icone est noire a la
+   source : elle sert de masque, la couleur vient du fond, ce qui donne le cyan au
+   survol sans chaine de filtres. */
+.rmbg-rotate-btn {
+  position:absolute; right:0; top:50%; transform:translateY(-50%);
+  width:24px; height:24px; flex-shrink:0; padding:0;
+  display:flex; align-items:center; justify-content:center;
+  background:#101a2e; border:1px solid var(--border2); border-radius:4px;
+  cursor:pointer; transition:border-color .15s;
+}
+.rmbg-rotate-btn::before {
+  content:''; width:16px; height:16px; background-color:var(--text);
+  -webkit-mask:url('../assets/rotate-left.png') center / 16px 16px no-repeat;
+          mask:url('../assets/rotate-left.png') center / 16px 16px no-repeat;
+  transition:background-color .15s;
+}
+.rmbg-rotate-btn:hover { border-color:var(--accent); }
+.rmbg-rotate-btn:hover::before { background-color:var(--accent); }
+.rmbg-rotate-btn:disabled { opacity:.4; cursor:default; border-color:var(--border2); }
+.rmbg-rotate-btn:disabled:hover::before { background-color:var(--text); }
+
 .rmbg-slider-row { display:flex; flex-direction:column; gap:4px; }
 .rmbg-label { font-family:var(--mono); font-size:11px; color:var(--text); letter-spacing:1px; display:flex; align-items:center; gap:8px; }
 .rmbg-val { color:var(--accent); min-width:28px; }
@@ -1509,6 +1578,13 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   transition: color .15s, border-color .15s;
 }
 #startup-license-btn:hover { color: var(--accent); border-color: rgba(0,212,255,.4); }
+/* Sigle Wires a la place de l'ancien hexagone. Simplement centre sur le texte, sans le
+   decalage vers le bas utilise ailleurs : sur ce bouton, l'utilisateur prefere ce rendu. */
+#startup-license-btn::before {
+  content: ''; display: inline-block; width: 18px; height: 18px;
+  margin-right: 6px; vertical-align: middle;
+  background: url('../assets/ico.png') center/contain no-repeat;
+}
 
 /* ── Add dropdown ───────────────────────────────────────────── */
 #add-dropdown {
@@ -1582,8 +1658,10 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   font-family: var(--mono); font-size: 11px; color: var(--text);
 }
 .port-list-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
-.port-list-del { margin-left:auto; background:none; border:none; color:var(--textdim); cursor:pointer; font-size:12px; padding:0 2px; }
-.port-list-del:hover { color:#ff4444; }
+/* Encadrement assorti au bouton IN/OUT voisin : meme teinte, meme rayon, meme
+   retrait. Sans bordure, la croix flottait a cote d'un bouton encadre. */
+.port-list-del { margin-left:auto; background:none; border:1px solid rgba(122,144,176,.5); border-radius:3px; color:var(--textdim); cursor:pointer; font-size:12px; padding:1px 5px; flex-shrink:0; }
+.port-list-del:hover { color:#ff4444; border-color:rgba(255,68,68,.6); }
 .port-name-dup-blink { animation: port-name-dup-blink 1s ease-in-out infinite; }
 @keyframes port-name-dup-blink {
   0%, 100% { border-color:#3a4d6d; }
@@ -1735,6 +1813,19 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   background: var(--border); border-radius: 6px; overflow: hidden;
 }
 .ep-frame-cell { background: var(--bg2); padding: 12px; }
+/* Infos d'export (04-10) : une ligne de trois champs au-dessus de l'aperçu PDF —
+   lieu, date de l'événement, notes. */
+.ep-infos-row { grid-template-columns: 1fr; }
+.ep-infos-champs { display: grid; grid-template-columns: 1fr 150px 1.4fr; gap: 8px; }
+.ep-infos-champs .form-input { min-width: 0; padding: 5px 8px; font-size: 12px; }
+.ep-infos-champs input[type="date"] { color-scheme: dark; }
+.ep-infos-champs.ep-infos-titre { grid-template-columns: 1fr; }
+/* Onglet PDF seulement : cases et écarts resserrés pour faire place aux infos
+   (sa demande : « il y a sûrement un peu de marge à rogner »). */
+#export-pane-pdf { gap: 12px; }
+#export-pane-pdf .ep-opts { gap: 10px; }
+#export-pane-pdf .ep-frame-cell { padding: 8px 12px; }
+#export-pane-pdf .export-opt-section { gap: 6px; }
 
 /* ── Export modal tabs ─────────────────────────────────────── */
 .export-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
@@ -1749,6 +1840,71 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 
 .export-pane { display: flex; flex-direction: column; gap: 16px; }
 .export-pane-desc { font-family: var(--body); font-size: 13px; color: var(--textdim); line-height: 1.6; }
+
+/* Onglet « Lien Wires Cloud » (1.6.0, 07-10) : grisé en Free et en Fast, mais cliquable — il dit l'offre. */
+.export-tab.export-tab-grise { opacity: .45; }
+.elk-etat { font-family: var(--body); font-size: 13px; line-height: 1.5; color: var(--text); margin: 0;
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; background: rgba(255,255,255,.03); }
+.elk-etat.elk-offre { color: #ffc107; }
+/* Projet qui ne vient pas de Wires Cloud (08-10) : centré dans l'onglet, une ligne par virgule,
+   logo Wires Cloud et icône du projet Cloud dans le texte. */
+#export-pane-lien { flex: 1 1 auto; }   /* l'onglet occupe toute la hauteur : le message s'y centre */
+.elk-etat.elk-pas-cloud { margin: auto 0; padding: 40px 0; text-align: center; font-size: 15px; line-height: 2.1; color: var(--textbr); }
+.elk-pas-cloud > span { display: block; }
+.elk-nc-logo { height: 22px; width: auto; vertical-align: -2px; margin: 0 2px; }   /* lettres posées sur la ligne du texte (bas des lettres à 88/96 de l'image) */
+.elk-nc-icone { height: 30px; width: auto; vertical-align: -4px; margin-left: 4px; }   /* idem (bas de PROJECT à 140/160) */
+.elk-lien { display: flex; flex-direction: column; gap: 8px; }
+.elk-lien[hidden] { display: none; }
+/* Le bouton du bas grisé (offre, projet hors de Wires Cloud…) : qu'il en ait l'air. */
+#export-footer-right:disabled { opacity: .4; cursor: not-allowed; }
+/* Onglet Lien (08-10) : « Fermer » à sa largeur, l'autre bouton prend le reste sur une ligne. */
+.modal-footer.export-footer-lien #export-footer-left { flex: 0 0 auto; width: auto; padding: 7px 26px; }
+.modal-footer.export-footer-lien #export-footer-right { flex: 1 1 auto; white-space: nowrap; }
+.elk-adresse { width: 100%; box-sizing: border-box; font-family: var(--mono); font-size: 12px; color: var(--accent); }
+.elk-ligne { display: flex; align-items: stretch; gap: 8px; }
+.elk-ligne .elk-adresse { flex: 1; min-width: 0; }
+.elk-copier {
+  flex-shrink: 0; width: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  background: rgba(0,212,255,.1); border: 1px solid rgba(0,212,255,.35); border-radius: 5px; color: var(--accent);
+  transition: background .15s, border-color .15s;
+}
+.elk-copier:hover { background: rgba(0,212,255,.2); border-color: var(--accent); }
+.elk-copier.elk-copie { color: #4caf50; border-color: rgba(76,175,80,.6); }
+.elk-copier:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.elk-fin { font-family: var(--body); font-size: 13px; color: var(--textdim); }
+/* « Supprimer le lien » (08-10) : un geste discret, sous la date de fin, jamais à la place de validation. */
+.elk-supprimer { align-self: flex-start; background: none; border: none; padding: 0; cursor: pointer;
+  font-family: var(--body); font-size: 12px; color: #ff6b6b; }
+.elk-supprimer:hover { text-decoration: underline; }
+.elk-supprimer:disabled { opacity: .4; cursor: not-allowed; text-decoration: none; }
+.elk-supprimer:focus-visible { outline: 2px solid #ff6b6b; outline-offset: 2px; }
+.elk-avis { font-family: var(--body); font-size: 12px; line-height: 1.5; color: #ff9f43; margin: 0; }
+/* L'aperçu de la page reçue : la carte de partage.html en petit, avec ses couleurs et sa police
+   (Inter, comme le site). Rien n'y est cliquable. */
+.elk-apercu { display: flex; flex-direction: column; gap: 8px; }
+.elk-apercu[hidden] { display: none; }
+.elk-apercu-titre { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--textdim); }
+.elk-page {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+  padding: 18px 16px 14px; border-radius: 12px; pointer-events: none; user-select: none;
+  border: 1px solid rgba(0,210,255,.28); font-family: 'Inter', sans-serif;
+  background: linear-gradient(180deg, rgba(0,210,255,.07), rgba(0,210,255,.01) 55%), #0c1422;
+}
+.elk-page-logo { height: 24px; width: auto; margin-bottom: 4px; }
+.elk-page-kicker { font-family: var(--mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: #9cacc1; }
+.elk-page-nom { font-size: 20px; font-weight: 800; color: #fff; line-height: 1.2; overflow-wrap: anywhere; }
+.elk-page-par { font-size: 11px; font-weight: 600; color: #eef4ff; }
+.elk-page-fin { font-size: 10px; color: #a8b6cc; }
+/* Le bouton de l'onglet, dans l'aperçu : seul élément cliquable de la carte. */
+.elk-creer {
+  pointer-events: auto; margin-top: 10px; padding: 9px 22px; border-radius: 999px; border: none; cursor: pointer;
+  font-family: var(--display); font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  background: var(--accent); color: #000; transition: opacity .15s;
+}
+.elk-creer:hover { opacity: .85; }
+.elk-creer:disabled { opacity: .4; cursor: not-allowed; }
+.elk-creer:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.elk-page-aide { font-size: 9px; color: #a8b6cc; margin-top: 6px; }
 
 /* Aperçu HTML interactif — canevas/en-tête en vraies captures d'écran
    (Electron capturePage, voir openExportModal) ; panneau gauche et panneau
@@ -1972,6 +2128,16 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 }
 .license-badge.pro     { color: var(--accent);  border-color: rgba(0,212,255,.5); background: rgba(0,212,255,.08); }
 .license-badge.free    { color: #4caf50; border-color: rgba(76,175,80,.5); background: rgba(76,175,80,.08); }
+/* Fast et Ent. (1.6.0) : couleurs de leurs logos, pour un badge en texte (secours). */
+.license-badge.fast    { color: #ff9f1c; border-color: rgba(255,159,28,.5); background: rgba(255,159,28,.08); }
+.license-badge.ent     { color: #3d8bff; border-color: rgba(61,139,255,.55); background: rgba(61,139,255,.10); }
+/* Le badge en image (04-10) : ses images néon des quatre offres (assets/badge-*.png), halo
+   compris — plus de cadre ni de fond dessinés. Après les règles de couleur, qu'elle remplace. */
+.license-badge.license-badge-img { padding: 0; border: none; background: none; line-height: 0; }
+/* Remonté de 2 px : centrées sur la ligne, ses lettres (plus grandes) descendaient 2 px
+   sous le pied de « 36 APPAREILS · 47 CONNEXIONS » (sa remarque du 04-10). Décalage
+   d'affichage seulement (position: relative) : rien d'autre ne bouge dans l'en-tête. */
+.license-badge-img img { display: block; height: 24px; width: auto; position: relative; top: -2px; }
 .license-badge:hover   { opacity: .75; }
 
 /* Overlay */
@@ -2121,6 +2287,247 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   white-space: nowrap;
 }
 #license-continue-btn:hover { color: var(--text); border-color: rgba(255,255,255,.2); }
+
+/* ── La fenêtre Licence aux quatre offres (1.6.0, sa demande du 07-10) ─────────────
+   La page des offres du site (licence-preview) reprise dans Wires : Free, Fast, Pro et Ent. côte
+   à côte, chacune teintée de sa couleur, avec son bouton d'achat. Free est en 1re colonne et
+   non plus en bandeau au-dessus (sa demande du 07-10 : la fenêtre débordait en hauteur).
+   Les quatre colonnes partagent les rangées de la grille (subgrid) : en-têtes, listes et boutons
+   démarrent à la même hauteur, quelle que soit la langue. Les listes des offres payantes
+   suivent le même ordre, pour que la comparaison se lise ligne à ligne.
+   Largeur fixe (4 colonnes de 334 px : « Renouvellement annulable à tout moment » tient sur une
+   ligne en français et en anglais ; en espagnol, plus long, il passe sur deux) : la mise en page
+   est la même sur tous les écrans ; sur un écran trop petit, license-ui.js (_ajusterOffres) la
+   réduit d'un bloc pour qu'elle tienne. */
+/* Les textes des offres sont en Inter, la police de la page des offres du site (sa demande du
+   07-10) ; les étiquettes (Share Tech Mono) et les boutons (Orbitron) restent ceux de Wires. */
+#license-modal.lic-large {
+  --offres-texte: 'Inter', sans-serif; --logo-h: 40px; --offre-l: 334px;
+  width: calc(4 * var(--offre-l) + 3 * 10px + 2 * 26px); padding: 22px 26px 16px;
+  /* Jamais tassée par la fenêtre de Wires (sinon ses colonnes se resserrent et elle grandit en
+     hauteur) : elle garde sa mise en page, et _ajusterOffres la réduit d'un bloc. */
+  flex-shrink: 0;
+  /* Le titre (« Choisir une offre »…) monte sur la ligne du logo : la section des offres
+     s'efface (display: contents) et ses blocs se rangent dans la grille de la fenêtre. */
+  display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 28px; align-items: start;
+}
+#license-modal.lic-large #license-section-paywall.active { display: contents; }
+#license-modal.lic-large #license-section-paywall > * { grid-column: 1 / -1; }
+#license-modal.lic-large .license-brand { grid-column: 1; grid-row: 1; margin-bottom: 10px; }
+#license-modal.lic-large .license-logo { height: var(--logo-h); }
+/* « Choisir une offre » (09-10, sa demande) : centré sur la largeur de la fenêtre, 2 à 3 fois plus
+   gros, sur la ligne de « v1.6.0 » — top posé par license-ui.js (_placerTitreOffres). */
+#license-modal.lic-large #license-section-paywall > .license-paywall-title {
+  position: absolute; left: 0; right: 0; top: 22px; margin: 0; min-height: 0;
+  text-align: center; font-family: var(--offres-texte); font-size: 30px; line-height: 1.15;
+  pointer-events: none;
+}
+/* La raison de l'ouverture, en rouge dans le champ de la clé (09-10) — license-ui.js, _raisonDansChamp. */
+#license-key-input.lic-raison::placeholder { color: #ff6b6b; opacity: 1; letter-spacing: normal; font-family: 'Inter', sans-serif; }
+.lic-offres { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; }
+.lic-offre {
+  --plan-rgb: 226,232,240; --accent-text: #dfe8f6;
+  min-width: 0; display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 8px;
+  padding: 12px 14px; border-radius: 8px;
+  border: 1px solid rgba(var(--plan-rgb), .28);
+  background:
+    linear-gradient(180deg, rgba(var(--plan-rgb), .06), rgba(var(--plan-rgb), .015) 40%, transparent 75%),
+    rgba(16,26,43,.82);
+}
+.lic-offre.fast { --plan-rgb: 255,174,38; --accent-text: #efc07b; }
+.lic-offre.pro  { --plan-rgb: 82,255,88;  --accent-text: #8ad9a5; }
+.lic-offre.ent  { --plan-rgb: 42,153,255; --accent-text: #91bbed; }
+.lic-offre.lic-en-cours { box-shadow: inset 0 0 0 1px rgba(var(--plan-rgb), .5); }
+
+/* align-content: start — la rangée commune prend la hauteur de l'en-tête le plus haut ; un
+   en-tête plus court (Free, Fast) garde son logo et ses mentions en haut, au lieu d'étirer ses
+   lignes et de les faire descendre. */
+.lic-offre-tete { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; align-content: start; column-gap: 10px; }
+.lic-cible {
+  grid-column: 1 / -1; margin: 0 0 6px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #9cacc1;
+}
+.lic-offre-logo {
+  height: 32px; width: auto; max-width: 110px; object-fit: contain; object-position: left center;
+  user-select: none; -webkit-user-drag: none;
+}
+.lic-prix-bloc { justify-self: end; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 1px; }
+.lic-prix { font-family: var(--offres-texte); font-size: 20px; font-weight: 800; line-height: 1.1; color: var(--accent-text); white-space: nowrap; }
+.lic-prix-note { font-family: var(--offres-texte); font-size: 11px; font-weight: 600; line-height: 1.35; color: var(--textdim); white-space: nowrap; }
+/* Sur une ligne quand la place le permet ; sur deux, équilibrées, sinon. */
+.lic-prix-note.lic-renewal { white-space: normal; text-wrap: balance; }
+.lic-duree { font-size: 13px; font-weight: 800; line-height: 1; color: #fff; }
+.lic-etoile { font-size: .58em; font-weight: 700; color: var(--textdim); margin-left: 1px; position: relative; top: -.45em; }
+
+.lic-liste { list-style: none; margin: 0; padding: 0; display: grid; align-content: start; gap: 2px; }
+.lic-liste li {
+  position: relative; padding-left: 18px;
+  font-family: var(--offres-texte); font-size: 12px; font-weight: 600; line-height: 1.4; color: #fff;
+}
+.lic-liste li::before { content: '✓'; position: absolute; left: 0; color: #4caf50; font-weight: 800; }
+.lic-liste li.limited { color: var(--textdim); }
+.lic-liste li.missing, .lic-liste li.missing::before { color: #6f7f97; }
+.lic-liste li.missing::before { content: '✗'; }
+.lic-liste li.lic-reprise { padding-left: 0; color: #72d9f2; font-weight: 700; }
+.lic-liste li.lic-version { margin-top: -2px; margin-bottom: 3px; white-space: nowrap; }
+.lic-liste li.lic-version-vide { visibility: hidden; }
+.lic-liste li.lic-cloud-acces { display: flex; align-items: center; gap: 6px; }
+.lic-cloud-logo { display: block; height: 22px; width: auto; max-width: 110px; object-fit: contain; }
+.lic-liste li.lic-cloud-detail { padding-left: 34px; }
+.lic-liste li.lic-cloud-detail::before { content: '•'; left: 20px; color: #72d9f2; }
+.lic-stockage { color: var(--accent-text); font-weight: 800; }
+.lic-liste li.lic-plus {
+  padding-left: 0; margin-top: 6px; padding-top: 6px;
+  border-top: 1px solid rgba(255,122,61,.25); color: #ff7a3d; font-weight: 800;
+}
+.lic-liste li.lic-autres { font-style: italic; color: var(--textdim); }
+.lic-liste li.lic-reprise::before, .lic-liste li.lic-plus::before, .lic-liste li.lic-autres::before { content: none; }
+.lic-liste .license-new { margin-right: 1px; }
+
+/* Free : une colonne comme les autres. Pas de prix : sa place est gardée, invisible, pour que
+   ses mentions tombent en face de celles des offres payantes. */
+.lic-prix-vide { visibility: hidden; }
+.lic-offre.free .lic-liste li { color: var(--text); }
+.lic-offre.free .lic-liste li.limited { color: var(--textdim); }
+
+/* Les boutons, sur la dernière rangée commune : les trois « Acheter » tombent sur la même
+   ligne, « Demander un devis » sous celui d'Ent. L'offre en cours dit « Offre actuelle » à la
+   place de son bouton (Free n'en a pas d'autre). */
+.lic-actions { display: flex; flex-direction: column; gap: 6px; padding-top: 4px; position: relative; }
+/* Parrainage (09-10) : la bulle « Un code de parrain ? », au-dessus des boutons de l'offre cliquée. */
+.lic-parrain-bulle {
+  position: absolute; left: 0; right: 0; bottom: calc(100% + 8px); z-index: 4;
+  display: flex; flex-direction: column; gap: 8px; padding: 12px;
+  background: #111c31; border: 1px solid rgba(0,212,255,.5); border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.6); font-family: 'Inter', sans-serif;
+}
+.lic-parrain-bulle[hidden] { display: none; }
+.lic-parrain-bulle-q { font-size: 13px; font-weight: 600; color: #fff; }
+.lic-parrain-bulle input {
+  font-family: var(--mono); font-size: 15px; letter-spacing: .12em; padding: 8px 10px;
+  background: rgba(0,0,0,.35); border: 1px solid var(--border2); border-radius: 6px; color: #00d4ff;
+}
+.lic-parrain-bulle input:focus { outline: none; border-color: #00d4ff; }
+.lic-parrain-bulle input::placeholder { color: var(--textdim); letter-spacing: normal; font-family: 'Inter', sans-serif; font-size: 12px; }
+.lic-parrain-continuer {
+  font-family: var(--display); font-size: 11px; letter-spacing: .08em; padding: 9px 10px; cursor: pointer;
+  background: #00d4ff; color: #04121a; border: none; border-radius: 6px; font-weight: 700;
+}
+.lic-parrain-continuer:hover { filter: brightness(1.1); }
+.lic-parrain-msg { margin: 0; font-size: 12px; line-height: 1.4; color: #ffb4a8; }
+.lic-parrain-msg.ok { color: #6ee7a8; font-weight: 600; }
+.lic-parrain-msg[hidden] { display: none; }
+/* Parrainage (09-10) : le message des mois offerts, au-dessus de tout. */
+.parrainage-recompense {
+  position: fixed; inset: 0; z-index: 100003; display: flex; align-items: center; justify-content: center;
+  background: rgba(2,4,14,.7); opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.parrainage-recompense.visible { opacity: 1; pointer-events: all; }
+.parrainage-recompense-boite {
+  width: min(420px, 92vw); padding: 24px 26px 20px; border-radius: 10px; font-family: 'Inter', sans-serif; color: var(--text);
+  background: linear-gradient(160deg, #111c31 0%, #0a1020 100%); border: 1px solid rgba(0,212,255,.4);
+  box-shadow: 0 24px 80px rgba(0,0,0,.7);
+}
+.parrainage-recompense-boite h3 { margin: 0 0 12px; font-size: 18px; font-weight: 700; color: #fff; }
+.parrainage-recompense-texte p { margin: 0 0 10px; font-size: 14px; line-height: 1.5; }
+.parrainage-recompense-date { font-size: 13px; color: var(--textdim); }
+.parrainage-recompense-ok {
+  display: block; margin: 16px 0 0 auto; padding: 8px 22px; border: none; border-radius: 6px; cursor: pointer;
+  font-family: var(--display); font-size: 12px; letter-spacing: .08em; font-weight: 700; background: #00d4ff; color: #04121a;
+}
+@media (prefers-reduced-motion: reduce) { .parrainage-recompense { transition: none; } }
+.lic-acheter, .lic-devis {
+  width: 100%; padding: 8px 10px; border-radius: 6px; cursor: pointer;
+  font-family: var(--display); font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.lic-acheter { background: rgba(var(--plan-rgb), .14); border: 1px solid rgba(var(--plan-rgb), .45); color: #fff; }
+.lic-acheter:hover { background: rgba(var(--plan-rgb), .24); border-color: rgba(var(--plan-rgb), .85); }
+.lic-devis { background: transparent; border: 1px solid var(--border2); color: var(--textdim); }
+.lic-devis:hover { color: #fff; border-color: rgba(var(--plan-rgb), .6); }
+.lic-acheter:focus-visible, .lic-devis:focus-visible, .lic-lien:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lic-actuelle {
+  display: block; padding: 7px 10px; border-radius: 6px; border: 1px dashed rgba(var(--plan-rgb), .5);
+  text-align: center; font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--accent-text);
+}
+.lic-offre:not(.lic-en-cours) .lic-actuelle { display: none; }
+.lic-offre.lic-en-cours .lic-acheter { display: none; }
+
+#license-modal.lic-large .license-activate-block { margin-bottom: 8px; padding: 12px 14px; }
+/* Sans message, la ligne du message ne réserve pas sa place. */
+#license-modal.lic-large .license-msg { font-family: var(--offres-texte); }
+#license-modal.lic-large .license-msg:empty { display: none; }
+/* Parrainage (1.6.0, 09-10) : la phrase cliquable, et le panneau qui glisse de la droite dans la
+   fenêtre Licence (license-ui.js, _parrainOuvrir). La fenêtre coupe ce qui dépasse sur le côté :
+   le panneau fermé attend à droite, hors de vue. */
+#license-modal { overflow-x: hidden; }
+.lic-parrain-lien {
+  display: block; margin: 2px auto 12px; padding: 2px 4px; background: none; border: none; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: #00d4ff;
+  text-decoration: underline dotted rgba(0,212,255,.6); text-underline-offset: 4px;
+}
+.lic-parrain-lien:hover { color: #fff; text-decoration-color: #fff; }
+.lic-parrain-lien:focus-visible { outline: 1px solid #00d4ff; outline-offset: 2px; border-radius: 3px; }
+.lic-parrain-lien[hidden] { display: none; }
+#license-section-pro .lic-parrain-lien { margin: 0 auto 18px; }
+.lic-parrain {
+  position: absolute; top: 0; right: 0; bottom: 0; z-index: 5; width: min(440px, 100%); box-sizing: border-box;
+  overflow-y: auto; padding: 26px 24px 22px; font-family: 'Inter', sans-serif; color: var(--text);
+  background: linear-gradient(160deg, #111c31 0%, #0a1020 100%);
+  border-left: 1px solid rgba(0,212,255,.35); box-shadow: -18px 0 40px rgba(0,0,0,.55);
+  transform: translateX(105%); visibility: hidden; transition: transform .28s ease, visibility 0s linear .28s;
+}
+.lic-parrain.ouvert { transform: none; visibility: visible; transition: transform .28s ease; }
+@media (prefers-reduced-motion: reduce) { .lic-parrain, .lic-parrain.ouvert { transition: none; } }
+/* Le logo Wires centré en haut, un peu d'espace dessous (09-10, sa demande). */
+.lic-parrain-logo { display: block; width: 150px; height: auto; margin: 0 auto 22px; }
+.lic-parrain-titre { margin: 0 0 6px; font-size: 18px; font-weight: 700; line-height: 1.3; color: #fff; text-wrap: balance; }
+.lic-parrain-accroche { margin: 0 0 16px; font-size: 13px; color: var(--textdim); }
+/* Le code de parrainage EN GRAND (09-10, sa demande), centré, sa source rappelée dessous. */
+.lic-parrain-code {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 4px 0 20px; padding: 14px 14px 12px;
+  border: 1px dashed rgba(0,212,255,.55); border-radius: 10px; background: rgba(0,212,255,.06); text-align: center;
+}
+.lic-parrain-code[hidden] { display: none; }
+.lic-parrain-code-label { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--textdim); }
+.lic-parrain-code-val { font-family: var(--mono); font-size: 34px; line-height: 1.1; letter-spacing: .14em; color: #00d4ff; user-select: all; }
+/* Le bouton « Copier » à droite du code (09-10, sa demande). */
+.lic-parrain-code-ligne { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.lic-parrain-copier {
+  padding: 4px 10px; border: 1px solid rgba(0,212,255,.55); border-radius: 6px; background: transparent; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; color: #00d4ff;
+}
+.lic-parrain-copier:hover { background: rgba(0,212,255,.12); }
+.lic-parrain-copier:focus-visible { outline: 1px solid #00d4ff; outline-offset: 2px; }
+/* « Comment ça marche », « Ce que chacun gagne » : des titres blancs, comme ceux du site (09-10). */
+.lic-parrain-sous { margin: 4px 0 10px; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: -.01em; color: #fff; }
+.lic-parrain-etapes { margin: 0 0 18px; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.5; }
+.lic-parrain-etapes li::marker { color: #00d4ff; font-weight: 700; }
+.lic-parrain-tableau {
+  display: grid; grid-template-columns: auto auto auto 1fr 1fr; margin: 0 0 16px;
+  border: 1px solid var(--border2); border-radius: 8px; overflow: hidden; font-size: 13px;
+}
+.lic-parrain-tableau > span { padding: 7px 10px; border-top: 1px solid var(--border2); }
+.lic-parrain-tableau > .lic-parrain-entete {
+  border-top: none; background: rgba(255,255,255,.04); font-family: var(--mono); font-size: 10px;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--textdim);
+}
+/* Les logos PRO et ENT. plutôt que les mots (09-10, sa demande : couleurs fausses). */
+.lic-parrain-offre { display: flex; align-items: center; }
+.lic-parrain-offre img { display: block; height: 20px; width: auto; }
+/* La flèche du parrain vers le filleul (09-10, sa demande), dans sa colonne étroite. */
+.lic-parrain-tableau > .lic-parrain-fleche { display: flex; align-items: center; padding: 7px 2px; font-size: 15px; color: var(--textdim); }
+.lic-parrain-tableau > .lic-parrain-entete:nth-child(2) { padding: 7px 2px; }
+.lic-parrain-mois { font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
+.lic-parrain-regle { margin: 0; font-size: 12px; line-height: 1.5; color: var(--textdim); }
+.lic-notes { margin: 0; text-align: center; font-family: var(--offres-texte); font-size: 11px; line-height: 1.6; color: var(--textdim); }
+.lic-notes-sep { display: inline-block; width: 16px; }
+.lic-lien {
+  background: none; border: none; padding: 0; cursor: pointer; font: inherit; color: var(--accent);
+  border-bottom: 1px solid rgba(0,212,255,.35);
+}
+.lic-lien:hover { border-bottom-color: var(--accent); }
 
 /* ── Shortcuts dialog ─────────────────────────────────────────── */
 #shortcuts-overlay { display: none; }
@@ -2386,6 +2793,23 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   cursor: pointer; transition: all .15s;
 }
 .license-cloud-btn:hover { background: rgba(0,212,255,.08); border-color: var(--accent); }
+/* « Voir les offres → » en bas de la fiche d'une clé Fast ou Pro, et « ← Ma licence » (08-10). */
+.license-offres-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.08); }
+.license-offres-section[hidden], .lic-retour[hidden] { display: none; }
+.license-offres-btn {
+  background: transparent; border: 2px solid rgba(0,212,255,.5); border-radius: 6px; padding: 8px 18px;
+  color: var(--accent); font-family: var(--body); font-size: 12px; font-weight: 700; cursor: pointer; transition: all .15s;
+}
+.license-offres-btn:hover { background: rgba(0,212,255,.08); border-color: var(--accent); }
+.lic-retour { margin-top: 14px; }
+/* Logo Lemon Squeezy a la place de l'ancien hexagone : ce bouton ouvre la page de
+   commandes chez eux, leur symbole dit donc ou il mene — ce que le sigle Wires ne
+   ferait pas. Proportions de l'image d'origine (21x28), calees sur un texte de 12 px. */
+.license-cloud-btn::before {
+  content: ''; display: inline-block; width: 11px; height: 14px;
+  margin-right: 7px; vertical-align: -2px;
+  background: url('../assets/lemonsqueezy.svg') center/contain no-repeat;
+}
 
 /* ── Welcome Pro popup ── */
 #pro-welcome-overlay {
@@ -2400,7 +2824,17 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   box-shadow: 0 8px 40px rgba(0,0,0,.6);
   animation: popIn .3s cubic-bezier(.34,1.56,.64,1);
 }
-.pro-welcome-icon { font-size: 40px; color: var(--accent); margin-bottom: 16px; }
+/* Logo Wires Pro a la place de l'ancien caractere hexagone. Meme image et meme hauteur
+   que la fenetre Licence (.license-logo, 64 px) : les deux ecrans parlent du meme
+   produit, ils portent la meme marque. Largeur figee car un fond n'a pas de taille
+   propre — 196 px, le rapport exact de l'image (392x128). */
+.pro-welcome-icon {
+  width: 196px; height: 64px; margin: 0 auto 16px;
+  background: url('../assets/logo-wires-pro.png') center/contain no-repeat;
+}
+/* Le logo de l'offre activée (1.6.0) : mêmes dimensions, tirés des logos Lemon Squeezy. */
+.pro-welcome-icon.fast { background-image: url('../assets/logo-wires-fast.png'); }
+.pro-welcome-icon.ent  { background-image: url('../assets/logo-wires-ent.png'); }
 .pro-welcome-title { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: 1px; margin-bottom: 8px; }
 .pro-welcome-sub { font-family: var(--body); font-size: 13px; color: var(--textdim); }
 @keyframes popIn {
@@ -2446,7 +2880,11 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   box-shadow: 0 0 60px rgba(0,212,255,.06), 0 20px 60px rgba(0,0,0,.6);
 }
 .html-ep-icon {
-  font-size: 32px; color: var(--accent); margin-bottom: 18px;
+  /* Sigle Wires a la place de l'ancien caractere hexagone. 48 px de cote : le dessin
+     n'occupe que 64 % de la hauteur de son carre, ce qui lui donne le meme poids visuel
+     qu'un hexagone de 32 px. La pulsation d'attente est conservee. */
+  width: 48px; height: 48px; margin: 0 auto 18px;
+  background: url('../assets/ico.png') center/contain no-repeat;
   animation: html-ep-pulse 2s ease-in-out infinite;
 }
 @keyframes html-ep-pulse {
@@ -2475,3 +2913,461 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
   font-family: var(--body); font-size: 11px; color: var(--textdim);
   line-height: 1.5; min-height: 16px;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   WIRES CLOUD — fenêtre « Ouvrir un projet » (cloud-fenetre.js)
+   Reprend la maquette validée le 2026-10-02 (maquettes/accueil-cloud.html
+   du bac à sable). Tout est préfixé wc- : aucune règle ne touche les
+   classes existantes de Wires.
+═══════════════════════════════════════════════════════════════ */
+/* Au-dessus de l'écran d'accueil (99999), de la licence (100001), d'À propos
+   (100002) et de la mise à jour (100003) ; sous la reliaison et les
+   confirmations (300000), qui peuvent s'ouvrir PAR-DESSUS elle. Le fond
+   bloque les clics : sans ça, un clic à côté atteindrait l'accueil derrière. */
+#cloud-open-modal { z-index: 100004; }
+#cloud-open-modal.open { pointer-events: all; }
+.wc-fenetre { position: relative; width: 672px; height: 560px; }
+.wc-corps { flex: 1; min-height: 0; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.wc-deux-cotes { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 28px 1fr; }
+.wc-cote {
+  min-height: 0; display: flex; flex-direction: column; gap: 8px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px;
+}
+.wc-cote > header { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+/* Version Free : Wires Cloud visible mais grisé, vide et inerte (ni clic, ni
+   dépôt) ; seul le message reste en clair par-dessus : le logo Wires Cloud en
+   haut, bien plus bas « Fonction réservée à », à la ligne le logo Wires Pro
+   (03-10). */
+.wc-cote.wc-gris { position: relative; pointer-events: none; user-select: none; }
+.wc-cote.wc-gris > :not(.wc-pro-reserve) { filter: grayscale(1); opacity: .45; }
+/* L'ensemble est centré dans la case : même vide en haut et en bas (03-10,
+   « redescends les deux blocs pour que l'écart en bas et en haut soit le même
+   dans la case »). */
+.wc-pro-reserve {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 18px; text-align: center;
+}
+.wc-pro-reserve[hidden] { display: none; }
+.wc-pro-logo { height: 31px; width: auto; }
+/* Le logo Wires Cloud plus grand (« plus grand », 03-10). */
+.wc-pro-logo.wc-pro-logo-cloud { height: 52px; }
+/* L'espace bien clair entre les deux blocs (« je veux voir un espace bien
+   clair entre les deux ») ; il se resserre seul si la fenêtre est trop basse. */
+.wc-pro-ecart { flex: 0 1 124px; }
+.wc-pro-texte { margin: 0 0 6px; font-family: var(--display); font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #fff; }
+/* Licence terminée (1.6.0) : une phrase entière, la date d'effacement — en texte courant. */
+.wc-pro-texte.wc-fin-licence { max-width: 340px; font-family: var(--body); font-size: 13px; font-weight: 600; letter-spacing: 0; line-height: 1.45; }
+.wc-titre { font-family: var(--display); font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #fff; white-space: nowrap; }
+.wc-milieu { display: flex; align-items: center; justify-content: center; color: var(--textdim); font-size: 18px; }
+.wc-sous { font-family: var(--mono); font-size: 10px; color: var(--textdim); }
+.wc-pseudo-ligne { min-height: 26px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.wc-pseudo-ligne b { color: #fff; font-weight: 400; }
+/* Crayon gris : mêmes couleur et taille que les ✎ du panneau Routes ; au
+   survol, la couleur d'accent, comme le crayon de la fiche d'un appareil. */
+.wc-crayon { font-size: 11px; color: var(--textdim); cursor: pointer; padding: 0 2px; transition: color .15s; }
+.wc-crayon:hover { color: var(--accent); }
+
+/* Choix de la vue, propre à chaque côté et retenu au redémarrage */
+.wc-vues { display: inline-flex; gap: 3px; margin-right: auto; margin-left: 8px; }
+.wc-vue-btn {
+  width: 22px; height: 20px; display: inline-flex; align-items: center; justify-content: center; padding: 0;
+  border: 1px solid var(--border2); border-radius: 3px; background: var(--bg3); color: var(--textdim); cursor: pointer;
+}
+.wc-vue-btn svg { width: 12px; height: 12px; }
+.wc-vue-btn:hover { color: var(--text); }
+.wc-vue-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(0,212,255,.12); }
+/* Le tri (03-10), sous la ligne du dossier ou du pseudo : à gauche, côté des
+   noms, le tri par nom ; à droite, côté des dates, l'horloge. */
+.wc-tri-ligne { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; }
+.wc-tri-btn.wc-tri-nom svg { width: 13px; height: 13px; }
+
+.wc-grille {
+  flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr;
+  align-content: start; gap: 8px; border-radius: 6px; padding: 4px;
+  transition: background .15s, box-shadow .15s;
+}
+.wc-grille.wc-survol { background: rgba(0,212,255,.06); box-shadow: inset 0 0 0 1px rgba(0,212,255,.5); }
+.wc-grille::-webkit-scrollbar { width: 3px; }
+.wc-grille::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+.wc-vide, .wc-message {
+  grid-column: 1 / -1; font-family: var(--mono); font-size: 11px; color: var(--textdim);
+  text-align: center; padding: 20px 8px; line-height: 1.6;
+}
+.wc-message .wc-btn { margin-top: 10px; }
+.wc-message .wc-input { margin-top: 10px; text-align: center; }
+
+.wc-tuile {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 4px; border-radius: 6px; border: 1px solid transparent;
+  cursor: grab; text-align: center; user-select: none;
+}
+.wc-tuile:hover { border-color: var(--border2); background: rgba(255,255,255,.02); }
+.wc-tuile.wc-en-vol { opacity: .35; }
+/* Le projet ouvert : encadré en ORANGE ; le projet sélectionné d'un clic : en
+   BLEU (03-10, sa règle) — la sélection l'emporte, dans Importer, sur le
+   projet ouvert qu'on importe dans lui-même. */
+.wc-tuile.wc-actuel { border-color: rgba(255,107,53,.7); background: rgba(255,107,53,.06); }
+.wc-tuile.wc-selection { border-color: var(--accent); background: rgba(0,212,255,.1); }
+/* L'icône est dans un cadre, qui règle sa taille en grandes icônes comme en
+   liste. */
+.wc-icone { position: relative; display: block; width: 100%; max-width: 104px; line-height: 0; }
+.wc-icone > img {
+  display: block; width: 100%; height: auto; pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(0,212,255,.25));
+}
+/* Mon poste : l'icône des projets du poste, plus haute que large, réglée en
+   hauteur (le nuage, lui, est deux fois plus large que haut). Son halo est
+   dans l'image : pas d'ombre lumineuse ajoutée. */
+.wc-icone.wc-locale { width: auto; max-width: none; }
+.wc-icone > img.wc-icone-locale { width: auto; height: 80px; filter: none; }
+/* La corbeille, au bout de l'en-tête Wires Cloud (idée de l'utilisateur,
+   02-10, à la place des croix) : on y glisse un projet — rouge pour un de mes
+   projets (supprimer), grise pour un projet reçu (retirer de ma liste). Un
+   clic montre les projets supprimés ; la flèche de retour prend sa place.
+   Le dessin ne reçoit pas le pointeur : sans ça, passer du bouton à son
+   dessin pendant un glisser ferait clignoter la couleur. */
+.wc-corbeille {
+  width: 26px; height: 22px; padding: 0; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  border: 1px solid var(--border2); border-radius: 4px; background: var(--bg3); color: var(--textdim); cursor: pointer;
+  transition: transform .15s, color .15s, border-color .15s, background .15s, box-shadow .15s;
+}
+.wc-corbeille[hidden] { display: none; }
+.wc-corbeille svg { width: 14px; height: 14px; pointer-events: none; }
+.wc-corbeille:hover { color: var(--text); }
+.wc-corbeille.wc-cible-rouge { transform: scale(1.45); color: #fff; border-color: #e5484d; background: #e5484d; box-shadow: 0 0 14px rgba(229,72,77,.6); }
+.wc-corbeille.wc-cible-grise { transform: scale(1.45); color: #e6ebf5; border-color: #8a93a6; background: #5a6478; box-shadow: 0 0 12px rgba(160,170,190,.35); }
+/* La corbeille de Mon poste (03-10) : on y glisse un projet, il part dans la
+   corbeille de l'ordinateur ; rien ne s'ouvre au clic, donc ni main ni
+   éclaircissement au survol. */
+.wc-corbeille.wc-corbeille-poste { cursor: default; }
+.wc-corbeille.wc-corbeille-poste:not(.wc-cible-rouge):hover { color: var(--textdim); }
+@media (prefers-reduced-motion: reduce) { .wc-corbeille { transition: none; } }
+/* Dans la corbeille : icônes éteintes, comme le logo de l'en-tête. */
+.wc-tuile.wc-supprime { cursor: default; }
+.wc-tuile.wc-supprime .wc-icone > img { filter: grayscale(1) brightness(.55); }
+.wc-tuile.wc-supprime .wc-nom { color: var(--textdim); }
+.wc-tuile.wc-supprime .wc-btn { margin-top: 4px; }
+.wc-delai { color: #ffb366; }
+.wc-btn.wc-danger { border-color: rgba(229,72,77,.6); color: #ff7a7e; background: rgba(229,72,77,.12); }
+.wc-btn.wc-danger:hover:not(:disabled) { border-color: #e5484d; color: #ff9a9d; }
+/* Le bouton de la corbeille grise (retirer de ma liste). */
+.wc-btn.wc-gris { border-color: #8a93a6; color: #e6ebf5; background: rgba(138,147,166,.18); }
+.wc-btn.wc-gris:hover:not(:disabled) { border-color: #c4ccda; color: #fff; }
+.wc-nom { font-family: var(--body); font-size: 13px; font-weight: 700; color: #fff; line-height: 1.1; word-break: break-word; }
+.wc-etat { font-family: var(--mono); font-size: 9.5px; color: var(--textdim); line-height: 1.25; }
+.wc-verrou { color: var(--accent2); }
+.wc-actif { color: var(--accent); }
+.wc-tuile.wc-bloque { cursor: not-allowed; }
+.wc-tuile.wc-bloque .wc-icone > img { filter: drop-shadow(0 0 6px rgba(255,107,53,.3)); }
+.wc-tuile.wc-bloque .wc-nom { color: var(--accent2); }
+
+/* Vue liste : une ligne par projet, petite icône, état à droite */
+.wc-grille.wc-liste { grid-template-columns: 1fr; gap: 2px; }
+.wc-grille.wc-liste .wc-tuile { flex-direction: row; align-items: center; text-align: left; gap: 8px; padding: 4px 6px; }
+.wc-grille.wc-liste .wc-icone { width: 44px; max-width: 44px; flex-shrink: 0; }
+.wc-grille.wc-liste .wc-icone.wc-locale { width: auto; max-width: none; }
+.wc-grille.wc-liste .wc-icone > img.wc-icone-locale { height: 32px; }
+.wc-grille.wc-liste .wc-tuile .wc-nom { font-size: 12.5px; flex: 1; min-width: 0; }
+.wc-grille.wc-liste .wc-tuile .wc-etat { text-align: right; max-width: 48%; }
+
+/* Beaucoup de propositions : elles défilent, la grille garde sa place. */
+.wc-propositions { border-top: 1px solid var(--border); padding-top: 8px; display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto; flex-shrink: 0; }
+.wc-label { font-family: var(--mono); font-size: 10px; color: var(--textdim); letter-spacing: 1px; text-transform: uppercase; }
+.wc-compte { font-family: var(--mono); font-size: 9px; color: var(--bg); background: var(--accent); border-radius: 8px; padding: 0 5px; margin-left: 4px; }
+.wc-prop { display: grid; grid-template-columns: 52px 1fr auto; align-items: center; gap: 8px; }
+.wc-prop > img { width: 52px; opacity: .8; }
+.wc-prop .wc-nom { font-size: 12px; text-align: left; }
+.wc-prop .wc-etat { text-align: left; }
+.wc-mini { display: flex; gap: 4px; }
+
+.wc-btn {
+  padding: 4px 8px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 4px;
+  color: var(--text); font-family: var(--mono); font-size: 10.5px; cursor: pointer; white-space: nowrap;
+}
+.wc-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.wc-btn.wc-oui { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,.12); }
+.wc-btn:disabled { opacity: .45; cursor: default; }
+/* Mon poste : le dossier montré (son nom, le chemin complet au survol) et
+   « Parcourir… » pour en choisir un autre (maquette validée le 02-10). Même
+   hauteur que la ligne du pseudo en face : les deux grilles commencent à la
+   même hauteur. */
+.wc-dossier-ligne { min-height: 26px; display: flex; align-items: center; gap: 8px; }
+.wc-dossier {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 10px; color: var(--textdim);
+}
+.wc-dossier svg { width: 15px; height: 13px; flex-shrink: 0; }
+.wc-dossier b { color: #fff; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wc-parcourir { flex-shrink: 0; padding: 4px 10px; }
+.wc-aide { font-family: var(--body); font-size: 12px; color: var(--textdim); text-align: center; line-height: 1.35; }
+/* Le gestionnaire de projets (04-10) : la fiche du projet choisi prend la
+   place de l'aide, à hauteur fixe (quatre lignes) — rien ne bouge. */
+.wc-aide.wc-fiche { height: calc(4 * 1.35em); overflow: hidden; }
+/* Enregistrer sous (10-10) : la consigne du choix, au-dessus des deux côtés. */
+.wc-aide.wc-aide-choix { font-size: 14px; font-weight: 600; color: var(--accent); letter-spacing: .3px; }
+.wc-fiche > div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wc-fiche-titre b { color: var(--text); font-weight: 600; }
+.wc-fiche-chemin { font-family: var(--mono); font-size: 10.5px; }
+.wc-f-btn {
+  padding: 7px 18px; background: none; border: 1px solid var(--border2); border-radius: 4px;
+  font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  color: var(--textdim); cursor: pointer; text-transform: uppercase;
+}
+.wc-f-btn:hover { color: var(--text); border-color: rgba(0,212,255,.4); }
+/* « Enregistrer sous » (03-10) : la même fenêtre ; rien ne s'y glisse. Sa
+   règle : au départ les deux côtés grisés ; un clic encadre le côté choisi et
+   grise l'autre ; un clic sur l'autre inverse ; jamais les deux. Pas de fond
+   bleu. En bas, « Nom du projet », « Partager » et « Enregistrer ». */
+.wc-sauvegarde .wc-cote { cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+.wc-sauvegarde .wc-cote > * { transition: opacity .2s, filter .2s; }
+.wc-sauvegarde .wc-cote.wc-pas-choisi > :not(.wc-pro-reserve) { opacity: .4; filter: grayscale(.8); }
+.wc-sauvegarde .wc-cote.wc-pas-choisi:hover { border-color: rgba(0,212,255,.35); }
+.wc-sauvegarde .wc-cote.wc-choisi { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.wc-sauvegarde .wc-tuile { cursor: pointer; }
+.wc-pied-nom { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; margin-right: 8px; }
+.wc-pied-nom .wc-label { white-space: nowrap; }
+.wc-f-btn.wc-f-oui { background: var(--accent); border-color: var(--accent); color: #000; transition: filter .15s; }
+.wc-f-btn.wc-f-oui:hover:not(:disabled) { color: #000; border-color: var(--accent); filter: brightness(1.15); }
+.wc-f-btn:disabled { opacity: .35; cursor: default; }
+/* « Vider la corbeille » (10-10, aperçu validé) : en bas de la boîte, toute sa largeur,
+   texte rouge sur fond transparent, fin contour rouge. */
+.wc-f-btn.wc-vider { width: 100%; flex-shrink: 0; background: transparent; color: #ff7a7e; border-color: rgba(229,72,77,.6); }
+.wc-f-btn.wc-vider:hover:not(:disabled) { color: #ff9a9d; border-color: #e5484d; }
+.wc-f-btn.wc-vider.wc-attente:disabled { opacity: .75; cursor: progress; }
+
+/* Bulles : dans la fenêtre (envoi, pseudo) ou par-dessus tout (refus,
+   progression) — toujours au centre, jamais en bas (décision du 02-10). */
+.wc-voile { position: absolute; inset: 0; background: rgba(0,0,0,.55); display: none; align-items: center; justify-content: center; z-index: 2; }
+.wc-voile.ouvert { display: flex; }
+.wc-voile-global { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 100010; display: flex; align-items: center; justify-content: center; }
+.wc-bulle {
+  width: 360px; max-width: 92%; background: var(--panel); border: 1px solid var(--accent); border-radius: 8px;
+  padding: 14px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 0 30px rgba(0,212,255,.15);
+}
+.wc-bulle h3 { font-family: var(--display); font-size: 11px; letter-spacing: 2px; color: #fff; font-weight: 700; word-break: break-word; }
+.wc-texte { font-family: var(--body); font-size: 14px; color: var(--text); line-height: 1.4; white-space: pre-line; }
+.wc-texte.wc-petit { font-size: 12px; color: var(--textdim); }
+.wc-erreur { font-family: var(--body); font-size: 12.5px; color: #ff8888; line-height: 1.4; white-space: pre-line; }
+.wc-erreur:empty { display: none; }
+.wc-champ { display: grid; grid-template-columns: 100px 1fr; align-items: center; gap: 8px; }
+.wc-input {
+  width: 100%; min-width: 0; background: var(--bg3); border: 1px solid var(--border2); border-radius: 4px; padding: 6px 8px;
+  font-family: var(--body); font-size: 13px; color: var(--text); outline: none; user-select: text;
+}
+.wc-input:focus { border-color: rgba(0,212,255,.5); }
+.wc-input::placeholder { color: var(--textdim); }
+.wc-puces { display: flex; gap: 6px; flex-wrap: wrap; min-height: 20px; padding-left: 108px; }
+.wc-puce { font-family: var(--mono); font-size: 10.5px; color: var(--accent); border: 1px solid rgba(0,212,255,.35); border-radius: 10px; padding: 1px 7px; cursor: pointer; }
+/* Le choix des amis (03-10) : pour partager, il faut être amis. Une case par
+   ami (collègues d'abord), cochée s'il a déjà le projet ; « en attente » tant
+   qu'il n'a pas accepté. */
+.wc-amis { display: flex; flex-direction: column; gap: 1px; max-height: 220px; overflow-y: auto; }
+.wc-amis-titre { font-family: var(--mono); font-size: 10px; color: var(--textdim); letter-spacing: 1px; text-transform: uppercase; margin: 6px 0 2px; }
+.wc-amis-titre:first-child { margin-top: 0; }
+.wc-ami { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 3px 4px; border-radius: 3px; cursor: pointer; }
+.wc-ami:hover { background: rgba(255,255,255,.04); }
+.wc-ami input { margin: 0; width: 14px; height: 14px; accent-color: var(--accent); cursor: pointer; }
+.wc-ami input:disabled { cursor: default; }
+.wc-ami-nom { font-family: var(--body); font-size: 13px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wc-ami .wc-etat { text-align: right; white-space: nowrap; }
+/* Deux colonnes dès 6 noms (07-10) : chaque groupe se remplit de haut en bas, colonne de
+   gauche puis de droite (le nombre de lignes est posé par cloud-fenetre.js) ; la bulle
+   s'élargit d'un tiers pour garder pseudo et état sur une ligne. */
+.wc-amis-groupe { display: grid; grid-auto-flow: column; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 12px; row-gap: 1px; }
+.wc-bulle:has(.wc-amis.wc-deux-colonnes) { width: 480px; }
+/* Les alertes avant la fin d'un abonnement (07-10) : le texte sur deux lignes, les trois boutons
+   (« Me le rappeler plus tard », « Déplacer mon Cloud en Local », « Renouveler ») sur une seule. */
+.wc-bulle.wc-alerte { width: 470px; }
+.wc-amis-vide { font-family: var(--body); font-size: 12.5px; color: var(--textdim); }
+.wc-partage-avec { display: flex; flex-direction: column; gap: 6px; }
+.wc-actions { display: flex; justify-content: flex-end; gap: 6px; }
+.wc-progression { display: flex; flex-direction: column; gap: 6px; }
+.wc-progression[hidden] { display: none; }
+.wc-barre { height: 4px; background: rgba(255,255,255,.06); border-radius: 2px; overflow: hidden; }
+.wc-barre > div { height: 100%; width: 0; background: var(--accent); border-radius: 2px; transition: width .2s ease; box-shadow: 0 0 8px rgba(0,212,255,.5); }
+.wc-barre.wc-indetermine > div { width: 30%; animation: wc-va-vient 1.2s ease-in-out infinite; }
+@keyframes wc-va-vient { 0% { transform: translateX(-100%); } 100% { transform: translateX(340%); } }
+@media (prefers-reduced-motion: reduce) { .wc-barre.wc-indetermine > div { animation: none; width: 100%; opacity: .5; } }
+
+/* Projets récents de l'accueil : colonne réservée au nuage, APRÈS la date
+   (choix B du 02-10) — vide pour un projet du poste, pour garder les dates
+   alignées. Orange : ouvert ailleurs, impossible à ouvrir. */
+.startup-recent-item { display: grid; grid-template-columns: 1fr auto 26px auto; gap: 8px; }
+.startup-recent-cloud { display: flex; align-items: center; justify-content: center; height: 18px; }
+.startup-recent-cloud svg { width: 26px; height: 16px; filter: drop-shadow(0 0 3px rgba(0,212,255,.6)); }
+.startup-recent-item.wc-bloque { cursor: not-allowed; }
+.startup-recent-item.wc-bloque .startup-recent-name,
+.startup-recent-item.wc-bloque .startup-recent-date { color: var(--accent2); }
+.startup-recent-item.wc-bloque .startup-recent-cloud svg { stroke: var(--accent2); filter: drop-shadow(0 0 3px rgba(255,107,53,.6)); }
+
+/* En-tête : le logo WIRES CLOUD (fourni par l'utilisateur, 02-10). Éteint
+   pour un projet du poste — un néon débranché, gris et sombre. Allumé pour un
+   projet ouvert depuis Wires Cloud, avec un scintillement d'allumage. */
+/* Remonté de 7,5 px : les lettres sont dans le bas de l'image (le nuage
+   dépasse au-dessus), leur centre est à 22,5 px sur 30 — mesuré dans
+   l'image. Ainsi « WIRES CLOUD » est à la hauteur du nom du projet
+   (demande de l'utilisateur, 02-10). */
+.h-cloud-logo {
+  height: 30px; width: auto; flex-shrink: 0; user-select: none; transform: translateY(-7.5px);
+  cursor: pointer;   /* un clic ouvre le gestionnaire de projets (09-10) */
+  filter: grayscale(1) brightness(.4); opacity: .55; transition: filter .3s, opacity .3s;
+}
+.h-cloud-logo.on { filter: none; opacity: 1; }
+.h-cloud-logo.allumage { animation: wc-allumage .9s steps(1, end); }
+@keyframes wc-allumage {
+  0%   { filter: grayscale(1) brightness(.4); opacity: .55; }
+  8%   { filter: none; opacity: 1; }
+  14%  { filter: grayscale(1) brightness(.4); opacity: .55; }
+  24%  { filter: none; opacity: 1; }
+  30%  { filter: grayscale(.6) brightness(.7); opacity: .8; }
+  42%  { filter: none; opacity: 1; }
+  100% { filter: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .h-cloud-logo.allumage { animation: none; } }
+/* Pendant l'envoi d'une version (Ctrl+S), le logo respire. */
+.h-cloud-logo.on.envoi { animation: wc-envoi 1s ease-in-out infinite; }
+@keyframes wc-envoi { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .h-cloud-logo.on.envoi { animation: none; opacity: .6; } }
+
+/* Fermeture de Wires hors ligne : même boîte que « Modifications non
+   sauvegardées » (fileIO.js), boutons empilés. */
+.wc-classique { background: #0d1526; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; padding: 28px 32px; min-width: 340px; max-width: 440px; box-shadow: 0 16px 48px rgba(0,0,0,.8); }
+.wc-classique-titre { font-family: var(--display); font-size: 11px; font-weight: 700; letter-spacing: 3px; color: #fff; margin-bottom: 8px; }
+.wc-classique-texte { font-family: var(--body); font-size: 13px; color: var(--textdim); margin-bottom: 24px; line-height: 1.45; }
+/* Logo Wires Cloud à la place des mots (10-10) : même règle que .elk-nc-logo, à l'échelle d'un
+   texte de 13 px — lettres posées sur la ligne du texte (bas des lettres à 88/96 de l'image). */
+.wc-texte-logo { height: 19px; width: auto; vertical-align: -1.6px; margin: 0 2px; }
+.wc-classique-boutons { display: flex; flex-direction: column; gap: 8px; }
+.wc-classique-boutons button { width: 100%; padding: 9px; border-radius: 4px; font-family: var(--mono); font-size: 11px; letter-spacing: 2px; cursor: pointer; text-transform: uppercase; }
+.wc-classique-boutons .wc-principal { background: var(--accent); border: none; color: #000; font-weight: 700; }
+.wc-classique-boutons .wc-second { background: none; border: 1px solid rgba(255,255,255,.15); color: var(--textdim); letter-spacing: 1px; }
+
+/* Avis discret en bas à droite (images manquantes, verrou perdu) */
+.wc-avis {
+  position: fixed; right: 16px; bottom: 16px; z-index: 100000; width: 340px; max-width: calc(100vw - 32px);
+  background: var(--panel); border: 1px solid var(--border2); border-left: 3px solid var(--accent2); border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.6); padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start;
+  font-family: var(--body); font-size: 13px; line-height: 1.5; color: var(--text);
+}
+.wc-avis > span { flex: 1; }
+.wc-avis > button { flex-shrink: 0; background: none; border: none; color: var(--textdim); font-size: 14px; cursor: pointer; line-height: 1; padding: 2px; }
+
+/* ═══════════════════════════════════════════════════════════════
+   WIRES CLOUD — le pseudo dans l'en-tête et son panneau (03-10)
+═══════════════════════════════════════════════════════════════ */
+/* La police du logo WIRES (sa décision du 03-10), pour son seul pseudo :
+   majuscules sans accents, une couleur par lettre (cloud-fenetre.js). */
+@font-face {
+  font-family: 'D3 Euronism';
+  src: url('../assets/fonts/D3Euronism-Bold.ttf') format('truetype');
+  font-weight: normal; font-style: normal; font-display: swap;
+}
+/* Pas de « position » ici : le panneau se place par rapport à l'en-tête. */
+.h-pseudo-wrap { margin-left: auto; flex-shrink: 0; }
+.h-pseudo-wrap:not([hidden]) + .h-stats { margin-left: 0; }
+.h-pseudo {
+  display: flex; align-items: center; gap: 7px; padding: 4px 9px;
+  background: none; border: 1px solid transparent; border-radius: 4px; cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.h-pseudo:hover, .h-pseudo.ouvert { border-color: var(--border2); background: var(--bg3); }
+.h-pseudo-icone { display: inline-flex; color: var(--accent); }
+.h-pseudo-icone svg { width: 14px; height: 14px; }
+.h-pseudo .pseudo-wires { font-size: 15px; }
+.h-pseudo-choisir { font-family: var(--mono); font-size: 11px; letter-spacing: 1px; color: var(--accent); white-space: nowrap; }
+.pseudo-wires { font-family: 'D3 Euronism', var(--display); letter-spacing: 1px; white-space: nowrap; line-height: 1; }
+.pseudo-wires > span { text-shadow: 0 0 6px currentColor; }
+/* Le « _ », que la police du logo dessine vide. */
+.pseudo-wires .pseudo-secours { font-family: var(--display); }
+/* Le panneau qui descend sous le pseudo (son choix du 03-10). Ouvert, l'en-tête
+   passe devant les panneaux de droite (appareil, routes : 200-201), jamais
+   devant les fenêtres (10000 et plus). Collé sous le bord bas de l'en-tête,
+   coins hauts carrés ; sa droite suit celle du pseudo (cloud-fenetre.js).
+   Le découpage cache tout ce qui dépasse au-dessus de lui — son ombre comprise,
+   qui sinon déborderait sur l'en-tête ; il laisse l'ombre sur les côtés et
+   en bas. */
+#header.pseudo-ouvert { z-index: 300; }
+.h-pseudo-panneau {
+  position: absolute; top: calc(100% + 1px); right: 20px; width: 340px; z-index: 9999;
+  background: var(--panel); border: 1px solid var(--border2); border-top: none; border-radius: 0 0 8px 8px;
+  box-shadow: 0 18px 60px rgba(0,0,0,.75); display: flex; flex-direction: column;
+  max-height: calc(100vh - 80px); overflow-y: auto;
+  clip-path: inset(0 -80px -100px -80px);
+}
+.h-pseudo-panneau[hidden] { display: none; }
+/* Il sort de dessous l'en-tête (sa demande du 03-10) : il descend, et seule la
+   partie déjà sortie se voit — le découpage suit le déplacement, son bord haut
+   reste au ras de l'en-tête. L'ombre du dessous vient avec lui. */
+@keyframes pa-sortir {
+  from { transform: translateY(-100%); clip-path: inset(100% -80px 0 -80px); }
+  to   { transform: translateY(0);     clip-path: inset(0 -80px -100px -80px); }
+}
+@keyframes pa-rentrer {
+  from { transform: translateY(0);     clip-path: inset(0 -80px -100px -80px); }
+  to   { transform: translateY(-100%); clip-path: inset(100% -80px 0 -80px); }
+}
+.h-pseudo-panneau.sort   { animation: pa-sortir .32s cubic-bezier(.16, 1, .3, 1); }
+.h-pseudo-panneau.rentre { animation: pa-rentrer .2s ease-in forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .h-pseudo-panneau.sort, .h-pseudo-panneau.rentre { animation: none; }
+}
+.pa-bloc { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.pa-bloc + .pa-bloc { border-top: 1px solid var(--border); }
+.pa-ligne { display: flex; align-items: center; gap: 8px; min-height: 26px; }
+/* Le pseudo prend sa largeur, le crayon le suit ; un pseudo trop long
+   s'abrège (« … ») et le crayon reste visible. */
+.pa-ligne.pa-moi-ligne { gap: 5px; }
+.pa-moi { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pa-moi-ligne .wc-crayon { flex-shrink: 0; }
+.pa-moi .pseudo-wires { font-size: 21px; }
+.pa-place { display: flex; flex-direction: column; gap: 5px; }
+.pa-place-txt { font-family: var(--mono); font-size: 10px; color: var(--textdim); }
+.pa-alerte { font-family: var(--mono); font-size: 10px; color: #ffb366; }
+.pa-presque .wc-barre > div { background: #ffb366; box-shadow: none; }
+.pa-plein .wc-barre > div { background: #ff5a5f; box-shadow: none; }
+.pa-plein .pa-alerte { color: #ff7a7e; }
+.pa-liste { display: flex; flex-direction: column; max-height: 190px; overflow-y: auto; }
+.pa-liste .pa-ligne { padding: 0 2px; border-radius: 3px; }
+.pa-liste .pa-ligne:hover { background: rgba(255,255,255,.03); }
+.pa-nom { flex: 1; min-width: 0; font-family: var(--body); font-size: 13.5px; font-weight: 600; color: #fff;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pa-retirer { background: none; border: none; color: var(--textdim); font-size: 13px; cursor: pointer; padding: 0 4px; line-height: 1; }
+.pa-retirer:hover { color: #ff7a7e; }
+.pa-retirer:disabled { opacity: .35; cursor: default; }
+/* Son Code Personnel (04-10) : le libellé tel qu'il l'a voulu (« Code
+   Personnel », sans capitales forcées), le code, et « Copier ». */
+.pa-code-libelle { flex-shrink: 0; font-family: var(--mono); font-size: 10px; color: var(--textdim); }
+.pa-code { flex: 1; min-width: 0; font-family: var(--mono); font-size: 13px; font-weight: 600; color: #fff;
+  letter-spacing: 1.5px; white-space: nowrap; user-select: text; }
+.pa-code-copier { flex-shrink: 0; }
+/* « Inviter un ami » : les demandes envoyées (« Paul · en attente »), puis le
+   champ du code de l'autre et « Inviter ». Les demandes reçues, en haut. */
+.pa-envoyee, .pa-demande { flex: 1; min-width: 0; font-family: var(--body); font-size: 13.5px; font-weight: 600; color: #fff;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pa-envoyee .pa-attente { font-family: var(--mono); font-size: 10px; font-weight: 400; color: var(--textdim); }
+.pa-inviter-ligne { gap: 6px; }
+.pa-code-champ { flex: 1; width: auto; font-family: var(--mono); letter-spacing: 1px; text-transform: uppercase; }
+.pa-code-champ:disabled { opacity: .45; }
+.pa-inviter { flex-shrink: 0; align-self: stretch; padding: 4px 12px; font-size: 11px; }
+.pa-vide { font-family: var(--body); font-size: 12.5px; color: var(--textdim); }
+/* Une proposition de partage pas encore vue (sa demande du 04-10) : le pseudo
+   clignote jusqu'à l'ouverture du panneau ; un cadre accent en plus. Moins
+   d'animations demandé : le cadre seul. */
+@keyframes pseudo-clignote { 0%, 100% { opacity: 1; } 50% { opacity: .18; } }
+.h-pseudo.a-voir { border-color: var(--accent); }
+.h-pseudo.a-voir .pseudo-wires { animation: pseudo-clignote 1.1s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .h-pseudo.a-voir .pseudo-wires { animation: none; }
+}
+/* Les projets proposés, en haut du panneau. */
+.pa-prop { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.pa-prop b { font-family: var(--body); font-size: 13.5px; font-weight: 600; color: #fff;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pa-prop span { font-family: var(--mono); font-size: 9.5px; color: var(--textdim); }
+.pa-props .wc-label .wc-compte, .pa-demandes .wc-label .wc-compte { margin-left: 6px; }
+/* « Marie (partage 1 projet) » : ce que l'ami me partage. */
+.pa-nom .pa-partage { font-family: var(--mono); font-size: 10px; font-weight: 400; color: var(--textdim); }
+/* Accepté depuis le panneau : la confirmation, jusqu'à sa fermeture. */
+.pa-confirme { font-family: var(--body); font-size: 12.5px; font-weight: 600; color: #6fe39a; }
+/* La bulle « Partager » sans ami : « Inviter un ami » ouvre le panneau du pseudo. */
+.wc-amis-inviter { align-self: flex-start; margin-top: 6px; }
