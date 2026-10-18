@@ -1127,6 +1127,18 @@ h3{color:#fff}
 }
 .release-group-fixes li::before{background:#71839b;box-shadow:none}
 .downloads-list-heading{max-width:1240px;margin:0 auto 24px;color:var(--text);font-size:18px;font-weight:700;line-height:1.4;text-align:left}
+/* Bouton Newsletter (2026-10-18) : texte et bordure vert de Brevo (#0b996e), fond de la page, même corps que le titre voisin, à gauche, sur la ligne du titre de la liste, désormais centré.
+   Grille 1fr auto 1fr : le titre reste au vrai centre de la page, le bouton ne le décale pas. */
+.downloads-heading-row{max-width:1240px;margin:0 auto 24px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}
+.downloads-heading-row .downloads-list-heading{grid-column:2;grid-row:1;margin:0;text-align:center}
+.downloads-newsletter-btn{grid-column:1;grid-row:1;justify-self:start;display:inline-flex;align-items:center;gap:7px;padding:2px 12px;line-height:1.25;border:1px solid #0b996e;border-radius:999px;background:transparent;color:#0b996e;font:inherit;font-size:18px;font-weight:700;cursor:pointer;transition:.18s ease}
+.downloads-newsletter-btn:hover,.downloads-newsletter-btn:focus-visible{border-color:#12c48e;color:#12c48e;transform:translateY(-2px)}
+.download-signup-modal[data-mode="newsletter"] label span{display:none}
+@media(max-width:760px){
+  .downloads-heading-row{grid-template-columns:1fr;justify-items:center;gap:12px}
+  .downloads-heading-row .downloads-list-heading{grid-column:1}
+  .downloads-newsletter-btn{grid-column:1;grid-row:2;justify-self:center}
+}
 .downloads-layout{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:stretch}
 .download-list{min-width:0;display:grid;gap:14px}
 .download-row{display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:center;padding:18px 20px;border:1px solid var(--line);border-radius:16px;background:rgba(17,29,50,.72);box-shadow:var(--shadow)}

@@ -585,9 +585,44 @@ function closeDownloadSignupModal() {
   downloadSignupReturnFocus = null;
 }
 
+// Deux usages de la même fenêtre (2026-10-18) : « download » (e-mail facultatif, puis téléchargement)
+// et « newsletter » (bouton Newsletter de la page : e-mail obligatoire, aucun téléchargement).
+function setDownloadSignupMode(modal, mode) {
+  modal.dataset.mode = mode;
+  const form = modal.querySelector("[data-download-signup-form]");
+  const input = modal.querySelector("[data-download-signup-email]");
+  const submit = form?.querySelector('button[type="submit"]');
+  if (submit) {
+    if (!submit.dataset.downloadText) submit.dataset.downloadText = submit.textContent;
+    submit.textContent = mode === "newsletter" ? (form.dataset.newsletterButton || submit.dataset.downloadText) : submit.dataset.downloadText;
+  }
+  if (input) input.required = mode === "newsletter";
+}
+
+function openNewsletterModal(button) {
+  const modal = document.getElementById("download-signup-modal");
+  if (!modal) return;
+  pendingDownload = null;
+  downloadSignupReturnFocus = button;
+  setDownloadSignupMode(modal, "newsletter");
+  const form = modal.querySelector("[data-download-signup-form]");
+  const input = modal.querySelector("[data-download-signup-email]");
+  const status = modal.querySelector("[data-download-signup-status]");
+  if (form) form.reset();
+  if (status) {
+    status.hidden = true;
+    status.textContent = "";
+  }
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("download-signup-open");
+  window.requestAnimationFrame(() => input?.focus());
+}
+
 function openDownloadSignupModal(downloadButton, downloadUrl) {
   const modal = document.getElementById("download-signup-modal");
   if (!modal) return false;
+  setDownloadSignupMode(modal, "download");
 
   pendingDownload = {
     button: downloadButton,
@@ -683,6 +718,12 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  const newsletterButton = event.target.closest("[data-newsletter-open]");
+  if (newsletterButton) {
+    openNewsletterModal(newsletterButton);
+    return;
+  }
+
   const downloadButton = event.target.closest("a[data-download-url]");
   if (!downloadButton) return;
   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -706,6 +747,19 @@ document.addEventListener("submit", (event) => {
   const hasEmail = Boolean(input?.value.trim());
   if (hasEmail && !input.checkValidity()) {
     input.reportValidity();
+    return;
+  }
+
+  if (form.closest("#download-signup-modal")?.dataset.mode === "newsletter") {
+    if (!hasEmail) {
+      input?.reportValidity();
+      return;
+    }
+    submitDownloadSignup(form, input.value.trim());
+    if (status) {
+      status.textContent = form.dataset.newsletterSubmitted || "";
+      status.hidden = false;
+    }
     return;
   }
 
