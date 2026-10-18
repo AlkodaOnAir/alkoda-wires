@@ -548,6 +548,14 @@ document.addEventListener("click", (event) => {
   event.preventDefault();
   trackFileDownload(directDownload, directDownload.href);
 
+  // Fichier servi par un autre site (Cloudflare, 2026-10-18) : on y va directement. Le fetch()
+  // ci-dessous partirait quand même chez lui (comptée) puis, refusé par le navigateur, se
+  // rattraperait par une seconde demande (comptée aussi) : un clic, deux téléchargements.
+  if (new URL(directDownload.href, location.href).origin !== location.origin) {
+    window.location.assign(directDownload.href);
+    return;
+  }
+
   fetch(directDownload.href)
     .then((response) => {
       if (!response.ok) throw new Error(`Download failed: ${response.status}`);
@@ -764,6 +772,10 @@ document.addEventListener("submit", (event) => {
   }
 
   if (hasEmail) submitDownloadSignup(form, input.value.trim());
+  // E-mail laissé : l'étiquette « nl=1 » le signale au comptage des téléchargements (Cloudflare).
+  if (hasEmail && pendingDownload && pendingDownload.url.indexOf("https://wires-downloads.wires-downloads.workers.dev/") === 0) {
+    pendingDownload.url += (pendingDownload.url.indexOf("?") === -1 ? "?" : "&") + "nl=1";
+  }
   startPendingDownload();
   if (status) {
     status.textContent = hasEmail ? form.dataset.signupSubmitted : form.dataset.downloadStarted;
