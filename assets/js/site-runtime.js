@@ -552,7 +552,9 @@ document.addEventListener("click", (event) => {
   // ci-dessous partirait quand même chez lui (comptée) puis, refusé par le navigateur, se
   // rattraperait par une seconde demande (comptée aussi) : un clic, deux téléchargements.
   if (new URL(directDownload.href, location.href).origin !== location.origin) {
-    window.location.assign(directDownload.href);
+    // Le ticket d'abord (2026-10-29) ; sans lui, le lien d'origine.
+    ticketedDownloadUrl(directDownload.href, takeTurnstileToken(1500))
+      .then((href) => window.location.assign(href));
     return;
   }
 
@@ -575,6 +577,147 @@ document.addEventListener("click", (event) => {
     .catch(() => {
       window.location.assign(directDownload.href);
     });
+});
+
+// Le ticket remis au clic (2026-10-29). Au clic sur un bouton de téléchargement,
+// la page demande un ticket à la fonction Cloudflare qui sert les fichiers, puis
+// lance le téléchargement avec ce ticket : la fonction sait alors que le fichier
+// vient d'un vrai clic sur le site. La vérification invisible de Cloudflare
+// (Turnstile) tourne au même moment, sans jamais rien afficher.
+// ⚠️ Jamais bloquant : sans ticket (panne, délai dépassé, page hors du site), le
+// téléchargement part quand même, avec le lien d'origine.
+const WIRES_DOWNLOADS_ORIGIN = "https://wires-downloads.wires-downloads.workers.dev";
+// Clé PUBLIQUE de la vérification invisible. Vide : pas de vérification, les
+// clics sont comptés « non vérifiés », rien d'autre ne change.
+const TURNSTILE_SITE_KEY = "";
+const DOWNLOAD_SOURCE_PATTERN = /^[a-z0-9][a-z0-9-]{0,39}$/;
+const DOWNLOAD_SOURCE_KEY = "wires-download-source";
+
+// La provenance du lien qui a mené au site (« ?source=email-lancement »),
+// gardée le temps de la visite.
+function downloadSource() {
+  try {
+    const fromUrl = (new URL(location.href).searchParams.get("source") || "").trim().toLowerCase();
+    if (DOWNLOAD_SOURCE_PATTERN.test(fromUrl)) sessionStorage.setItem(DOWNLOAD_SOURCE_KEY, fromUrl);
+    const kept = sessionStorage.getItem(DOWNLOAD_SOURCE_KEY);
+    return kept && DOWNLOAD_SOURCE_PATTERN.test(kept) ? kept : null;
+  } catch {
+    return null;
+  }
+}
+downloadSource();
+
+let turnstileApi = null;
+let turnstileToken = null;
+
+function loadTurnstile() {
+  if (!TURNSTILE_SITE_KEY) return Promise.resolve(null);
+  if (!turnstileApi) {
+    turnstileApi = new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.onload = () => resolve(window.turnstile || null);
+      script.onerror = () => resolve(null);
+      document.head.appendChild(script);
+    });
+  }
+  return turnstileApi;
+}
+
+// Prépare un jeton de vérification (dès que la souris passe sur un bouton, ou au
+// clic). Un jeton ne sert qu'une fois : le suivant est préparé à la demande.
+function prepareTurnstileToken() {
+  if (!TURNSTILE_SITE_KEY) return null;
+  if (turnstileToken) return turnstileToken;
+  turnstileToken = loadTurnstile().then((api) => new Promise((resolve) => {
+    if (!api) {
+      resolve(null);
+      return;
+    }
+    // Jamais visible : même si Cloudflare voulait poser une question, ce cadre
+    // de taille nulle la cache, et la vérification échoue simplement.
+    const holder = document.createElement("div");
+    holder.setAttribute("aria-hidden", "true");
+    holder.style.cssText = "position:fixed;left:0;top:0;width:0;height:0;overflow:hidden;";
+    document.body.appendChild(holder);
+    let done = false;
+    const finish = (token) => {
+      if (done) return;
+      done = true;
+      window.setTimeout(() => {
+        try { api.remove(widgetId); } catch {}
+        holder.remove();
+      }, 0);
+      resolve(typeof token === "string" && token ? token : null);
+    };
+    let widgetId = null;
+    try {
+      widgetId = api.render(holder, {
+        sitekey: TURNSTILE_SITE_KEY,
+        appearance: "interaction-only",
+        callback: finish,
+        "error-callback": () => finish(null),
+        "timeout-callback": () => finish(null),
+        "unsupported-callback": () => finish(null)
+      });
+    } catch {
+      finish(null);
+    }
+    window.setTimeout(() => finish(null), 8000);
+  }));
+  // Un jeton expire au bout de cinq minutes : on n'en garde pas un plus vieux.
+  const prepared = turnstileToken;
+  window.setTimeout(() => {
+    if (turnstileToken === prepared) turnstileToken = null;
+  }, 4 * 60 * 1000);
+  return turnstileToken;
+}
+
+function takeTurnstileToken(waitMs) {
+  const pending = prepareTurnstileToken();
+  turnstileToken = null;
+  if (!pending) return Promise.resolve(null);
+  return Promise.race([pending, new Promise((resolve) => window.setTimeout(() => resolve(null), waitMs))]);
+}
+
+// Le lien du fichier avec son ticket ; le lien d'origine si quoi que ce soit échoue.
+async function ticketedDownloadUrl(rawUrl, tokenPromise) {
+  let url;
+  try {
+    url = new URL(rawUrl, location.href);
+  } catch {
+    return rawUrl;
+  }
+  if (url.origin !== WIRES_DOWNLOADS_ORIGIN) return rawUrl;
+  const source = downloadSource();
+  if (source) url.searchParams.set("source", source);
+  try {
+    const token = tokenPromise ? await tokenPromise : null;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 3000);
+    const response = await fetch(`${WIRES_DOWNLOADS_ORIGIN}/ticket`, {
+      method: "POST",
+      body: JSON.stringify({ fichier: decodeURIComponent(url.pathname.slice(1)), source, turnstile: token }),
+      credentials: "omit",
+      signal: controller.signal
+    });
+    window.clearTimeout(timer);
+    if (response.ok) {
+      const data = await response.json();
+      if (data && typeof data.ticket === "string") url.searchParams.set("k", data.ticket);
+    }
+  } catch {
+    // Le téléchargement part sans ticket.
+  }
+  return url.href;
+}
+
+document.addEventListener("pointerover", (event) => {
+  if (event.target.closest?.("a[data-download-url], a[data-direct-download]")) prepareTurnstileToken();
+});
+document.addEventListener("focusin", (event) => {
+  if (event.target.closest?.("a[data-download-url], a[data-direct-download]")) prepareTurnstileToken();
 });
 
 let pendingDownload = null;
@@ -636,7 +779,9 @@ function openDownloadSignupModal(downloadButton, downloadUrl) {
     button: downloadButton,
     url: downloadUrl,
     filename: downloadButton.dataset.downloadFilename || "",
-    guideHref: downloadButton.dataset.guideTarget || ""
+    guideHref: downloadButton.dataset.guideTarget || "",
+    // La vérification invisible tourne pendant que la fenêtre est ouverte.
+    token: takeTurnstileToken(2500)
   };
   downloadSignupReturnFocus = downloadButton;
 
@@ -659,7 +804,7 @@ function openDownloadSignupModal(downloadButton, downloadUrl) {
 function startPendingDownload() {
   if (!pendingDownload) return;
 
-  const { button, url, filename, guideHref } = pendingDownload;
+  const { button, url, filename, guideHref, token } = pendingDownload;
   trackFileDownload(button, url);
 
   if (guideHref.startsWith("#")) {
@@ -670,13 +815,15 @@ function startPendingDownload() {
     scrollToPageTarget(guideUrl.hash);
   }
 
-  const fileLink = document.createElement("a");
-  fileLink.href = url;
-  fileLink.download = filename;
-  fileLink.hidden = true;
-  document.body.appendChild(fileLink);
-  fileLink.click();
-  fileLink.remove();
+  ticketedDownloadUrl(url, token).then((href) => {
+    const fileLink = document.createElement("a");
+    fileLink.href = href;
+    fileLink.download = filename;
+    fileLink.hidden = true;
+    document.body.appendChild(fileLink);
+    fileLink.click();
+    fileLink.remove();
+  });
 }
 
 function submitDownloadSignup(form, email) {
@@ -741,7 +888,7 @@ document.addEventListener("click", (event) => {
 
   event.preventDefault();
   if (!openDownloadSignupModal(downloadButton, downloadUrl)) {
-    window.location.assign(downloadUrl);
+    ticketedDownloadUrl(downloadUrl, takeTurnstileToken(2500)).then((href) => window.location.assign(href));
   }
 });
 
