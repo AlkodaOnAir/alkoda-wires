@@ -589,7 +589,7 @@ document.addEventListener("click", (event) => {
 const WIRES_DOWNLOADS_ORIGIN = "https://wires-downloads.wires-downloads.workers.dev";
 // Clé PUBLIQUE de la vérification invisible. Vide : pas de vérification, les
 // clics sont comptés « non vérifiés », rien d'autre ne change.
-const TURNSTILE_SITE_KEY = "";
+const TURNSTILE_SITE_KEY = "0x4AAAAAAFrgOHUowEgQXwt8";
 const DOWNLOAD_SOURCE_PATTERN = /^[a-z0-9][a-z0-9-]{0,39}$/;
 const DOWNLOAD_SOURCE_KEY = "wires-download-source";
 
